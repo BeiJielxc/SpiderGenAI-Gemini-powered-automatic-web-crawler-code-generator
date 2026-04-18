@@ -1,0 +1,175 @@
+{
+  "baseUrl": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/",
+  "bestCandidate": {
+    "selector": ".rightListContent",
+    "titleSelector": ".rightListImport.unlock a",
+    "dateSelector": "",
+    "score": 100,
+    "itemCount": 10,
+    "hasLink": 10,
+    "hasDate": 10
+  },
+  "structureHint": "Each item is a <div class='rightListContent'>; title/link in <span class='rightListImport.unlock'> > <a>",
+  "sampleHtml": "<div class=\"rightListContent\">\n<span class=\"marketL34\" style=\"display: inline-block;width: 28px;text-align: center;\">\n\n                            1</span>\n<span class=\"rightListImport unlock\" style=\"width: 766px;\">\n<a href=\"https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202512/t20251229_854871375.html\" title=\"中央国债登记结算有限责任公司关于调整2025年12月31日中债综合业务平台业务受理时间的通知\">\n                                    中央国债登记结算有限责任公司关于调整2025年12月31日中债综合业务平台业务受理时间的通知</a>\n</span>\n<span class=\"rightListTime\" style=\"width: 126px;\">\n                                2025/12/29\n                            </span...\n<div class=\"rightListContent\">\n<span class=\"marketL34\" style=\"display: inline-block;width: 28px;text-align: center;\">\n\n                            2</span>\n<span class=\"rightListImport unlock\" style=\"width: 766px;\">\n<a href=\"https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202512/t20251218_854863840.html\" title=\"中央国债登记结算有限责任公司关于2026年储蓄国债（电子式）业务节假日安排的通知\">\n                                    中央国债登记结算有限责任公司关于2026年储蓄国债（电子式）业务节假日安排的通知</a>\n</span>\n<span class=\"rightListTime\" style=\"width: 126px;\">\n                                2025/12/19\n                            </span>\n</div>",
+  "items": [
+    {
+      "title": "中央国债登记结算有限责任公司关于调整2025年12月31日中债综合业务平台业务受理时间的通知",
+      "url": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202512/t20251229_854871375.html",
+      "date": "2025-12-31",
+      "dateText": "中央国债登记结算有限责任公司关于调整2025年12月31日中债综合业务平台业务受理时间的通知"
+    },
+    {
+      "title": "中央国债登记结算有限责任公司关于2026年储蓄国债（电子式）业务节假日安排的通知",
+      "url": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202512/t20251218_854863840.html",
+      "date": "2025-12-19",
+      "dateText": "2025/12/19"
+    },
+    {
+      "title": "关于2026年全国银行间债券市场节假日休市安排的通知",
+      "url": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202512/t20251218_854863820.html",
+      "date": "2025-12-19",
+      "dateText": "2025/12/19"
+    },
+    {
+      "title": "关于持续优化银行间债券市场境外机构投资者账户服务的通知",
+      "url": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202512/t20251211_854858044.html",
+      "date": "2025-12-11",
+      "dateText": "2025/12/11"
+    },
+    {
+      "title": "关于2025年12月13日至12月14日中债综合业务平台进行系统维护的通知",
+      "url": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202512/t20251209_854855571.html",
+      "date": "2025-12-13",
+      "dateText": "关于2025年12月13日至12月14日中债综合业务平台进行系统维护的通知"
+    },
+    {
+      "title": "中央国债登记结算有限责任公司2026年度校园招聘启事",
+      "url": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202511/t20251111_854833718.html",
+      "date": "2025-11-11",
+      "dateText": "2025/11/11"
+    },
+    {
+      "title": "中央结算公司博士后科研工作站2026年度招聘启事",
+      "url": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202511/t20251111_854833715.html",
+      "date": "2025-11-11",
+      "dateText": "2025/11/11"
+    },
+    {
+      "title": "中央国债登记结算有限责任公司关于发布支农支小再贷款业务操作指引的通知",
+      "url": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202510/t20251020_854797760.html",
+      "date": "2025-10-20",
+      "dateText": "2025/10/20"
+    },
+    {
+      "title": "全国银行间同业拆借中心 中央国债登记结算有限责任公司 银行间市场清算所股份有限公司 关于联合支持境外机构投资者开展银行间债券市场债券回购业务的通知",
+      "url": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202509/t20250926_854776778.html",
+      "date": "2025-09-26",
+      "dateText": "2025/09/26"
+    },
+    {
+      "title": "关于进一步优化银行间债券市场境外机构投资者账户服务的通知",
+      "url": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202509/t20250925_854775279.html",
+      "date": "2025-09-25",
+      "dateText": "2025/09/25"
+    }
+  ],
+  "pagination": {
+    "next": {
+      "tag": "a",
+      "text": "",
+      "href": null,
+      "onclick": "goPageApp('index_115.html')",
+      "target": "index_115.html",
+      "url": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/index_115.html",
+      "class": "pageNext"
+    },
+    "prev": {
+      "tag": "span",
+      "text": "",
+      "href": null,
+      "onclick": null,
+      "target": null,
+      "url": "",
+      "class": "pagePrev"
+    },
+    "pageNums": [
+      {
+        "tag": "a",
+        "text": "1",
+        "href": "index.html",
+        "onclick": null,
+        "target": null,
+        "url": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/index.html",
+        "class": "pageNum pageChecked"
+      },
+      {
+        "tag": "a",
+        "text": "2",
+        "href": null,
+        "onclick": "goPageApp('index_115.html')",
+        "target": "index_115.html",
+        "url": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/index_115.html",
+        "class": "pageNum"
+      },
+      {
+        "tag": "a",
+        "text": "3",
+        "href": null,
+        "onclick": "goPageApp('index_114.html')",
+        "target": "index_114.html",
+        "url": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/index_114.html",
+        "class": "pageNum"
+      },
+      {
+        "tag": "a",
+        "text": "4",
+        "href": null,
+        "onclick": "goPageApp('index_113.html')",
+        "target": "index_113.html",
+        "url": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/index_113.html",
+        "class": "pageNum"
+      },
+      {
+        "tag": "a",
+        "text": "116",
+        "href": null,
+        "onclick": "goPageApp('index_1.html')",
+        "target": "index_1.html",
+        "url": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/index_1.html",
+        "class": "pageNum"
+      }
+    ],
+    "totalPages": 116
+  },
+  "dateHints": {
+    "minDate": "2025-09-25",
+    "maxDate": "2025-12-31",
+    "startDate": "2025-12-01",
+    "endDate": "2025-12-31",
+    "hasInRange": true,
+    "hasOlderThanStart": true,
+    "suggestStopPaging": true
+  },
+  "otherCandidates": [
+    {
+      "selector": "li",
+      "score": 52,
+      "count": 16
+    },
+    {
+      "selector": "li",
+      "score": 36,
+      "count": 8
+    },
+    {
+      "selector": "li",
+      "score": 34,
+      "count": 7
+    },
+    {
+      "selector": ".toolBar",
+      "score": 32,
+      "count": 6
+    }
+  ]
+}

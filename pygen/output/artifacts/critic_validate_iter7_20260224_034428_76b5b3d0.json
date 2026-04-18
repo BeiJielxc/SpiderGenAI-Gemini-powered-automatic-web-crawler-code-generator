@@ -1,0 +1,168 @@
+{
+  "passed": true,
+  "summary": "Critic passed in round 1.",
+  "confidence": 0.9,
+  "issues": [],
+  "recommendations": [
+    "检查完整的错误日志",
+    "使用调试模式运行脚本",
+    "逐步排查代码逻辑"
+  ],
+  "details": {
+    "final_round": 1,
+    "max_retries": 3,
+    "rounds": [
+      {
+        "round": 1,
+        "passed": true,
+        "primary_cause": "unknown",
+        "backup_cause": "schema_mismatch",
+        "uncertain": true,
+        "classifier_confidence": 0.3,
+        "record_count": 5,
+        "static_error_count": 0
+      }
+    ],
+    "evidence": [
+      {
+        "round": 1,
+        "step": "static_check",
+        "result": {
+          "error_count": 0,
+          "warning_count": 1,
+          "top_errors": [],
+          "top_warnings": [
+            {
+              "severity": "warning",
+              "code": "ERR_006",
+              "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+            }
+          ]
+        }
+      },
+      {
+        "round": 1,
+        "step": "lightweight_runtime",
+        "result": {
+          "execution_success": true,
+          "timed_out": false,
+          "exit_code": 0,
+          "duration_seconds": 2.976,
+          "record_count": 5,
+          "date_fill_rate": 1.0,
+          "status": "success",
+          "http_statuses": [],
+          "stdout_tail": "开始爬取德国联邦银行新闻...\n正在请求 API: https://api.stage.bio/api/account/bundesbank/source/entry\n结果已保存到: d:\\llm_mcp_genpy\\pygen\\output\\bundesbank_news_20260224_114428.json\n共爬取 5 条新闻\n\n--- 爬取结果预览 ---\n1. [2026-02-24] The Governor of the Central Bank of Montenegro, Irena Radović, visited the Bunde...\n   Link: https://bsky.app/profile/bundesbank.de/post/3mfk7fub6ne2f\n2. [2026-02-24] 👋 Zdravo!  A delegation of the Central Bank of Montenegro, helmed by its Governo...\n   Link: https://www.linkedin.com/feed/update/urn:li:share:7431756072203411456\n3. [2026-02-23] Wohlstand unter der Lupe -\n   Link: https://www.facebook.com/1208694837923094/posts/1536886155103959\n4. [2026-02-23] Finance Flash: EZB vs. Bundesbank - Wer macht was? #shorts\n   Link: https://www.youtube.com/watch?v=ftgO_yxi_3g\n5. [2026-02-23] How can ...(truncated)",
+          "stderr_tail": ""
+        }
+      },
+      {
+        "round": 1,
+        "step": "cause_ranking",
+        "result": {
+          "primary_cause": "unknown",
+          "backup_cause": "schema_mismatch",
+          "confidence": 0.3,
+          "classifier_summary": "未能明确分类的故障"
+        }
+      },
+      {
+        "round": 1,
+        "step": "minimal_experiment",
+        "result": {
+          "type": "sample_output_probe",
+          "cause": "unknown",
+          "result": {
+            "sample_size": 5,
+            "required_non_empty_count": {
+              "title": 5,
+              "sourceUrl": 5
+            },
+            "sample": [
+              {
+                "id": "1583",
+                "title": "The Governor of the Central Bank of Montenegro, Irena Radović, visited the Bunde...",
+                "date": "2026-02-24",
+                "author": "bundesbank.de",
+                "source": "Deutsche Bundesbank",
+                "sourceUrl": "https://bsky.app/profile/bundesbank.de/post/3mfk7fub6ne2f",
+                "summary": "The Governor of the Central Bank of Montenegro, Irena Radović, visited the Bundesbank today. She met President Joachim Nagel to discuss Montenegro’s alignment with the European System of Central Banks...",
+                "content": "<div>The Governor of the Central Bank of Montenegro, Irena Radović, visited the Bundesbank today. She met President Joachim Nagel to discuss Montenegro’s alignment with the European System of Central Banks and Board Member Burkhard Balz to talk about digital innovation.<br><br>#Montenegro #EUIntegration</div>"
+              },
+              {
+                "id": "1474",
+                "title": "👋 Zdravo!  A delegation of the Central Bank of Montenegro, helmed by its Governo...",
+                "date": "2026-02-24",
+                "author": "20884",
+                "source": "Deutsche Bundesbank",
+                "sourceUrl": "https://www.linkedin.com/feed/update/urn:li:share:7431756072203411456",
+                "summary": "👋 Zdravo!\n\nA delegation of the Central Bank of Montenegro, helmed by its Governor @Irena_Radovic, visited the Bundesbank today, reaffirming the strong and long-standing cooperation between the two ins...",
+                "content": "<div>👋 Zdravo!<br><br>A delegation of the Central Bank of Montenegro, helmed by its Governor @Irena_Radovic, visited the Bundesbank today, reaffirming the strong and long-standing cooperation between the two institutions. Talks were held with President Joachim Nagel and Executive Board Member @Burkhard_Balz on advancing Montenegro’s alignment with the European System of Central Banks (ESCB).<br><b"
+              },
+              {
+                "id": "1471",
+                "title": "Wohlstand unter der Lupe -",
+                "date": "2026-02-23",
+                "author": "deutsche.bundesbank",
+                "source": "Deutsche Bundesbank",
+                "sourceUrl": "https://www.facebook.com/1208694837923094/posts/1536886155103959",
+                "summary": "💶Wer besitzt wie viel? Und wie sieht die Zukunft unseres Geldes aus?\nZwei spannende Veranstaltungen der Bundesbank in Kooperation mit der Volkshochschule (vhs) Hanau laden Sie ein, mehr über die Verte...",
+                "content": "<div>💶Wer besitzt wie viel? Und wie sieht die Zukunft unseres Geldes aus?<br>Zwei spannende Veranstaltungen der Bundesbank in Kooperation mit der Volkshochschule (vhs) Hanau laden Sie ein, mehr über die Verteilung von Vermögen in Deutschland und die Zukunft des Zahlungsverkehrs zu erfahren.<br><br>Erfahren Sie, wie Vermögen aufgebaut sind, welche Faktoren die Verteilung beeinflussen und wie sich d"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "round": 1,
+        "step": "output_quality",
+        "result": {
+          "record_count": 5,
+          "required_fields": [
+            "title",
+            "sourceUrl"
+          ],
+          "field_fill_rate": {
+            "title": 1.0,
+            "sourceUrl": 1.0
+          },
+          "required_fields_ok": true,
+          "meets_min_items": true,
+          "recommendations": [],
+          "sample_records": [
+            {
+              "id": "1583",
+              "title": "The Governor of the Central Bank of Montenegro, Irena Radović, visited the Bunde...",
+              "date": "2026-02-24",
+              "author": "bundesbank.de",
+              "source": "Deutsche Bundesbank",
+              "sourceUrl": "https://bsky.app/profile/bundesbank.de/post/3mfk7fub6ne2f",
+              "summary": "The Governor of the Central Bank of Montenegro, Irena Radović, visited the Bundesbank today. She met President Joachim Nagel to discuss Montenegro’s alignment with the European System of Central Banks...",
+              "content": "<div>The Governor of the Central Bank of Montenegro, Irena Radović, visited the Bundesbank today. She met President Joachim Nagel to discuss Montenegro’s alignment with the European System of Central Banks and Board Member Burkhard Balz to talk about digital innovation.<br><br>#Montenegro #EUIntegration</div>"
+            },
+            {
+              "id": "1474",
+              "title": "👋 Zdravo!  A delegation of the Central Bank of Montenegro, helmed by its Governo...",
+              "date": "2026-02-24",
+              "author": "20884",
+              "source": "Deutsche Bundesbank",
+              "sourceUrl": "https://www.linkedin.com/feed/update/urn:li:share:7431756072203411456",
+              "summary": "👋 Zdravo!\n\nA delegation of the Central Bank of Montenegro, helmed by its Governor @Irena_Radovic, visited the Bundesbank today, reaffirming the strong and long-standing cooperation between the two ins...",
+              "content": "<div>👋 Zdravo!<br><br>A delegation of the Central Bank of Montenegro, helmed by its Governor @Irena_Radovic, visited the Bundesbank today, reaffirming the strong and long-standing cooperation between the two institutions. Talks were held with President Joachim Nagel and Executive Board Member @Burkhard_Balz on advancing Montenegro’s alignment with the European System of Central Banks (ESCB).<br><b"
+            },
+            {
+              "id": "1471",
+              "title": "Wohlstand unter der Lupe -",
+              "date": "2026-02-23",
+              "author": "deutsche.bundesbank",
+              "source": "Deutsche Bundesbank",
+              "sourceUrl": "https://www.facebook.com/1208694837923094/posts/1536886155103959",
+              "summary": "💶Wer besitzt wie viel? Und wie sieht die Zukunft unseres Geldes aus?\nZwei spannende Veranstaltungen der Bundesbank in Kooperation mit der Volkshochschule (vhs) Hanau laden Sie ein, mehr über die Verte...",
+              "content": "<div>💶Wer besitzt wie viel? Und wie sieht die Zukunft unseres Geldes aus?<br>Zwei spannende Veranstaltungen der Bundesbank in Kooperation mit der Volkshochschule (vhs) Hanau laden Sie ein, mehr über die Verteilung von Vermögen in Deutschland und die Zukunft des Zahlungsverkehrs zu erfahren.<br><br>Erfahren Sie, wie Vermögen aufgebaut sind, welche Faktoren die Verteilung beeinflussen und wie sich d"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,263 @@
+{
+  "final_round": 2,
+  "max_retries": 3,
+  "repaired_code": "import os\nimport json\nimport time\nimport re\nfrom datetime import datetime\nfrom urllib.parse import urljoin\nfrom bs4 import BeautifulSoup\nfrom playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError\n\n# ==========================================\n# 配置区域\n# ==========================================\nOUTPUT_DIR = r\"d:\\llm_mcp_genpy\\pygen\\output\"\nTARGET_URL = \"https://www.cityam.com/news/\"\nMAX_ITEMS = 10  # 限制爬取前10条\nREQUEST_DELAY = 1  # 减少请求间隔以避免超时\n\n# ==========================================\n# 核心功能函数\n# ==========================================\n\ndef setup_browser(p):\n    \"\"\"配置浏览器实例，包含反爬设置\"\"\"\n    browser = p.chromium.launch(\n        headless=True,\n        args=[\"--disable-blink-features=AutomationControlled\", \"--no-sandbox\"]\n    )\n    context = browser.new_context(\n        viewport={'width': 1920, 'height': 1080},\n        user_agent=\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\",\n        locale=\"en-GB\",\n        extra_http_headers={\"Accept-Language\": \"en-GB,en;q=0.9\"}\n    )\n    return browser, context\n\ndef clean_html_content(html_content, base_url):\n    \"\"\"\n    清洗 HTML 内容：\n    1. 移除不需要的干扰元素\n    2. 将相对路径转换为绝对路径\n    \"\"\"\n    if not html_content:\n        return \"\"\n    try:\n        soup = BeautifulSoup(html_content, 'html.parser')\n        \n        # 移除不需要的元素\n        selectors_to_remove = [\n            '.article-header', '.article-footer', '.read-more', \n            '.newsletter-auto-inject', '.notice-header', 'figure',\n            'script', 'style', 'iframe', '.ad-container', '#leaderboard',\n            'nav', 'header', 'footer'\n        ]\n        for selector in selectors_to_remove:\n            for tag in soup.select(selector):\n                tag.decompose()\n\n        # 修复图片链接 (相对路径 -> 绝对路径)\n        for img in soup.find_all('img'):\n            if img.get('data-src'):\n                img['src'] = urljoin(base_url, img['data-src'])\n            elif img.get('src'):\n                img['src'] = urljoin(base_url, img['src'])\n            # 移除 srcset 防止加载错误\n            if img.get('srcset'):\n                del img['srcset']\n                \n        # 修复超链接\n        for a in soup.find_all('a'):\n            if a.get('href'):\n                a['href'] = urljoin(base_url, a['href'])\n                \n        return str(soup)\n    except Exception as e:\n        print(f\"内容清洗出错: {e}\")\n        return html_content\n\ndef extract_date_from_detail(soup):\n    \"\"\"从详情页提取发布日期\"\"\"\n    date_str = \"\"\n    \n    # 策略1: JSON-LD\n    try:\n        ld_json_scripts = soup.find_all('script', type='application/ld+json')\n        for script in ld_json_scripts:\n            if script.string:\n                try:\n                    data = json.loads(script.string)\n                    if isinstance(data, list): data = data[0] if data else {}\n                    if 'datePublished' in data:\n                        date_str = data['datePublished']\n                        break\n                except: continue\n    except: pass\n\n    # 策略2: Meta 标签\n    if not date_str:\n        meta_date = soup.find('meta', property='article:published_time')\n        if meta_date: date_str = meta_date.get('content')\n\n    # 策略3: Time 标签\n    if not date_str:\n        time_tag = soup.find('time')\n        if time_tag:\n            date_str = time_tag.get('datetime') or time_tag.get_text(strip=True)\n\n    # 格式化\n    if date_str:\n        try:\n            if 'T' in date_str: return date_str.split('T')[0]\n            return date_str.strip()\n        except: return date_str\n            \n    return datetime.now().strftime(\"%Y-%m-%d\")\n\ndef crawl_news():\n    \"\"\"爬取新闻主逻辑\"\"\"\n    articles = []\n    \n    with sync_playwright() as p:\n        browser, context = setup_browser(p)\n        page = context.new_page()\n        \n        # 【优化】拦截图片和媒体资源，加快加载速度，防止超时\n        page.route(\"**/*\", lambda route: route.abort() if route.request.resource_type in [\"image\", \"media\", \"font\"] else route.continue_())\n        \n        try:\n            print(f\"正在访问列表页: {TARGET_URL}\")\n            # 【优化】使用 domcontentloaded 而不是 load，大幅减少等待时间\n            page.goto(TARGET_URL, wait_until=\"domcontentloaded\", timeout=30000)\n            \n            # 等待文章元素加载\n            try:\n                page.wait_for_selector(\"article, .post, .card\", timeout=10000)\n            except:\n                print(\"等待列表元素超时，尝试继续解析...\")\n\n            # 解析列表页\n            list_html = page.content()\n            list_soup = BeautifulSoup(list_html, 'html.parser')\n            \n            # 【修复】使用更通用的选择器，防止特定类名变更导致找不到元素\n            items = list_soup.select(\"article\")\n            if not items:\n                items = list_soup.select(\".post\")\n            if not items:\n                items = list_soup.select(\"div[class*='card']\")\n                \n            print(f\"页面共找到 {len(items)} 个潜在新闻项\")\n            \n            # 提取前 10 条链接\n            links_to_crawl = []\n            for item in items:\n                if len(links_to_crawl) >= MAX_ITEMS:\n                    break\n                \n                # 查找标题链接\n                a_tag = item.find('a')\n                # 优先查找标题标签内的链接\n                title_elem = item.select_one(\"h2, h3, h4, .card__title\")\n                if title_elem and title_elem.find('a'):\n                    a_tag = title_elem.find('a')\n                \n                if a_tag and a_tag.get('href'):\n                    link = urljoin(TARGET_URL, a_tag.get('href'))\n                    title = a_tag.get_text(strip=True) or (title_elem.get_text(strip=True) if title_elem else \"No Title\")\n                    \n                    # 去重并添加\n                    if link not in [x['url'] for x in links_to_crawl] and \"cityam.com\" in link:\n                        links_to_crawl.append({\"url\": link, \"title\": title})\n            \n            print(f\"准备爬取前 {len(links_to_crawl)} 条详情页...\")\n            \n            # 遍历详情页\n            for index, link_info in enumerate(links_to_crawl):\n                url = link_info['url']\n                list_title = link_info['title']\n                \n                print(f\"[{index+1}/{len(links_to_crawl)}] 正在抓取: {list_title}\")\n                \n                try:\n                    # 【优化】快速加载详情页\n                    page.goto(url, wait_until=\"domcontentloaded\", timeout=20000)\n                    \n                    # 简单等待内容\n                    try:\n                        page.wait_for_selector(\"h1\", timeout=5000)\n                    except: pass\n                    \n                    detail_html = page.content()\n                    detail_soup = BeautifulSoup(detail_html, 'html.parser')\n                    \n                    # 1. 提取标题\n                    h1 = detail_soup.find(\"h1\")\n                    title = h1.get_text(strip=True) if h1 else list_title\n                    \n                    # 2. 提取日期\n                    pub_date = extract_date_from_detail(detail_soup)\n                    \n                    # 3. 提取作者\n                    author = \"City AM\"\n                    author_tag = detail_soup.select_one(\".author-name, .article-header__author\")\n                    if author_tag:\n                        author = author_tag.get_text(strip=True)\n                    \n                    # 4. 提取正文\n                    # 尝试多个可能的正文容器\n                    content_container = detail_soup.select_one(\"article, .post-content, .entry-content, .content-container\")\n                    content_html = \"\"\n                    summary = \"\"\n                    \n                    if content_container:\n                        summary_text = content_container.get_text(strip=True)\n                        summary = (summary_text[:200] + \"...\") if len(summary_text) > 200 else summary_text\n                        content_html = clean_html_content(str(content_container), url)\n                    \n                    article = {\n                        \"id\": str(index + 1),\n                        \"title\": title,\n                        \"date\": pub_date,\n                        \"author\": author,\n                        \"source\": \"City AM\",\n                        \"sourceUrl\": url,\n                        \"summary\": summary,\n                        \"content\": content_html\n                    }\n                    \n                    articles.append(article)\n                    time.sleep(REQUEST_DELAY)\n                    \n                except Exception as e:\n                    print(f\"  - 抓取失败 {url}: {e}\")\n                    \n        except Exception as e:\n            print(f\"爬虫运行出错: {e}\")\n        finally:\n            browser.close()\n            \n    return articles\n\ndef save_results(articles: list, output_dir: str):\n    \"\"\"保存结果为 JSON\"\"\"\n    if not os.path.exists(output_dir):\n        os.makedirs(output_dir, exist_ok=True)\n        \n    timestamp = datetime.now().strftime(\"%Y%m%d_%H%M%S\")\n    filename = f\"cityam_news_{timestamp}.json\"\n    output_path = os.path.join(output_dir, filename)\n    \n    result = {\n        \"total\": len(articles),\n        \"crawlTime\": datetime.now().strftime(\"%Y-%m-%d %H:%M:%S\"),\n        \"articles\": articles\n    }\n    \n    with open(output_path, 'w', encoding='utf-8') as f:\n        json.dump(result, f, ensure_ascii=False, indent=2)\n    \n    print(f\"\\n结果已保存到: {output_path}\")\n\ndef main():\n    print(\"=== 开始爬取 City AM 新闻 ===\")\n    articles = crawl_news()\n    \n    if articles:\n        save_results(articles, OUTPUT_DIR)\n        print(f\"爬取完成，共获取 {len(articles)} 条新闻。\")\n    else:\n        print(\"未获取到任何新闻数据。\")\n\nif __name__ == \"__main__\":\n    main()",
+  "rounds": [
+    {
+      "round": 1,
+      "passed": false,
+      "primary_cause": "timeout",
+      "backup_cause": "schema_mismatch",
+      "uncertain": false,
+      "classifier_confidence": 0.99,
+      "record_count": 0,
+      "static_error_count": 0
+    },
+    {
+      "round": 2,
+      "passed": true,
+      "primary_cause": "unknown",
+      "backup_cause": "schema_mismatch",
+      "uncertain": true,
+      "classifier_confidence": 0.3,
+      "record_count": 5,
+      "static_error_count": 0
+    }
+  ],
+  "evidence": [
+    {
+      "round": 1,
+      "step": "static_check",
+      "result": {
+        "error_count": 0,
+        "warning_count": 2,
+        "top_errors": [],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+          },
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'url' 而不是 'downloadUrl'"
+          }
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": false,
+        "timed_out": true,
+        "exit_code": 1,
+        "duration_seconds": 120.117,
+        "record_count": 0,
+        "date_fill_rate": 0.0,
+        "status": "timeout",
+        "http_statuses": [],
+        "stdout_tail": "",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 1,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "timeout",
+        "backup_cause": "schema_mismatch",
+        "confidence": 0.99,
+        "classifier_summary": "脚本执行超时"
+      }
+    },
+    {
+      "round": 1,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "network_probe",
+        "cause": "timeout",
+        "result": {
+          "ok": false,
+          "status": null,
+          "error": "The read operation timed out",
+          "challenge_detected": false
+        }
+      }
+    },
+    {
+      "round": 1,
+      "step": "output_quality",
+      "result": {
+        "record_count": 0,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 0.0,
+          "sourceUrl": 0.0
+        },
+        "required_fields_ok": false,
+        "meets_min_items": false,
+        "recommendations": [
+          "Extract at least 1 items in lightweight validation.",
+          "Ensure required fields are populated: ['title', 'sourceUrl']"
+        ],
+        "sample_records": []
+      }
+    },
+    {
+      "round": 2,
+      "step": "llm_repair",
+      "result": {
+        "changed": true
+      }
+    },
+    {
+      "round": 2,
+      "step": "static_check",
+      "result": {
+        "error_count": 0,
+        "warning_count": 2,
+        "top_errors": [],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+          },
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'url' 而不是 'downloadUrl'"
+          }
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": true,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 76.728,
+        "record_count": 5,
+        "date_fill_rate": 1.0,
+        "status": "partial",
+        "http_statuses": [],
+        "stdout_tail": "=== 开始爬取 City AM 新闻 ===\n正在访问列表页: https://www.cityam.com/news/\n等待列表元素超时，尝试继续解析...\n页面共找到 21 个潜在新闻项\n准备爬取前 10 条详情页...\n[1/10] 正在抓取: Rolls-Royce: FTSE 100 giant set to splash £1bn on shareholders\n[2/10] 正在抓取: Britain must launch no-brainer 2038 Winter Olympics bid\n[3/10] 正在抓取: London Sports Festival Returns to the Capital\n[4/10] 正在抓取: FTSE 100 Live: Stocks jittery after Trump tariffs; Job vacancies fall\n  - 抓取失败 https://www.cityam.com/ftse-100-live-stocks-set-to-dip-after-trumps-fresh-tariffs-salvo/: Page.goto: Timeout 20000ms exceeded.\nCall log:\n  - navigating to \"https://www.cityam.com/ftse-100-live-stocks-set-to-dip-after-trumps-fresh-tariffs-salvo/\", waiting until \"domcontentloaded\"\n\n[5/10] 正在抓取: Job vacancies at lowest level since 2021 as London worst affected\n[6/10] 正在抓取: Bank to business ...(truncated)",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 2,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "unknown",
+        "backup_cause": "schema_mismatch",
+        "confidence": 0.3,
+        "classifier_summary": "未能明确分类的故障"
+      }
+    },
+    {
+      "round": 2,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "sample_output_probe",
+        "cause": "unknown",
+        "result": {
+          "sample_size": 5,
+          "required_non_empty_count": {
+            "title": 5,
+            "sourceUrl": 5
+          },
+          "sample": [
+            {
+              "id": "1",
+              "title": "Rolls-Royce: FTSE 100 giant set to splash £1bn on shareholders",
+              "date": "2026-02-23",
+              "author": "City AM",
+              "source": "City AM",
+              "sourceUrl": "https://www.cityam.com/rolls-royce-ftse-100-giant-set-to-splash-1bn-on-shareholders/",
+              "summary": "Rolls-Royce: FTSE 100 giant set to splash £1bn on shareholders",
+              "content": "<article class=\"card card--is-nav-featured card--has-media card--has-density-hd\">\n<div class=\"card__content\">\n<h3 class=\"card__title\"> <a href=\"https://www.cityam.com/rolls-royce-ftse-100-giant-set-to-splash-1bn-on-shareholders/\">\n\t\t\t\tRolls-Royce: FTSE 100 giant set to splash £1bn on shareholders\t\t\t</a>\n</h3>\n</div>\n<div class=\"card__media\">\n<div class=\"card__media-aspect\">\n<div class=\"card__media"
+            },
+            {
+              "id": "2",
+              "title": "Britain must launch no-brainer 2038 Winter Olympics bid",
+              "date": "2026-02-22",
+              "author": "City AM",
+              "source": "City AM",
+              "sourceUrl": "https://www.cityam.com/britain-must-launch-no-brainer-2038-winter-olympics-bid/",
+              "summary": "Rolls-Royce: FTSE 100 giant set to splash £1bn on shareholders",
+              "content": "<article class=\"card card--is-nav-featured card--has-media card--has-density-hd\">\n<div class=\"card__content\">\n<h3 class=\"card__title\"> <a href=\"https://www.cityam.com/rolls-royce-ftse-100-giant-set-to-splash-1bn-on-shareholders/\">\n\t\t\t\tRolls-Royce: FTSE 100 giant set to splash £1bn on shareholders\t\t\t</a>\n</h3>\n</div>\n<div class=\"card__media\">\n<div class=\"card__media-aspect\">\n<div class=\"card__media"
+            },
+            {
+              "id": "3",
+              "title": "London Sports Festival Returns to the Capital",
+              "date": "2026-02-20",
+              "author": "City AM",
+              "source": "City AM",
+              "sourceUrl": "https://www.cityam.com/london-sports-festival-returns-to-the-capital-2/",
+              "summary": "Rolls-Royce: FTSE 100 giant set to splash £1bn on shareholders",
+              "content": "<article class=\"card card--is-nav-featured card--has-media card--has-density-hd\">\n<div class=\"card__content\">\n<h3 class=\"card__title\"> <a href=\"https://www.cityam.com/rolls-royce-ftse-100-giant-set-to-splash-1bn-on-shareholders/\">\n\t\t\t\tRolls-Royce: FTSE 100 giant set to splash £1bn on shareholders\t\t\t</a>\n</h3>\n</div>\n<div class=\"card__media\">\n<div class=\"card__media-aspect\">\n<div class=\"card__media"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "round": 2,
+      "step": "output_quality",
+      "result": {
+        "record_count": 5,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 1.0,
+          "sourceUrl": 1.0
+        },
+        "required_fields_ok": true,
+        "meets_min_items": true,
+        "recommendations": [],
+        "sample_records": [
+          {
+            "id": "1",
+            "title": "Rolls-Royce: FTSE 100 giant set to splash £1bn on shareholders",
+            "date": "2026-02-23",
+            "author": "City AM",
+            "source": "City AM",
+            "sourceUrl": "https://www.cityam.com/rolls-royce-ftse-100-giant-set-to-splash-1bn-on-shareholders/",
+            "summary": "Rolls-Royce: FTSE 100 giant set to splash £1bn on shareholders",
+            "content": "<article class=\"card card--is-nav-featured card--has-media card--has-density-hd\">\n<div class=\"card__content\">\n<h3 class=\"card__title\"> <a href=\"https://www.cityam.com/rolls-royce-ftse-100-giant-set-to-splash-1bn-on-shareholders/\">\n\t\t\t\tRolls-Royce: FTSE 100 giant set to splash £1bn on shareholders\t\t\t</a>\n</h3>\n</div>\n<div class=\"card__media\">\n<div class=\"card__media-aspect\">\n<div class=\"card__media"
+          },
+          {
+            "id": "2",
+            "title": "Britain must launch no-brainer 2038 Winter Olympics bid",
+            "date": "2026-02-22",
+            "author": "City AM",
+            "source": "City AM",
+            "sourceUrl": "https://www.cityam.com/britain-must-launch-no-brainer-2038-winter-olympics-bid/",
+            "summary": "Rolls-Royce: FTSE 100 giant set to splash £1bn on shareholders",
+            "content": "<article class=\"card card--is-nav-featured card--has-media card--has-density-hd\">\n<div class=\"card__content\">\n<h3 class=\"card__title\"> <a href=\"https://www.cityam.com/rolls-royce-ftse-100-giant-set-to-splash-1bn-on-shareholders/\">\n\t\t\t\tRolls-Royce: FTSE 100 giant set to splash £1bn on shareholders\t\t\t</a>\n</h3>\n</div>\n<div class=\"card__media\">\n<div class=\"card__media-aspect\">\n<div class=\"card__media"
+          },
+          {
+            "id": "3",
+            "title": "London Sports Festival Returns to the Capital",
+            "date": "2026-02-20",
+            "author": "City AM",
+            "source": "City AM",
+            "sourceUrl": "https://www.cityam.com/london-sports-festival-returns-to-the-capital-2/",
+            "summary": "Rolls-Royce: FTSE 100 giant set to splash £1bn on shareholders",
+            "content": "<article class=\"card card--is-nav-featured card--has-media card--has-density-hd\">\n<div class=\"card__content\">\n<h3 class=\"card__title\"> <a href=\"https://www.cityam.com/rolls-royce-ftse-100-giant-set-to-splash-1bn-on-shareholders/\">\n\t\t\t\tRolls-Royce: FTSE 100 giant set to splash £1bn on shareholders\t\t\t</a>\n</h3>\n</div>\n<div class=\"card__media\">\n<div class=\"card__media-aspect\">\n<div class=\"card__media"
+          }
+        ]
+      }
+    }
+  ]
+}

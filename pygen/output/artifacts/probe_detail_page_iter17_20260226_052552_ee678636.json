@@ -1,0 +1,83 @@
+{
+  "url": "https://www.seczambia.org.zm/investor-protection/licensing/find-a-licensee/",
+  "contentSelector": "div.elementor.elementor-15028",
+  "contentTagName": "div",
+  "contentTextLength": 3326,
+  "sampleContentHtml": "<div class=\"elementor elementor-15028\" data-elementor-id=\"15028\" data-elementor-post-type=\"page\" data-elementor-type=\"wp-page\">\n<div class=\"elementor-element elementor-element-2744124b e-flex e-con-boxed e-con e-parent e-lazyloaded\" data-e-type=\"container\" data-element_type=\"container\" data-id=\"2744124b\" data-settings='{\"background_background\":\"classic\",\"shape_divider_bottom\":\"curve\",\"shape_divider_bottom_negative\":\"yes\"}'>\n<div class=\"e-con-inner\">\n<div aria-hidden=\"true\" class=\"elementor-shape elementor-shape-bottom\" data-negative=\"true\">\n<svg preserveaspectratio=\"none\" viewbox=\"0 0 1000 100\" xmlns=\"http://www.w3.org/2000/svg\">\n<path class=\"elementor-shape-fill\" d=\"M500,97C126.7,96.3,0.8,19.8,0,0v100l1000,0V1C1000,19.4,873.3,97.8,500,97z\"></path>\n</svg> </div>\n<div class=\"elementor-element elementor-element-9494a4a e-con-full e-flex e-con e-child\" data-e-type=\"container\" data-element_type=\"container\" data-id=\"9494a4a\">\n<div class=\"elementor-element elementor-element-3d52d79b e-con-full e-flex e-con e-child\" data-e-type=\"container\" data-element_type=\"container\" data-id=\"3d52d79b\">\n<div class=\"elementor-element elementor-element-52bbd83 elementor-widget-divider--view-line_text elem...",
+  "contentCandidates": [
+    {
+      "selector": "div.elementor.elementor-15028",
+      "textLength": 3326,
+      "linkCount": 11,
+      "linkDensity": 0.0033,
+      "textPreview": "Find A LicenseeFind A LicenseeList of Capital Market OperatorsWho Is Required to"
+    },
+    {
+      "selector": "div.elementor.elementor-116",
+      "textLength": 2332,
+      "linkCount": 127,
+      "linkDensity": 0.0544,
+      "textPreview": "Facebook-fIcon-linkedinX-twitterYoutubeFind A LicenseePublications & ReportsOnli"
+    },
+    {
+      "selector": "div.elementor-element.elementor-element-e7d81ab.e-flex.e-con-boxed.e-con.e-parent.e-lazyloaded",
+      "textLength": 2196,
+      "linkCount": 115,
+      "linkDensity": 0.0523,
+      "textPreview": "HomeAbout UsMission and VisionOur BoardOur ValuesSEC SustainabilityManagement & "
+    },
+    {
+      "selector": "div.elementor-element.elementor-element-10aa888.e-flex.e-con-boxed.e-con.e-child",
+      "textLength": 2196,
+      "linkCount": 115,
+      "linkDensity": 0.0523,
+      "textPreview": "HomeAbout UsMission and VisionOur BoardOur ValuesSEC SustainabilityManagement & "
+    },
+    {
+      "selector": "div.elementor-element.elementor-element-d80c3e1.e-con-full.e-flex.e-con.e-child",
+      "textLength": 2113,
+      "linkCount": 106,
+      "linkDensity": 0.0501,
+      "textPreview": "HomeAbout UsMission and VisionOur BoardOur ValuesSEC SustainabilityManagement & "
+    },
+    {
+      "selector": "div.elementor-widget-container",
+      "textLength": 2113,
+      "linkCount": 106,
+      "linkDensity": 0.0501,
+      "textPreview": "HomeAbout UsMission and VisionOur BoardOur ValuesSEC SustainabilityManagement & "
+    },
+    {
+      "selector": "div.elementor-element.elementor-element-ed04497.e-flex.e-con-boxed.e-con.e-parent.e-lazyloaded",
+      "textLength": 1751,
+      "linkCount": 0,
+      "linkDensity": 0.0,
+      "textPreview": "List of Capital Market OperatorsWho Is Required to Be Licensed?The Securities an"
+    },
+    {
+      "selector": "div.elementor-element.elementor-element-78a6ffe.e-con-full.e-flex.e-con.e-child",
+      "textLength": 1751,
+      "linkCount": 0,
+      "linkDensity": 0.0,
+      "textPreview": "List of Capital Market OperatorsWho Is Required to Be Licensed?The Securities an"
+    },
+    {
+      "selector": "div.elementor-element.elementor-element-c149aea.e-con-full.e-flex.e-con.e-child",
+      "textLength": 1751,
+      "linkCount": 0,
+      "linkDensity": 0.0,
+      "textPreview": "List of Capital Market OperatorsWho Is Required to Be Licensed?The Securities an"
+    },
+    {
+      "selector": "div.elementor-element.elementor-element-d2ecd15.e-con-full.e-flex.e-con.e-child",
+      "textLength": 1751,
+      "linkCount": 0,
+      "linkDensity": 0.0,
+      "textPreview": "List of Capital Market OperatorsWho Is Required to Be Licensed?The Securities an"
+    }
+  ],
+  "titleSelector": "h1",
+  "titleTagName": "h1.elementor-heading-title.elementor-size-default",
+  "titleText": "Find A Licensee",
+  "structureHint": "10 body container candidates for LLM to choose from; title in <h1.elementor-heading-title.elementor-size-default> (selector: 'h1')"
+}

@@ -1,0 +1,145 @@
+{
+  "baseUrl": "https://www.granma.cu/",
+  "bestCandidate": {
+    "selector": ".media",
+    "titleSelector": "a.pull-left",
+    "dateSelector": "",
+    "score": 54,
+    "itemCount": 17,
+    "hasLink": 17,
+    "hasDate": 0
+  },
+  "structureHint": "Each item is a <li class='media'>; title/link in <a class='pull-left'>",
+  "sampleHtml": "<li class=\"media\">\n<a class=\"pull-left\" href=\"/cuba/2026-02-24/como-evitar-que-se-ahogue-el-potencial-productivo-parte-i-11-12-2025-21-12-10\">\n<img alt=\"agricultura\" class=\"img-responsive\" src=\"/file/img/2025/12/thumb/f0438586.jpg\"/>\n</a>\n<div class=\"media-body\">\n<h4 class=\"media-heading\"><a href=\"/cuba/2026-02-24/como-evitar-que-se-ahogue-el-potencial-productivo-parte-i-11-12-2025-21-12-10\">¿Cómo evitar que se ahogue  el potencial productivo? (Parte I)</a></h4>\n</div>\n</li>\n<li class=\"media\">\n<a class=\"pull-left\" href=\"/pensar-en-qr/2026-02-24/agua-dulce-29-09-2025-20-09-09\">\n<img alt=\"De este lugar nadie sabe más que ellos. fotos: Yélidis Remón Vega\" class=\"img-responsive\" src=\"/file/img/2025/09/thumb/f0435958.jpg\"/>\n</a>\n<div class=\"media-body\">\n<h4 class=\"media-heading\"><a href=\"/pensar-en-qr/2026-02-24/agua-dulce-29-09-2025-20-09-09\">Agua dulce (+ Fotos)</a></h4>\n</div>\n</li>",
+  "items": [
+    {
+      "title": "",
+      "url": "https://www.granma.cu/cuba/2026-02-24/como-evitar-que-se-ahogue-el-potencial-productivo-parte-i-11-12-2025-21-12-10",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "",
+      "url": "https://www.granma.cu/pensar-en-qr/2026-02-24/agua-dulce-29-09-2025-20-09-09",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "",
+      "url": "https://www.granma.cu/cuba/2026-02-24/la-espera-infinita-10-09-2025-20-09-30",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "",
+      "url": "https://www.granma.cu/cuba/2026-02-24/mucho-hervor-poca-sustancia-14-09-2025-22-09-54",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "",
+      "url": "https://www.granma.cu/cuba/2026-02-24/cacao-tras-la-huella-de-un-extravio-ii-30-07-2025-22-07-13",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "",
+      "url": "https://www.granma.cu/cuba/2026-02-24/cacao-tras-la-huella-de-un-extravio-i-29-07-2025-21-07-42",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "",
+      "url": "https://www.granma.cu/cuba/2026-02-24/cacao-tras-la-huella-de-un-extravio-iii-01-08-2025-00-08-08",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "",
+      "url": "https://www.granma.cu/cuba/2026-02-24/cacao-tras-la-huella-de-un-extravio-iv-y-final-01-08-2025-23-08-17",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "",
+      "url": "https://www.granma.cu/cuba/2026-02-24/gallinas-mas-encadenamiento-productivo-mas-huevos-23-07-2025-23-07-50",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "",
+      "url": "https://www.granma.cu/cuba/2026-02-24/se-podra-comprar-huevos-algun-dia-a-precios-asequibles-22-07-2025-00-07-24",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "",
+      "url": "https://www.granma.cu/cuba/2026-02-24/leche-recortada-la-culpa-no-es-de-la-vaca-i-08-06-2025-21-06-25",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "",
+      "url": "https://www.granma.cu/cuba/2026-02-24/leche-recortada-la-culpa-no-es-de-la-vaca-ii-y-final",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "",
+      "url": "https://www.granma.cu/cuba/2026-02-24/podra-recuperarse-totalmente-el-sistema-electrico-nacional-i-23-03-2025-21-03-20",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "",
+      "url": "https://www.granma.cu/cuba/2026-02-24/podra-recuperarse-totalmente-el-sistema-electrico-nacional-ii-25-03-2025-00-03-16",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "",
+      "url": "https://www.granma.cu/cuba/2026-02-24/podra-recuperarse-totalmente-el-sistema-electrico-nacional-iii-26-03-2025-00-03-44",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "",
+      "url": "https://www.granma.cu/cuba/2026-02-24/podra-recuperarse-totalmente-el-sistema-electrico-nacional-iv-y-final-26-03-2025-22-03-42",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "",
+      "url": "https://www.granma.cu/cuba/2026-02-24/para-que-no-falte-un-traguito-de-cafe-ii-13-03-2025-21-03-23",
+      "date": "",
+      "dateText": ""
+    }
+  ],
+  "pagination": {
+    "next": null,
+    "prev": null,
+    "pageNums": [],
+    "totalPages": 0
+  },
+  "dateHints": {
+    "minDate": "",
+    "maxDate": "",
+    "startDate": "",
+    "endDate": "",
+    "hasInRange": false,
+    "hasOlderThanStart": false,
+    "suggestStopPaging": false
+  },
+  "otherCandidates": [
+    {
+      "selector": ".col-md-6.col-sm-6.g-regular-story.container-right > article",
+      "score": 48,
+      "count": 14
+    },
+    {
+      "selector": ".col-md-6.col-sm-6.g-regular-story.container-left > article",
+      "score": 42,
+      "count": 11
+    }
+  ]
+}

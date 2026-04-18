@@ -1,0 +1,175 @@
+{
+  "baseUrl": "https://www.interfax-russia.ru/news",
+  "bestCandidate": {
+    "selector": ".list-unstyled.lenta-all-news > li",
+    "titleSelector": "a",
+    "dateSelector": "",
+    "score": 60,
+    "itemCount": 22,
+    "hasLink": 20,
+    "hasDate": 0
+  },
+  "structureHint": "Each item is a <li>",
+  "sampleHtml": "<li>\n<h2 class=\"text-primary font-weight-normal mb-0\">21 февраля</h2>\n</li>\n<li>\n<span class=\"news-datetime mb-10\">\n                        18:48\n                </span>\n<a class=\"d-block mb-0\" href=\"https://www.interfax-russia.ru/northwest/news/rossiyskaya-tamozhnya-predupredila-ob-ocheredyah-na-estonskoy-granice\">Российская таможня предупредила об очередях на эстонской границе</a>\n</li>",
+  "items": [
+    {
+      "title": "",
+      "url": "",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Российская таможня предупредила об очередях на эстонской границе",
+      "url": "https://www.interfax-russia.ru/northwest/news/rossiyskaya-tamozhnya-predupredila-ob-ocheredyah-na-estonskoy-granice",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Финский залив полностью покрылся льдом - синоптик",
+      "url": "https://www.interfax-russia.ru/northwest/news/finskiy-zaliv-polnostyu-pokrylsya-ldom-sinoptik",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Пять человек отравились насмерть угарным газом после пожара в Вологодской области",
+      "url": "https://www.interfax-russia.ru/northwest/news/pyat-chelovek-otravilis-nasmert-ugarnym-gazom-posle-pozhara-v-vologodskoy-oblasti",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Вертолет авиакомпании \"Ямал\" совершил жесткую посадку в ЯНАО, погибших нет",
+      "url": "https://www.interfax-russia.ru/ural/news/vertolet-aviakompanii-yamal-sovershil-zhestkuyu-posadku-v-yanao-pogibshih-net",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "",
+      "url": "",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Аэропорты Ижевска, Оренбурга и Перми приостановили работу - Росавиация",
+      "url": "https://www.interfax-russia.ru/volga/news/aeroporty-izhevska-orenburga-i-permi-priostanovili-rabotu-rosaviaciya",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Аэропорты Самары и Чебоксар приостановили работу - Росавиация",
+      "url": "https://www.interfax-russia.ru/volga/news/aeroporty-samary-i-cheboksar-priostanovili-rabotu-rosaviaciya",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Аэропорты Казани и Нижнекамска приостановили работу - Росавиация",
+      "url": "https://www.interfax-russia.ru/volga/news/aeroporty-kazani-i-nizhnekamska-priostanovili-rabotu-rosaviaciya",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Пожар на площади 2500 кв. метров тушат в Подмосковье - МЧС",
+      "url": "https://www.interfax-russia.ru/center/news/pozhar-na-ploshchadi-2500-kv-metrov-tushat-v-podmoskove-mchs",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Шесть человек, включая пятерых туристов из КНР, пострадали в аварии на дороге в Териберку",
+      "url": "https://www.interfax-russia.ru/northwest/news/shest-chelovek-vklyuchaya-pyateryh-turistov-iz-knr-postradali-v-avarii-na-doroge-v-teriberku",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Газовая труба загорелась после падения обломков БПЛА в Краснодаре (версия 2)",
+      "url": "https://www.interfax-russia.ru/south-and-north-caucasus/news/gazovaya-truba-zagorelas-posle-padeniya-oblomkov-bpla-v-krasnodare-versiya-2",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Газовая труба загорелась после падения обломков БПЛА в Краснодаре",
+      "url": "https://www.interfax-russia.ru/south-and-north-caucasus/news/gazovaya-truba-zagorelas-posle-padeniya-oblomkov-bpla-v-krasnodare",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Обломки БПЛА упали в частном секторе в Краснодаре",
+      "url": "https://www.interfax-russia.ru/south-and-north-caucasus/news/oblomki-bpla-upali-v-chastnom-sektore-v-krasnodare",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Аэропорт Саратова приостановил работу",
+      "url": "https://www.interfax-russia.ru/volga/news/aeroport-saratova-priostanovil-rabotu-1",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Суд передал в собственность государства компанию-разработчика системы бронирования \"Леонардо\"",
+      "url": "https://www.interfax-russia.ru/moscow/news/sud-peredal-v-sobstvennost-gosudarstva-kompaniyu-razrabotchika-sistemy-bronirovaniya-leonardo",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Аэропорт Волгограда приостановил работу - Росавиация",
+      "url": "https://www.interfax-russia.ru/south-and-north-caucasus/news/aeroport-volgograda-priostanovil-rabotu-rosaviaciya-9",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Один человек погиб и пять ранены при атаках БПЛА в Белгородской области - власти",
+      "url": "https://www.interfax-russia.ru/center/news/odin-chelovek-pogib-i-pyat-raneny-pri-atakah-bpla-v-belgorodskoy-oblasti-vlasti",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Глава департамента по делам казачества Кубани арестован на 2 месяца",
+      "url": "https://www.interfax-russia.ru/south-and-north-caucasus/news/glava-departamenta-po-delam-kazachestva-kubani-arestovan-na-2-mesyaca",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Строительство и реконструкцию почти 50 спортобъектов завершат в Москве в 2026 году",
+      "url": "https://www.interfax-russia.ru/moscow/news/stroitelstvo-i-rekonstrukciyu-pochti-50-sportobektov-zavershat-v-moskve-v-2026-godu",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Обабков назначен ректором УрФУ - распоряжение правительства",
+      "url": "https://www.interfax-russia.ru/ural/news/obabkov-naznachen-rektorom-urfu-rasporyazhenie-pravitelstva",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Аэропорт Краснодара временно не обслуживает рейсы",
+      "url": "https://www.interfax-russia.ru/south-and-north-caucasus/news/aeroport-krasnodara-vremenno-ne-obsluzhivaet-reysy-1",
+      "date": "",
+      "dateText": ""
+    }
+  ],
+  "pagination": {
+    "next": null,
+    "prev": null,
+    "pageNums": [],
+    "totalPages": 0
+  },
+  "dateHints": {
+    "minDate": "",
+    "maxDate": "",
+    "startDate": "2026-02-20",
+    "endDate": "2026-02-23",
+    "hasInRange": false,
+    "hasOlderThanStart": false,
+    "suggestStopPaging": false
+  },
+  "otherCandidates": [
+    {
+      "selector": ".navbar-nav.nav-scroll-sections",
+      "score": 44,
+      "count": 12
+    },
+    {
+      "selector": ".nav-item-dropdown__holder",
+      "score": 44,
+      "count": 13
+    }
+  ]
+}

@@ -1,0 +1,125 @@
+{
+  "baseUrl": "https://www.seczambia.org.zm/resources/multimedia/news/?e-page-895e501=2",
+  "bestCandidate": {
+    "selector": ".elementor-icon-list-item",
+    "titleSelector": "a",
+    "dateSelector": "",
+    "score": 42,
+    "itemCount": 11,
+    "hasLink": 11,
+    "hasDate": 0
+  },
+  "structureHint": "Each item is a <li class='elementor-icon-list-item'>; title/link in <a>",
+  "sampleHtml": "<li class=\"elementor-icon-list-item\">\n<a href=\"https://www.seczambia.org.zm/investor-protection/licensing/find-a-licensee/\">\n<span class=\"elementor-icon-list-icon\">\n<svg aria-hidden=\"true\" class=\"e-font-icon-svg e-fas-angle-right\" viewbox=\"0 0 256 512\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M224.3 273l-136 136c-9.4 9.4-24.6 9.4-33.9 0l-22.6-22.6c-9.4-9.4-9.4-24.6 0-33.9l96.4-96.4-96.4-96.4c-9.4-9.4-9.4-24.6 0-33.9L54.3 103c9.4-9.4 24.6-9.4 33.9 0l136 136c9.5 9.4 9.5 24.6.1 34z\"></path></svg> </span>\n<span class=\"elementor-icon-list-text\">Find A Licensee</span>\n</a>\n</li>\n<li class=\"elementor-icon-list-item\">\n<a href=\"https://www.seczambia.org.zm/investor-protection/licensing/credit-rating/\">\n<span class=\"elementor-icon-list-icon\">\n<svg aria-hidden=\"true\" class=\"e-font-icon-svg e-fas-angle-right\" viewbox=\"0 0 256 512\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M224.3 273l-136 136c-9.4 9.4-24.6 9.4-33.9 0l-22.6-22.6c-9.4-9.4-9.4-24.6 0-33.9l96.4-96.4-96.4-96.4c-9.4-9.4-9.4-24.6 0-33.9L54.3 103c9.4-9.4 24.6-9.4 33.9 0l136 136c9.5 9.4 9.5 24.6.1 34z\"></path></svg> </span>\n<span class=\"elementor-icon-list-text\">Credit Rating</span>\n</a>\n</li>",
+  "items": [
+    {
+      "title": "Find A Licensee",
+      "url": "https://www.seczambia.org.zm/investor-protection/licensing/find-a-licensee/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Credit Rating",
+      "url": "https://www.seczambia.org.zm/investor-protection/licensing/credit-rating/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Dealers License",
+      "url": "https://www.seczambia.org.zm/investor-protection/licensing/dealers/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Investment Advisors",
+      "url": "https://www.seczambia.org.zm/investor-protection/licensing/investment-advisors/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Dealer's representative",
+      "url": "https://www.seczambia.org.zm/investor-protection/licensing/dealers-representative/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Investment Advisors representative",
+      "url": "https://www.seczambia.org.zm/investor-protection/licensing/investment-advisors-representative/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Securities Exchange",
+      "url": "https://www.seczambia.org.zm/investor-protection/licensing/securities-exchange/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Clearing and Settlement",
+      "url": "https://www.seczambia.org.zm/investor-protection/licensing/clearing-and-settlement/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Share Transfer Agencies",
+      "url": "https://www.seczambia.org.zm/investor-protection/licensing/share-transfer-agencies/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Share Transfer Agencies representatives",
+      "url": "https://www.seczambia.org.zm/investor-protection/licensing/share-transfer-agencies-representatives/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Sandbox",
+      "url": "https://www.seczambia.org.zm/market-developments/products/#sandbox",
+      "date": "",
+      "dateText": ""
+    }
+  ],
+  "pagination": {
+    "next": {
+      "tag": "a",
+      "text": "Next",
+      "href": "https://www.seczambia.org.zm/resources/multimedia/news/?e-page-895e501=3",
+      "onclick": null,
+      "target": null,
+      "url": "https://www.seczambia.org.zm/resources/multimedia/news/?e-page-895e501=3",
+      "class": "page-numbers next"
+    },
+    "prev": {
+      "tag": "a",
+      "text": "Previous",
+      "href": "https://www.seczambia.org.zm/resources/multimedia/news/",
+      "onclick": null,
+      "target": null,
+      "url": "https://www.seczambia.org.zm/resources/multimedia/news/",
+      "class": "page-numbers prev"
+    },
+    "pageNums": [],
+    "totalPages": 0
+  },
+  "dateHints": {
+    "minDate": "",
+    "maxDate": "",
+    "startDate": "",
+    "endDate": "",
+    "hasInRange": false,
+    "hasOlderThanStart": false,
+    "suggestStopPaging": false
+  },
+  "otherCandidates": [
+    {
+      "selector": ".elementor-icon-list-item",
+      "score": 32,
+      "count": 6
+    },
+    {
+      "selector": ".elementor-icon-list-item",
+      "score": 32,
+      "count": 6
+    }
+  ]
+}

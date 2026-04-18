@@ -1,0 +1,91 @@
+{
+  "baseUrl": "https://www.news.bundesbank.de/news-de",
+  "shadowDOM": true,
+  "shadowHostSelector": "#stage-widget",
+  "bestCandidate": {
+    "selector": "shadow:#stage-widget",
+    "titleSelector": "",
+    "dateSelector": "",
+    "score": 0,
+    "itemCount": 10,
+    "hasLink": true,
+    "hasDate": true
+  },
+  "structureHint": "Content is inside Shadow DOM (host: #stage-widget). Use page.evaluate() with element.shadowRoot to access items. Found 10 cards. Do NOT use BeautifulSoup for shadow DOM content.",
+  "sampleHtml": "<div tabindex=\"0\" class=\"css-1qh1c7n\"><div class=\"css-rxpf3l\"><div class=\"css-6l2s1z\"><div class=\"css-zyo6ya\"><img alt=\"Profilbild von Deutsche Bundesbank\" class=\"css-1vwxd2p\" src=\"https://cdn.stage.bio/foyer/07669bcb-cd39-4dfc-bcc7-c18ffce63fe4.jpg\"></div><div class=\"css-1jblb44\"><a href=\"https://bsky.app/profile/bundesbank.bsky.social\" class=\"css-t9rrt7\">Deutsche Bundesbank</a><div color=\"secondary\" class=\"css-8h7cib\">vor 9 Stunden</div></div><div class=\"css-1sg2lsz\"><div class=\"swiper-full-width css-1abdvnh\" role=\"region\" aria-roledescription=\"carousel\"><div class=\"swiper swiper-initialized swiper-horizontal\" role=\"list\"><div class=\"swiper-wrapper\"><div class=\"swiper-slide swiper-slide-active post-header-slide\" role=\"listitem\" style=\"width: 48px; margin-right: 8px;\"><div class=\"css-1b6b36p\"><button class=\"css-usc1pk\" title=\"Zum Bluesky-Kanal von Deutsche Bundesbank wechseln\" tabindex=\"0\" kind=\"round\"><div class=\"css-19y45nn\"><div class=\"css-zw12sa\"><svg aria-hidden=\"true\" focusable=\"false\" data-prefix=\"fab\" data-icon=\"bluesky\" role=\"img\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 576 512\"><path fill=\"currentColor\" d=\"M407.8 294.7c-3.3-.4-6.7-.8-10-1.3 3.4 .4 6.7 .9 10 1.3zM288 227.1C261.9 176.4 190.9 81.9 124.9 35.3 61.6-9.4 37.5-1.7 21.6 5.5 3.3 13.8 0 41.9 0 58.4S9.1 194 15 213.9c19.5 65.7 89.1 87.9 153.2 80.7 3.3-.5 6.6-.9 10-1.4-3.3 .5-6.6 1-10 1.4-93.9 14-177.3 48.2-67.9 169.9 120.3 124.6 164.8-26.7 187.7-103.4 22.9 76.7 49.2 222.5 185.6 103.4 102.4-103.4 28.1-15",
+  "items": [
+    {
+      "title": "The Governor of the Central Bank of Montenegro, Irena Radović, visited the Bundesbank today. She met President Joachim Nagel to discuss Montenegro’s alignment with the European System of Central Banks",
+      "url": "https://bsky.app/profile/bundesbank.bsky.social",
+      "date": "vor 9 Stunden",
+      "source": "Deutsche Bundesbank",
+      "platform": "bluesky"
+    },
+    {
+      "title": "A delegation of the Central Bank of Montenegro, helmed by its Governor @Irena_Radovic, visited the Bundesbank today, reaffirming the strong and long-standing cooperation between the two institutions. ",
+      "url": "https://linkedin.com/company/20884",
+      "date": "vor 9 Stunden",
+      "source": "Deutsche Bundesbank",
+      "platform": "linkedin"
+    },
+    {
+      "title": "💶Wer besitzt wie viel? Und wie sieht die Zukunft unseres Geldes aus?",
+      "url": "https://facebook.com/deutsche.bundesbank/",
+      "date": "vor 13 Stunden",
+      "source": "Deutsche Bundesbank",
+      "platform": "facebook"
+    },
+    {
+      "title": "Hast Du Dich schon mal gefragt, was genau der Unterschied zwischen EZB und Bundesbank ist? Beide haben ihren Sitz in Frankfurt🏙️, der Hauptstadt des Euro. Und beide sind für Geldpolitik zuständig.",
+      "url": "https://instagram.com/deutsche.bundesbank/",
+      "date": "vor 14 Stunden",
+      "source": "Deutsche Bundesbank",
+      "platform": "instagram"
+    },
+    {
+      "title": "How can we improve the quality of seasonally adjusted estimates obtained with up-to-date methods tailored to the complexities of modern daily and weekly economic data?",
+      "url": "https://bsky.app/profile/bundesbank.bsky.social",
+      "date": "vor 15 Stunden",
+      "source": "Deutsche Bundesbank",
+      "platform": "bluesky"
+    },
+    {
+      "title": "Guten Morgen aus Frankfurt! 👋",
+      "url": "https://instagram.com/deutsche.bundesbank/",
+      "date": "vor 18 Stunden",
+      "source": "Deutsche Bundesbank",
+      "platform": "instagram"
+    },
+    {
+      "title": "Studienplatz gesucht? Wir sind am Start!",
+      "url": "https://instagram.com/bundesbank.karriere/",
+      "date": "vor 18 Stunden",
+      "source": "Deutsche Bundesbank Karriere",
+      "platform": "instagram"
+    },
+    {
+      "title": "🌎Im Januar 2026 hat die EU zwei bedeutende Handelsabkommen abgeschlossen – eines mit den Mercosur-Staaten und eines mit Indien (Ratifizierung beider Abkommen steht noch aus).",
+      "url": "https://instagram.com/deutsche.bundesbank/",
+      "date": "vor 3 Tagen",
+      "source": "Deutsche Bundesbank",
+      "platform": "instagram"
+    },
+    {
+      "title": "A new Bundesbank discussion paper finds that complete trade sanctions reduce bilateral trade by around 58% – far more than traditional estimates suggest. How fast does trade recover once sanctions are",
+      "url": "https://bsky.app/profile/bundesbank.bsky.social",
+      "date": "vor 3 Tagen",
+      "source": "Deutsche Bundesbank",
+      "platform": "bluesky"
+    },
+    {
+      "title": "Im Januar 2026 schloss die EU ihre jahrelangen Verhandlungen zu zwei bedeutenden Handelsabkommen ab – mit den Mercosur-Staaten und mit Indien. Die Ratifizierung beider Abkommen steht noch aus. Im aktu",
+      "url": "https://linkedin.com/company/20884",
+      "date": "vor 3 Tagen",
+      "source": "Deutsche Bundesbank",
+      "platform": "linkedin"
+    }
+  ],
+  "pagination": {},
+  "dateHints": {},
+  "otherCandidates": []
+}

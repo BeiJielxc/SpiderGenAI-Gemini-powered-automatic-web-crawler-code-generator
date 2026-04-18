@@ -1,0 +1,22 @@
+{
+  "total": 2,
+  "crawlTime": "2026-02-24 20:14:35",
+  "articles": [
+    {
+      "title": "Opinion",
+      "sourceUrl": "https://www.cityam.com/opinion/",
+      "date": "2026-02-24",
+      "source": "",
+      "author": "",
+      "summary": ""
+    },
+    {
+      "title": "Life&Style",
+      "sourceUrl": "https://www.cityam.com/life-and-style/",
+      "date": "2026-02-24",
+      "source": "",
+      "author": "",
+      "summary": ""
+    }
+  ]
+}

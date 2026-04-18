@@ -1,0 +1,568 @@
+{
+  "final_round": 3,
+  "max_retries": 3,
+  "repaired_code": "import os\nimport json\nimport time\nimport random\nimport re\nfrom datetime import datetime\nfrom urllib.parse import urljoin\nfrom bs4 import BeautifulSoup\nfrom playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError\n\n# ==========================================\n# 配置区域\n# ==========================================\n\n# 目标URL\nTARGET_URL = \"https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/\"\n\n# 爬取时间范围 (用户指定)\nSTART_DATE = \"2025-12-01\"\nEND_DATE = \"2025-12-31\"\n\n# 输出目录\nOUTPUT_DIR = r\"d:\\llm_mcp_genpy\\pygen\\output\"\n\n# 浏览器配置\nHEADLESS = True  # 是否无头模式\nTIMEOUT = 30000  # 请求超时时间 (ms)\n\n# ==========================================\n# 核心功能函数\n# ==========================================\n\ndef clean_html_content(html_content, base_url):\n    \"\"\"\n    清洗HTML内容：\n    1. 将相对路径图片/链接转换为绝对路径\n    2. 移除无用标签\n    \"\"\"\n    if not html_content:\n        return \"\"\n    try:\n        soup = BeautifulSoup(html_content, 'html.parser')\n        \n        # 修复图片链接\n        for img in soup.find_all('img'):\n            if img.get('src'):\n                img['src'] = urljoin(base_url, img['src'])\n                \n        # 修复超链接\n        for a in soup.find_all('a'):\n            if a.get('href'):\n                a['href'] = urljoin(base_url, a['href'])\n        \n        # 移除脚本和样式\n        for script in soup([\"script\", \"style\"]):\n            script.decompose()\n            \n        return str(soup)\n    except Exception as e:\n        print(f\"[WARN] 内容清洗出错: {e}\")\n        return html_content\n\ndef extract_detail_content(page_url, html):\n    \"\"\"\n    从详情页HTML中提取正文\n    \"\"\"\n    soup = BeautifulSoup(html, 'html.parser')\n    \n    # 尝试常见的正文容器选择器 (根据CMS常见结构推断)\n    content_selectors = [\n        \"div.TRS_Editor\",\n        \"div.article_content\",\n        \"div.content\",\n        \"div.main_content\",\n        \"div.detail_content\",\n        \"div.rightContentBox\", \n        \"#content\",\n        \"div.marketRight\"\n    ]\n    \n    content_html = \"\"\n    for selector in content_selectors:\n        element = soup.select_one(selector)\n        if element:\n            if len(element.get_text(strip=True)) > 10:\n                content_html = str(element)\n                break\n    \n    if not content_html:\n        body = soup.find('body')\n        if body:\n            content_html = str(body)\n            \n    return clean_html_content(content_html, page_url)\n\ndef parse_date(date_str):\n    \"\"\"\n    解析日期字符串，统一返回 YYYY-MM-DD 格式\n    支持格式: YYYY/MM/DD, YYYY-MM-DD, YYYY.MM.DD, YYYY年MM月DD日\n    \"\"\"\n    if not date_str:\n        return \"\"\n    \n    # 清理括号和空白\n    date_str = date_str.strip().strip(\"[]()【】\")\n    \n    # 1. 尝试标准格式\n    formats = [\n        \"%Y-%m-%d\",\n        \"%Y/%m/%d\",\n        \"%Y.%m.%d\",\n        \"%Y年%m月%d日\",\n        \"%Y-%m-%d %H:%M:%S\",\n        \"%Y/%m/%d %H:%M:%S\"\n    ]\n    \n    for fmt in formats:\n        try:\n            return datetime.strptime(date_str, fmt).strftime(\"%Y-%m-%d\")\n        except ValueError:\n            continue\n            \n    # 2. 尝试正则提取 YYYY-MM-DD 或 YYYY/MM/DD\n    match = re.search(r\"(20\\d{2})[-/.](\\d{1,2})[-/.](\\d{1,2})\", date_str)\n    if match:\n        try:\n            y, m, d = match.groups()\n            return f\"{y}-{int(m):02d}-{int(d):02d}\"\n        except:\n            pass\n        \n    return \"\"\n\ndef extract_date_from_url(url):\n    \"\"\"\n    从URL中提取日期作为兜底方案\n    支持: .../202512/t20251229_... 或 .../2025-12/29/...\n    \"\"\"\n    if not url:\n        return \"\"\n    try:\n        # 匹配 /202512/t20251229_ (常见CMS格式)\n        match = re.search(r\"t(20\\d{2})(\\d{2})(\\d{2})_\", url)\n        if match:\n            return f\"{match.group(1)}-{match.group(2)}-{match.group(3)}\"\n            \n        # 匹配 /2025-12/29/\n        match = re.search(r\"/(20\\d{2})[-/](\\d{2})[-/](\\d{2})/\", url)\n        if match:\n            return f\"{match.group(1)}-{match.group(2)}-{match.group(3)}\"\n    except:\n        pass\n    return \"\"\n\ndef save_results(articles, output_path):\n    \"\"\"保存结果为JSON\"\"\"\n    result = {\n        \"total\": len(articles),\n        \"crawlTime\": datetime.now().strftime(\"%Y-%m-%d %H:%M:%S\"),\n        \"articles\": articles\n    }\n    \n    os.makedirs(os.path.dirname(output_path), exist_ok=True)\n    with open(output_path, 'w', encoding='utf-8') as f:\n        json.dump(result, f, ensure_ascii=False, indent=2)\n    print(f\"[SUCCESS] 已保存 {len(articles)} 条数据到 {output_path}\")\n\n# ==========================================\n# 爬虫主类\n# ==========================================\n\nclass ChinaBondCrawler:\n    def __init__(self):\n        self.articles = []\n        self.seen_urls = set()\n        \n    def run(self):\n        with sync_playwright() as p:\n            # 启动浏览器 (配置反爬参数)\n            browser = p.chromium.launch(\n                headless=HEADLESS,\n                args=[\"--disable-blink-features=AutomationControlled\", \"--no-sandbox\"]\n            )\n            context = browser.new_context(\n                viewport={'width': 1920, 'height': 1080},\n                user_agent=\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\"\n            )\n            \n            page = context.new_page()\n            \n            try:\n                print(f\"[INFO] 开始爬取: {TARGET_URL}\")\n                print(f\"[INFO] 目标日期范围: {START_DATE} 至 {END_DATE}\")\n                \n                page.goto(TARGET_URL, timeout=TIMEOUT)\n                page.wait_for_load_state('networkidle')\n                \n                has_next_page = True\n                page_num = 1\n                \n                while has_next_page:\n                    print(f\"\\n[INFO] 正在处理第 {page_num} 页...\")\n                    \n                    # 提取列表数据\n                    new_articles, should_continue = self.parse_list_page(page)\n                    \n                    # 处理详情页\n                    for article in new_articles:\n                        if article['sourceUrl'] not in self.seen_urls:\n                            self.process_detail(context, article)\n                            self.articles.append(article)\n                            self.seen_urls.add(article['sourceUrl'])\n                    \n                    # 检查是否需要翻页\n                    if not should_continue:\n                        print(\"[INFO] 已达到结束日期或无更多数据，停止翻页\")\n                        break\n                        \n                    # 尝试翻页\n                    has_next_page = self.go_to_next_page(page)\n                    if has_next_page:\n                        page_num += 1\n                        time.sleep(random.uniform(1, 3))\n                    else:\n                        print(\"[INFO] 没有下一页了\")\n                \n            except Exception as e:\n                print(f\"[ERROR] 爬取过程中发生错误: {e}\")\n            finally:\n                browser.close()\n                \n            # 保存结果\n            filename = f\"chinabond_news_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json\"\n            output_path = os.path.join(OUTPUT_DIR, filename)\n            save_results(self.articles, output_path)\n\n    def parse_list_page(self, page):\n        \"\"\"\n        解析列表页\n        返回: (articles_list, should_continue)\n        \"\"\"\n        articles = []\n        should_continue = True\n        \n        # 等待列表容器加载\n        try:\n            page.wait_for_selector(\"div.rightListContent\", timeout=5000)\n        except:\n            pass\n\n        # 获取所有列表项 (修复选择器，定位到具体行 li 或 tr)\n        # div.rightListContent 通常是容器，里面包含 ul > li\n        items = page.query_selector_all(\"div.rightListContent li\")\n        \n        # 兜底：如果是表格结构\n        if not items:\n            items = page.query_selector_all(\"div.rightListContent tr\")\n            \n        if not items:\n            print(\"[WARN] 未找到列表项 (div.rightListContent li/tr)，可能页面结构已变更\")\n            return [], False\n            \n        print(f\"[INFO] 本页共找到 {len(items)} 条记录\")\n        \n        for item in items:\n            try:\n                # 提取标题和链接\n                link_el = item.query_selector(\"span.rightListImport a\")\n                if not link_el:\n                    # 尝试直接找 a\n                    link_el = item.query_selector(\"a\")\n                \n                if not link_el:\n                    continue\n                    \n                title = link_el.inner_text().strip()\n                relative_link = link_el.get_attribute(\"href\")\n                full_link = urljoin(page.url, relative_link)\n                \n                # 提取日期 (增强版)\n                date_el = item.query_selector(\"span.rightListTime\")\n                date_text = date_el.inner_text().strip() if date_el else \"\"\n                pub_date = parse_date(date_text)\n                \n                # 如果文本提取失败，尝试从URL提取\n                if not pub_date:\n                    pub_date = extract_date_from_url(full_link)\n                \n                # 日期过滤逻辑\n                if not pub_date:\n                    print(f\"[SKIP] 日期解析失败: {title}\")\n                    continue\n                    \n                # 检查日期范围\n                if pub_date > END_DATE:\n                    continue\n                elif pub_date < START_DATE:\n                    print(f\"[STOP] 发现旧于开始日期的记录: {pub_date} < {START_DATE}\")\n                    should_continue = False\n                    break\n                \n                # 符合日期范围\n                article = {\n                    \"title\": title,\n                    \"date\": pub_date,\n                    \"sourceUrl\": full_link,\n                    \"source\": \"中国债券信息网\",\n                    \"author\": \"\",\n                    \"summary\": \"\",\n                    \"content\": \"\"\n                }\n                articles.append(article)\n                print(f\"[FOUND] {pub_date} | {title}\")\n                \n            except Exception as e:\n                print(f\"[ERROR] 解析列表项出错: {e}\")\n                continue\n                \n        return articles, should_continue\n\n    def process_detail(self, context, article):\n        \"\"\"\n        处理详情页，提取正文\n        \"\"\"\n        page = None\n        try:\n            page = context.new_page()\n            page.goto(article['sourceUrl'], timeout=TIMEOUT)\n            try:\n                page.wait_for_selector(\"div.TRS_Editor, div.rightContentBox\", timeout=5000)\n            except:\n                pass \n            \n            html = page.content()\n            article['content'] = extract_detail_content(article['sourceUrl'], html)\n            \n            # 简单的摘要提取\n            soup = BeautifulSoup(article['content'], 'html.parser')\n            text = soup.get_text(strip=True)\n            article['summary'] = text[:200] + \"...\" if len(text) > 200 else text\n            \n        except Exception as e:\n            print(f\"[ERROR] 获取详情页失败 {article['sourceUrl']}: {e}\")\n        finally:\n            if page:\n                page.close()\n\n    def go_to_next_page(self, page):\n        \"\"\"\n        尝试翻页\n        \"\"\"\n        try:\n            next_btn = page.query_selector(\"a.pageNext\")\n            \n            if next_btn:\n                current_url = page.url\n                next_btn.click()\n                \n                try:\n                    page.wait_for_load_state('networkidle', timeout=5000)\n                except:\n                    pass\n                \n                if page.url != current_url:\n                    return True\n                \n                # 策略2: 尝试点击页码\n                current_page_el = page.query_selector(\"a.pageNum.pageChecked\")\n                if current_page_el:\n                    next_sibling = current_page_el.evaluate_handle(\"el => el.nextElementSibling\")\n                    if next_sibling:\n                        tag_name = next_sibling.evaluate(\"el => el.tagName\")\n                        class_name = next_sibling.evaluate(\"el => el.className\")\n                        if tag_name == \"A\" and \"pageNum\" in class_name:\n                            next_sibling.click()\n                            page.wait_for_load_state('networkidle')\n                            return True\n            \n            return False\n            \n        except Exception as e:\n            print(f\"[WARN] 翻页失败: {e}\")\n            return False\n\n# ==========================================\n# 主程序入口\n# ==========================================\n\ndef main():\n    if not os.path.exists(OUTPUT_DIR):\n        os.makedirs(OUTPUT_DIR)\n        \n    crawler = ChinaBondCrawler()\n    crawler.run()\n\nif __name__ == \"__main__\":\n    main()",
+  "rounds": [
+    {
+      "round": 1,
+      "passed": false,
+      "primary_cause": "date_extraction_failed",
+      "backup_cause": "schema_mismatch",
+      "uncertain": false,
+      "classifier_confidence": 0.7,
+      "record_count": 5,
+      "static_error_count": 1
+    },
+    {
+      "round": 2,
+      "passed": false,
+      "primary_cause": "date_extraction_failed",
+      "backup_cause": "schema_mismatch",
+      "uncertain": false,
+      "classifier_confidence": 0.7,
+      "record_count": 5,
+      "static_error_count": 1
+    },
+    {
+      "round": 3,
+      "passed": false,
+      "primary_cause": "schema_mismatch",
+      "backup_cause": "date_extraction_failed",
+      "uncertain": false,
+      "classifier_confidence": 0.7,
+      "record_count": 5,
+      "static_error_count": 1
+    },
+    {
+      "round": 3,
+      "passed": false,
+      "primary_cause": "empty_output",
+      "backup_cause": "schema_mismatch",
+      "uncertain": false,
+      "classifier_confidence": 0.75,
+      "record_count": 0,
+      "static_error_count": 1
+    }
+  ],
+  "evidence": [
+    {
+      "round": 1,
+      "step": "static_check",
+      "result": {
+        "error_count": 1,
+        "warning_count": 1,
+        "top_errors": [
+          {
+            "severity": "error",
+            "code": "ERR_008",
+            "message": "检测到从标题提取年份作为日期的模式"
+          }
+        ],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+          }
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": true,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 49.81,
+        "record_count": 5,
+        "date_fill_rate": 1.0,
+        "status": "success",
+        "http_statuses": [],
+        "stdout_tail": "[INFO] ��ʼ��ȡ: https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/\n[INFO] Ŀ�����ڷ�Χ: 2025-12-01 �� 2025-12-31\n\n[INFO] ���ڴ����� 1 ҳ...\n[INFO] ��ҳ���ҵ� 10 ����¼\n[FOUND] 2025-12-29 | �����ծ�Ǽǽ����������ι�˾���ڵ���2025��12��31����ծ�ۺ�ҵ��ƽ̨ҵ������ʱ���֪ͨ\n[FOUND] 2025-12-19 | �����ծ�Ǽǽ����������ι�˾����2026�괢���ծ������ʽ��ҵ��ڼ��հ��ŵ�֪ͨ\n[FOUND] 2025-12-19 | ����2026��ȫ�����м�ծȯ�г��ڼ������а��ŵ�֪ͨ\n[FOUND] 2025-12-11 | ���ڳ����Ż����м�ծȯ�г��������Ͷ�����˻������֪ͨ\n[FOUND] 2025-12-09 | ����2025��12��13����12��14����ծ�ۺ�ҵ��ƽ̨����ϵͳά����֪ͨ\n[STOP] ���־��ڿ�ʼ���ڵļ�¼: 2025-11-11 < 2025-12-01\n[INFO] �Ѵﵽ�������ڻ��޸������ݣ�ֹͣ��ҳ\n[SUCCESS] �ѱ��� 5 �����ݵ� d:\\llm_mcp_genpy\\pygen\\output\\chinabond_news_20260221_111942.json",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 1,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "date_extraction_failed",
+        "backup_cause": "schema_mismatch",
+        "confidence": 0.7,
+        "classifier_summary": "静态分析发现问题: 检测到从标题提取年份作为日期的模式"
+      }
+    },
+    {
+      "round": 1,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "sample_output_probe",
+        "cause": "date_extraction_failed",
+        "result": {
+          "sample_size": 5,
+          "required_non_empty_count": {
+            "title": 5,
+            "sourceUrl": 5
+          },
+          "sample": [
+            {
+              "title": "�����ծ�Ǽǽ����������ι�˾���ڵ���2025��12��31����ծ�ۺ�ҵ��ƽ̨ҵ������ʱ���֪ͨ",
+              "date": "2025-12-29",
+              "sourceUrl": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202512/t20251229_854871375.html",
+              "source": "�й�ծȯ��Ϣ��",
+              "author": "",
+              "summary": "2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ���ͻ��������ߣ�010-88170123|��ϵ����|APP����|΢�Ź��ں�|����|ENɨһɨ��ע���ں��ֻ�ɨ��������ص�¼|  ע����ڹ�˾���Ź����г�ָ����Ϣ��¶��ծ�����о������ͻ����Ĺ���֪ͨ��˾�����ܹ����н鹫���г�������Ƹծ������ծȯ�г���۾��ù��ʶ�̬�ȵ������г��������ɷ��淨�ɷ��沿�Ź��º͹淶���ļ�ҵ��ָ��Ӧ��ҵ������ͻ��˻���...",
+              "content": "<body>\n<!-- ������Ŀ���� -->\n<div class=\"common_header\"><meta charset=\"utf-8\"/>\n\n\n<!-- ͷ�� -->\n<div id=\"topTip\">\n<div id=\"topBox\">\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� begin  -->\n<!-- 023��03��20�� ����һ -->\n<!-- ��ӭ����¼�й�ծȯ��Ϣ�� -->\n<span id=\"welcomeWord\">2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ��</span>\n\n<!--�����δ��¼״̬������ʾ�˳���ť����ӭ���β����span������ǩ end  -->\n<!--�ж���û���û���¼���Ѿ���¼״̬����ӭ������ӵǳ�������ť end  -->\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� end  -->\n<div id=\"myHeader\" style=\"d"
+            },
+            {
+              "title": "�����ծ�Ǽǽ����������ι�˾����2026�괢���ծ������ʽ��ҵ��ڼ��հ��ŵ�֪ͨ",
+              "date": "2025-12-19",
+              "sourceUrl": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202512/t20251218_854863840.html",
+              "source": "�й�ծȯ��Ϣ��",
+              "author": "",
+              "summary": "2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ���ͻ��������ߣ�010-88170123|��ϵ����|APP����|΢�Ź��ں�|����|ENɨһɨ��ע���ں��ֻ�ɨ��������ص�¼|  ע����ڹ�˾���Ź����г�ָ����Ϣ��¶��ծ�����о������ͻ����Ĺ���֪ͨ��˾�����ܹ����н鹫���г�������Ƹծ������ծȯ�г���۾��ù��ʶ�̬�ȵ������г��������ɷ��淨�ɷ��沿�Ź��º͹淶���ļ�ҵ��ָ��Ӧ��ҵ������ͻ��˻���...",
+              "content": "<body>\n<!-- ������Ŀ���� -->\n<div class=\"common_header\"><meta charset=\"utf-8\"/>\n\n\n<!-- ͷ�� -->\n<div id=\"topTip\">\n<div id=\"topBox\">\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� begin  -->\n<!-- 023��03��20�� ����һ -->\n<!-- ��ӭ����¼�й�ծȯ��Ϣ�� -->\n<span id=\"welcomeWord\">2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ��</span>\n\n<!--�����δ��¼״̬������ʾ�˳���ť����ӭ���β����span������ǩ end  -->\n<!--�ж���û���û���¼���Ѿ���¼״̬����ӭ������ӵǳ�������ť end  -->\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� end  -->\n<div id=\"myHeader\" style=\"d"
+            },
+            {
+              "title": "����2026��ȫ�����м�ծȯ�г��ڼ������а��ŵ�֪ͨ",
+              "date": "2025-12-19",
+              "sourceUrl": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202512/t20251218_854863820.html",
+              "source": "�й�ծȯ��Ϣ��",
+              "author": "",
+              "summary": "2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ���ͻ��������ߣ�010-88170123|��ϵ����|APP����|΢�Ź��ں�|����|ENɨһɨ��ע���ں��ֻ�ɨ��������ص�¼|  ע����ڹ�˾���Ź����г�ָ����Ϣ��¶��ծ�����о������ͻ����Ĺ���֪ͨ��˾�����ܹ����н鹫���г�������Ƹծ������ծȯ�г���۾��ù��ʶ�̬�ȵ������г��������ɷ��淨�ɷ��沿�Ź��º͹淶���ļ�ҵ��ָ��Ӧ��ҵ������ͻ��˻���...",
+              "content": "<body>\n<!-- ������Ŀ���� -->\n<div class=\"common_header\"><meta charset=\"utf-8\"/>\n\n\n<!-- ͷ�� -->\n<div id=\"topTip\">\n<div id=\"topBox\">\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� begin  -->\n<!-- 023��03��20�� ����һ -->\n<!-- ��ӭ����¼�й�ծȯ��Ϣ�� -->\n<span id=\"welcomeWord\">2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ��</span>\n\n<!--�����δ��¼״̬������ʾ�˳���ť����ӭ���β����span������ǩ end  -->\n<!--�ж���û���û���¼���Ѿ���¼״̬����ӭ������ӵǳ�������ť end  -->\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� end  -->\n<div id=\"myHeader\" style=\"d"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "round": 1,
+      "step": "output_quality",
+      "result": {
+        "record_count": 5,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 1.0,
+          "sourceUrl": 1.0
+        },
+        "required_fields_ok": true,
+        "meets_min_items": true,
+        "recommendations": [],
+        "sample_records": [
+          {
+            "title": "�����ծ�Ǽǽ����������ι�˾���ڵ���2025��12��31����ծ�ۺ�ҵ��ƽ̨ҵ������ʱ���֪ͨ",
+            "date": "2025-12-29",
+            "sourceUrl": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202512/t20251229_854871375.html",
+            "source": "�й�ծȯ��Ϣ��",
+            "author": "",
+            "summary": "2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ���ͻ��������ߣ�010-88170123|��ϵ����|APP����|΢�Ź��ں�|����|ENɨһɨ��ע���ں��ֻ�ɨ��������ص�¼|  ע����ڹ�˾���Ź����г�ָ����Ϣ��¶��ծ�����о������ͻ����Ĺ���֪ͨ��˾�����ܹ����н鹫���г�������Ƹծ������ծȯ�г���۾��ù��ʶ�̬�ȵ������г��������ɷ��淨�ɷ��沿�Ź��º͹淶���ļ�ҵ��ָ��Ӧ��ҵ������ͻ��˻���...",
+            "content": "<body>\n<!-- ������Ŀ���� -->\n<div class=\"common_header\"><meta charset=\"utf-8\"/>\n\n\n<!-- ͷ�� -->\n<div id=\"topTip\">\n<div id=\"topBox\">\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� begin  -->\n<!-- 023��03��20�� ����һ -->\n<!-- ��ӭ����¼�й�ծȯ��Ϣ�� -->\n<span id=\"welcomeWord\">2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ��</span>\n\n<!--�����δ��¼״̬������ʾ�˳���ť����ӭ���β����span������ǩ end  -->\n<!--�ж���û���û���¼���Ѿ���¼״̬����ӭ������ӵǳ�������ť end  -->\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� end  -->\n<div id=\"myHeader\" style=\"d"
+          },
+          {
+            "title": "�����ծ�Ǽǽ����������ι�˾����2026�괢���ծ������ʽ��ҵ��ڼ��հ��ŵ�֪ͨ",
+            "date": "2025-12-19",
+            "sourceUrl": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202512/t20251218_854863840.html",
+            "source": "�й�ծȯ��Ϣ��",
+            "author": "",
+            "summary": "2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ���ͻ��������ߣ�010-88170123|��ϵ����|APP����|΢�Ź��ں�|����|ENɨһɨ��ע���ں��ֻ�ɨ��������ص�¼|  ע����ڹ�˾���Ź����г�ָ����Ϣ��¶��ծ�����о������ͻ����Ĺ���֪ͨ��˾�����ܹ����н鹫���г�������Ƹծ������ծȯ�г���۾��ù��ʶ�̬�ȵ������г��������ɷ��淨�ɷ��沿�Ź��º͹淶���ļ�ҵ��ָ��Ӧ��ҵ������ͻ��˻���...",
+            "content": "<body>\n<!-- ������Ŀ���� -->\n<div class=\"common_header\"><meta charset=\"utf-8\"/>\n\n\n<!-- ͷ�� -->\n<div id=\"topTip\">\n<div id=\"topBox\">\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� begin  -->\n<!-- 023��03��20�� ����һ -->\n<!-- ��ӭ����¼�й�ծȯ��Ϣ�� -->\n<span id=\"welcomeWord\">2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ��</span>\n\n<!--�����δ��¼״̬������ʾ�˳���ť����ӭ���β����span������ǩ end  -->\n<!--�ж���û���û���¼���Ѿ���¼״̬����ӭ������ӵǳ�������ť end  -->\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� end  -->\n<div id=\"myHeader\" style=\"d"
+          },
+          {
+            "title": "����2026��ȫ�����м�ծȯ�г��ڼ������а��ŵ�֪ͨ",
+            "date": "2025-12-19",
+            "sourceUrl": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202512/t20251218_854863820.html",
+            "source": "�й�ծȯ��Ϣ��",
+            "author": "",
+            "summary": "2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ���ͻ��������ߣ�010-88170123|��ϵ����|APP����|΢�Ź��ں�|����|ENɨһɨ��ע���ں��ֻ�ɨ��������ص�¼|  ע����ڹ�˾���Ź����г�ָ����Ϣ��¶��ծ�����о������ͻ����Ĺ���֪ͨ��˾�����ܹ����н鹫���г�������Ƹծ������ծȯ�г���۾��ù��ʶ�̬�ȵ������г��������ɷ��淨�ɷ��沿�Ź��º͹淶���ļ�ҵ��ָ��Ӧ��ҵ������ͻ��˻���...",
+            "content": "<body>\n<!-- ������Ŀ���� -->\n<div class=\"common_header\"><meta charset=\"utf-8\"/>\n\n\n<!-- ͷ�� -->\n<div id=\"topTip\">\n<div id=\"topBox\">\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� begin  -->\n<!-- 023��03��20�� ����һ -->\n<!-- ��ӭ����¼�й�ծȯ��Ϣ�� -->\n<span id=\"welcomeWord\">2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ��</span>\n\n<!--�����δ��¼״̬������ʾ�˳���ť����ӭ���β����span������ǩ end  -->\n<!--�ж���û���û���¼���Ѿ���¼״̬����ӭ������ӵǳ�������ť end  -->\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� end  -->\n<div id=\"myHeader\" style=\"d"
+          }
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "step": "llm_repair",
+      "result": {
+        "changed": true
+      }
+    },
+    {
+      "round": 2,
+      "step": "static_check",
+      "result": {
+        "error_count": 1,
+        "warning_count": 2,
+        "top_errors": [
+          {
+            "severity": "error",
+            "code": "ERR_008",
+            "message": "检测到从标题提取年份作为日期的模式"
+          }
+        ],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+          },
+          {
+            "severity": "warning",
+            "code": "ERR_003",
+            "message": "日期提取函数可能在分页循环外调用，可能导致只有第一页有日期"
+          }
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": true,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 48.338,
+        "record_count": 5,
+        "date_fill_rate": 1.0,
+        "status": "success",
+        "http_statuses": [],
+        "stdout_tail": "[INFO] ��ʼ��ȡ: https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/\n[INFO] Ŀ�����ڷ�Χ: 2025-12-01 �� 2025-12-31\n\n[INFO] ���ڴ����� 1 ҳ...\n[INFO] ��ҳ���ҵ� 10 ����¼\n[FOUND] 2025-12-29 | �����ծ�Ǽǽ����������ι�˾���ڵ���2025��12��31����ծ�ۺ�ҵ��ƽ̨ҵ������ʱ���֪ͨ\n[FOUND] 2025-12-19 | �����ծ�Ǽǽ����������ι�˾����2026�괢���ծ������ʽ��ҵ��ڼ��հ��ŵ�֪ͨ\n[FOUND] 2025-12-19 | ����2026��ȫ�����м�ծȯ�г��ڼ������а��ŵ�֪ͨ\n[FOUND] 2025-12-11 | ���ڳ����Ż����м�ծȯ�г��������Ͷ�����˻������֪ͨ\n[FOUND] 2025-12-09 | ����2025��12��13����12��14����ծ�ۺ�ҵ��ƽ̨����ϵͳά����֪ͨ\n[STOP] ���־��ڿ�ʼ���ڵļ�¼: 2025-11-11 < 2025-12-01\n[INFO] �Ѵﵽ�������ڻ��޸������ݣ�ֹͣ��ҳ\n[SUCCESS] �ѱ��� 5 �����ݵ� d:\\llm_mcp_genpy\\pygen\\output\\chinabond_news_20260221_112159.json",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 2,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "date_extraction_failed",
+        "backup_cause": "schema_mismatch",
+        "confidence": 0.7,
+        "classifier_summary": "静态分析发现问题: 检测到从标题提取年份作为日期的模式"
+      }
+    },
+    {
+      "round": 2,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "sample_output_probe",
+        "cause": "date_extraction_failed",
+        "result": {
+          "sample_size": 5,
+          "required_non_empty_count": {
+            "title": 5,
+            "sourceUrl": 5
+          },
+          "sample": [
+            {
+              "title": "�����ծ�Ǽǽ����������ι�˾���ڵ���2025��12��31����ծ�ۺ�ҵ��ƽ̨ҵ������ʱ���֪ͨ",
+              "date": "2025-12-29",
+              "sourceUrl": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202512/t20251229_854871375.html",
+              "source": "�й�ծȯ��Ϣ��",
+              "author": "",
+              "summary": "2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ���ͻ��������ߣ�010-88170123|��ϵ����|APP����|΢�Ź��ں�|����|ENɨһɨ��ע���ں��ֻ�ɨ��������ص�¼|  ע����ڹ�˾���Ź����г�ָ����Ϣ��¶��ծ�����о������ͻ����Ĺ���֪ͨ��˾�����ܹ����н鹫���г�������Ƹծ������ծȯ�г���۾��ù��ʶ�̬�ȵ������г��������ɷ��淨�ɷ��沿�Ź��º͹淶���ļ�ҵ��ָ��Ӧ��ҵ������ͻ��˻���...",
+              "content": "<body>\n<!-- ������Ŀ���� -->\n<div class=\"common_header\"><meta charset=\"utf-8\"/>\n\n\n<!-- ͷ�� -->\n<div id=\"topTip\">\n<div id=\"topBox\">\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� begin  -->\n<!-- 023��03��20�� ����һ -->\n<!-- ��ӭ����¼�й�ծȯ��Ϣ�� -->\n<span id=\"welcomeWord\">2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ��</span>\n\n<!--�����δ��¼״̬������ʾ�˳���ť����ӭ���β����span������ǩ end  -->\n<!--�ж���û���û���¼���Ѿ���¼״̬����ӭ������ӵǳ�������ť end  -->\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� end  -->\n<div id=\"myHeader\" style=\"d"
+            },
+            {
+              "title": "�����ծ�Ǽǽ����������ι�˾����2026�괢���ծ������ʽ��ҵ��ڼ��հ��ŵ�֪ͨ",
+              "date": "2025-12-19",
+              "sourceUrl": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202512/t20251218_854863840.html",
+              "source": "�й�ծȯ��Ϣ��",
+              "author": "",
+              "summary": "2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ���ͻ��������ߣ�010-88170123|��ϵ����|APP����|΢�Ź��ں�|����|ENɨһɨ��ע���ں��ֻ�ɨ��������ص�¼|  ע����ڹ�˾���Ź����г�ָ����Ϣ��¶��ծ�����о������ͻ����Ĺ���֪ͨ��˾�����ܹ����н鹫���г�������Ƹծ������ծȯ�г���۾��ù��ʶ�̬�ȵ������г��������ɷ��淨�ɷ��沿�Ź��º͹淶���ļ�ҵ��ָ��Ӧ��ҵ������ͻ��˻���...",
+              "content": "<body>\n<!-- ������Ŀ���� -->\n<div class=\"common_header\"><meta charset=\"utf-8\"/>\n\n\n<!-- ͷ�� -->\n<div id=\"topTip\">\n<div id=\"topBox\">\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� begin  -->\n<!-- 023��03��20�� ����һ -->\n<!-- ��ӭ����¼�й�ծȯ��Ϣ�� -->\n<span id=\"welcomeWord\">2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ��</span>\n\n<!--�����δ��¼״̬������ʾ�˳���ť����ӭ���β����span������ǩ end  -->\n<!--�ж���û���û���¼���Ѿ���¼״̬����ӭ������ӵǳ�������ť end  -->\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� end  -->\n<div id=\"myHeader\" style=\"d"
+            },
+            {
+              "title": "����2026��ȫ�����м�ծȯ�г��ڼ������а��ŵ�֪ͨ",
+              "date": "2025-12-19",
+              "sourceUrl": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202512/t20251218_854863820.html",
+              "source": "�й�ծȯ��Ϣ��",
+              "author": "",
+              "summary": "2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ���ͻ��������ߣ�010-88170123|��ϵ����|APP����|΢�Ź��ں�|����|ENɨһɨ��ע���ں��ֻ�ɨ��������ص�¼|  ע����ڹ�˾���Ź����г�ָ����Ϣ��¶��ծ�����о������ͻ����Ĺ���֪ͨ��˾�����ܹ����н鹫���г�������Ƹծ������ծȯ�г���۾��ù��ʶ�̬�ȵ������г��������ɷ��淨�ɷ��沿�Ź��º͹淶���ļ�ҵ��ָ��Ӧ��ҵ������ͻ��˻���...",
+              "content": "<body>\n<!-- ������Ŀ���� -->\n<div class=\"common_header\"><meta charset=\"utf-8\"/>\n\n\n<!-- ͷ�� -->\n<div id=\"topTip\">\n<div id=\"topBox\">\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� begin  -->\n<!-- 023��03��20�� ����һ -->\n<!-- ��ӭ����¼�й�ծȯ��Ϣ�� -->\n<span id=\"welcomeWord\">2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ��</span>\n\n<!--�����δ��¼״̬������ʾ�˳���ť����ӭ���β����span������ǩ end  -->\n<!--�ж���û���û���¼���Ѿ���¼״̬����ӭ������ӵǳ�������ť end  -->\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� end  -->\n<div id=\"myHeader\" style=\"d"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "round": 2,
+      "step": "output_quality",
+      "result": {
+        "record_count": 5,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 1.0,
+          "sourceUrl": 1.0
+        },
+        "required_fields_ok": true,
+        "meets_min_items": true,
+        "recommendations": [],
+        "sample_records": [
+          {
+            "title": "�����ծ�Ǽǽ����������ι�˾���ڵ���2025��12��31����ծ�ۺ�ҵ��ƽ̨ҵ������ʱ���֪ͨ",
+            "date": "2025-12-29",
+            "sourceUrl": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202512/t20251229_854871375.html",
+            "source": "�й�ծȯ��Ϣ��",
+            "author": "",
+            "summary": "2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ���ͻ��������ߣ�010-88170123|��ϵ����|APP����|΢�Ź��ں�|����|ENɨһɨ��ע���ں��ֻ�ɨ��������ص�¼|  ע����ڹ�˾���Ź����г�ָ����Ϣ��¶��ծ�����о������ͻ����Ĺ���֪ͨ��˾�����ܹ����н鹫���г�������Ƹծ������ծȯ�г���۾��ù��ʶ�̬�ȵ������г��������ɷ��淨�ɷ��沿�Ź��º͹淶���ļ�ҵ��ָ��Ӧ��ҵ������ͻ��˻���...",
+            "content": "<body>\n<!-- ������Ŀ���� -->\n<div class=\"common_header\"><meta charset=\"utf-8\"/>\n\n\n<!-- ͷ�� -->\n<div id=\"topTip\">\n<div id=\"topBox\">\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� begin  -->\n<!-- 023��03��20�� ����һ -->\n<!-- ��ӭ����¼�й�ծȯ��Ϣ�� -->\n<span id=\"welcomeWord\">2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ��</span>\n\n<!--�����δ��¼״̬������ʾ�˳���ť����ӭ���β����span������ǩ end  -->\n<!--�ж���û���û���¼���Ѿ���¼״̬����ӭ������ӵǳ�������ť end  -->\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� end  -->\n<div id=\"myHeader\" style=\"d"
+          },
+          {
+            "title": "�����ծ�Ǽǽ����������ι�˾����2026�괢���ծ������ʽ��ҵ��ڼ��հ��ŵ�֪ͨ",
+            "date": "2025-12-19",
+            "sourceUrl": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202512/t20251218_854863840.html",
+            "source": "�й�ծȯ��Ϣ��",
+            "author": "",
+            "summary": "2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ���ͻ��������ߣ�010-88170123|��ϵ����|APP����|΢�Ź��ں�|����|ENɨһɨ��ע���ں��ֻ�ɨ��������ص�¼|  ע����ڹ�˾���Ź����г�ָ����Ϣ��¶��ծ�����о������ͻ����Ĺ���֪ͨ��˾�����ܹ����н鹫���г�������Ƹծ������ծȯ�г���۾��ù��ʶ�̬�ȵ������г��������ɷ��淨�ɷ��沿�Ź��º͹淶���ļ�ҵ��ָ��Ӧ��ҵ������ͻ��˻���...",
+            "content": "<body>\n<!-- ������Ŀ���� -->\n<div class=\"common_header\"><meta charset=\"utf-8\"/>\n\n\n<!-- ͷ�� -->\n<div id=\"topTip\">\n<div id=\"topBox\">\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� begin  -->\n<!-- 023��03��20�� ����һ -->\n<!-- ��ӭ����¼�й�ծȯ��Ϣ�� -->\n<span id=\"welcomeWord\">2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ��</span>\n\n<!--�����δ��¼״̬������ʾ�˳���ť����ӭ���β����span������ǩ end  -->\n<!--�ж���û���û���¼���Ѿ���¼״̬����ӭ������ӵǳ�������ť end  -->\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� end  -->\n<div id=\"myHeader\" style=\"d"
+          },
+          {
+            "title": "����2026��ȫ�����м�ծȯ�г��ڼ������а��ŵ�֪ͨ",
+            "date": "2025-12-19",
+            "sourceUrl": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202512/t20251218_854863820.html",
+            "source": "�й�ծȯ��Ϣ��",
+            "author": "",
+            "summary": "2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ���ͻ��������ߣ�010-88170123|��ϵ����|APP����|΢�Ź��ں�|����|ENɨһɨ��ע���ں��ֻ�ɨ��������ص�¼|  ע����ڹ�˾���Ź����г�ָ����Ϣ��¶��ծ�����о������ͻ����Ĺ���֪ͨ��˾�����ܹ����н鹫���г�������Ƹծ������ծȯ�г���۾��ù��ʶ�̬�ȵ������г��������ɷ��淨�ɷ��沿�Ź��º͹淶���ļ�ҵ��ָ��Ӧ��ҵ������ͻ��˻���...",
+            "content": "<body>\n<!-- ������Ŀ���� -->\n<div class=\"common_header\"><meta charset=\"utf-8\"/>\n\n\n<!-- ͷ�� -->\n<div id=\"topTip\">\n<div id=\"topBox\">\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� begin  -->\n<!-- 023��03��20�� ����һ -->\n<!-- ��ӭ����¼�й�ծȯ��Ϣ�� -->\n<span id=\"welcomeWord\">2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ��</span>\n\n<!--�����δ��¼״̬������ʾ�˳���ť����ӭ���β����span������ǩ end  -->\n<!--�ж���û���û���¼���Ѿ���¼״̬����ӭ������ӵǳ�������ť end  -->\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� end  -->\n<div id=\"myHeader\" style=\"d"
+          }
+        ]
+      }
+    },
+    {
+      "round": 3,
+      "step": "static_check",
+      "result": {
+        "error_count": 1,
+        "warning_count": 2,
+        "top_errors": [
+          {
+            "severity": "error",
+            "code": "ERR_008",
+            "message": "检测到从标题提取年份作为日期的模式"
+          }
+        ],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+          },
+          {
+            "severity": "warning",
+            "code": "ERR_003",
+            "message": "日期提取函数可能在分页循环外调用，可能导致只有第一页有日期"
+          }
+        ]
+      }
+    },
+    {
+      "round": 3,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": true,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 48.174,
+        "record_count": 5,
+        "date_fill_rate": 1.0,
+        "status": "success",
+        "http_statuses": [],
+        "stdout_tail": "[INFO] ��ʼ��ȡ: https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/\n[INFO] Ŀ�����ڷ�Χ: 2025-12-01 �� 2025-12-31\n\n[INFO] ���ڴ����� 1 ҳ...\n[INFO] ��ҳ���ҵ� 10 ����¼\n[FOUND] 2025-12-29 | �����ծ�Ǽǽ����������ι�˾���ڵ���2025��12��31����ծ�ۺ�ҵ��ƽ̨ҵ������ʱ���֪ͨ\n[FOUND] 2025-12-19 | �����ծ�Ǽǽ����������ι�˾����2026�괢���ծ������ʽ��ҵ��ڼ��հ��ŵ�֪ͨ\n[FOUND] 2025-12-19 | ����2026��ȫ�����м�ծȯ�г��ڼ������а��ŵ�֪ͨ\n[FOUND] 2025-12-11 | ���ڳ����Ż����м�ծȯ�г��������Ͷ�����˻������֪ͨ\n[FOUND] 2025-12-09 | ����2025��12��13����12��14����ծ�ۺ�ҵ��ƽ̨����ϵͳά����֪ͨ\n[STOP] ���־��ڿ�ʼ���ڵļ�¼: 2025-11-11 < 2025-12-01\n[INFO] �Ѵﵽ�������ڻ��޸������ݣ�ֹͣ��ҳ\n[SUCCESS] �ѱ��� 5 �����ݵ� d:\\llm_mcp_genpy\\pygen\\output\\chinabond_news_20260221_112247.json",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 3,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "schema_mismatch",
+        "backup_cause": "date_extraction_failed",
+        "confidence": 0.7,
+        "classifier_summary": "静态分析发现问题: 检测到从标题提取年份作为日期的模式"
+      }
+    },
+    {
+      "round": 3,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "sample_output_probe",
+        "cause": "schema_mismatch",
+        "result": {
+          "sample_size": 5,
+          "required_non_empty_count": {
+            "title": 5,
+            "sourceUrl": 5
+          },
+          "sample": [
+            {
+              "title": "�����ծ�Ǽǽ����������ι�˾���ڵ���2025��12��31����ծ�ۺ�ҵ��ƽ̨ҵ������ʱ���֪ͨ",
+              "date": "2025-12-29",
+              "sourceUrl": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202512/t20251229_854871375.html",
+              "source": "�й�ծȯ��Ϣ��",
+              "author": "",
+              "summary": "2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ���ͻ��������ߣ�010-88170123|��ϵ����|APP����|΢�Ź��ں�|����|ENɨһɨ��ע���ں��ֻ�ɨ��������ص�¼|  ע����ڹ�˾���Ź����г�ָ����Ϣ��¶��ծ�����о������ͻ����Ĺ���֪ͨ��˾�����ܹ����н鹫���г�������Ƹծ������ծȯ�г���۾��ù��ʶ�̬�ȵ������г��������ɷ��淨�ɷ��沿�Ź��º͹淶���ļ�ҵ��ָ��Ӧ��ҵ������ͻ��˻���...",
+              "content": "<body>\n<!-- ������Ŀ���� -->\n<div class=\"common_header\"><meta charset=\"utf-8\"/>\n\n\n<!-- ͷ�� -->\n<div id=\"topTip\">\n<div id=\"topBox\">\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� begin  -->\n<!-- 023��03��20�� ����һ -->\n<!-- ��ӭ����¼�й�ծȯ��Ϣ�� -->\n<span id=\"welcomeWord\">2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ��</span>\n\n<!--�����δ��¼״̬������ʾ�˳���ť����ӭ���β����span������ǩ end  -->\n<!--�ж���û���û���¼���Ѿ���¼״̬����ӭ������ӵǳ�������ť end  -->\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� end  -->\n<div id=\"myHeader\" style=\"d"
+            },
+            {
+              "title": "�����ծ�Ǽǽ����������ι�˾����2026�괢���ծ������ʽ��ҵ��ڼ��հ��ŵ�֪ͨ",
+              "date": "2025-12-19",
+              "sourceUrl": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202512/t20251218_854863840.html",
+              "source": "�й�ծȯ��Ϣ��",
+              "author": "",
+              "summary": "2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ���ͻ��������ߣ�010-88170123|��ϵ����|APP����|΢�Ź��ں�|����|ENɨһɨ��ע���ں��ֻ�ɨ��������ص�¼|  ע����ڹ�˾���Ź����г�ָ����Ϣ��¶��ծ�����о������ͻ����Ĺ���֪ͨ��˾�����ܹ����н鹫���г�������Ƹծ������ծȯ�г���۾��ù��ʶ�̬�ȵ������г��������ɷ��淨�ɷ��沿�Ź��º͹淶���ļ�ҵ��ָ��Ӧ��ҵ������ͻ��˻���...",
+              "content": "<body>\n<!-- ������Ŀ���� -->\n<div class=\"common_header\"><meta charset=\"utf-8\"/>\n\n\n<!-- ͷ�� -->\n<div id=\"topTip\">\n<div id=\"topBox\">\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� begin  -->\n<!-- 023��03��20�� ����һ -->\n<!-- ��ӭ����¼�й�ծȯ��Ϣ�� -->\n<span id=\"welcomeWord\">2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ��</span>\n\n<!--�����δ��¼״̬������ʾ�˳���ť����ӭ���β����span������ǩ end  -->\n<!--�ж���û���û���¼���Ѿ���¼״̬����ӭ������ӵǳ�������ť end  -->\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� end  -->\n<div id=\"myHeader\" style=\"d"
+            },
+            {
+              "title": "����2026��ȫ�����м�ծȯ�г��ڼ������а��ŵ�֪ͨ",
+              "date": "2025-12-19",
+              "sourceUrl": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202512/t20251218_854863820.html",
+              "source": "�й�ծȯ��Ϣ��",
+              "author": "",
+              "summary": "2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ���ͻ��������ߣ�010-88170123|��ϵ����|APP����|΢�Ź��ں�|����|ENɨһɨ��ע���ں��ֻ�ɨ��������ص�¼|  ע����ڹ�˾���Ź����г�ָ����Ϣ��¶��ծ�����о������ͻ����Ĺ���֪ͨ��˾�����ܹ����н鹫���г�������Ƹծ������ծȯ�г���۾��ù��ʶ�̬�ȵ������г��������ɷ��淨�ɷ��沿�Ź��º͹淶���ļ�ҵ��ָ��Ӧ��ҵ������ͻ��˻���...",
+              "content": "<body>\n<!-- ������Ŀ���� -->\n<div class=\"common_header\"><meta charset=\"utf-8\"/>\n\n\n<!-- ͷ�� -->\n<div id=\"topTip\">\n<div id=\"topBox\">\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� begin  -->\n<!-- 023��03��20�� ����һ -->\n<!-- ��ӭ����¼�й�ծȯ��Ϣ�� -->\n<span id=\"welcomeWord\">2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ��</span>\n\n<!--�����δ��¼״̬������ʾ�˳���ť����ӭ���β����span������ǩ end  -->\n<!--�ж���û���û���¼���Ѿ���¼״̬����ӭ������ӵǳ�������ť end  -->\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� end  -->\n<div id=\"myHeader\" style=\"d"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "round": 3,
+      "step": "output_quality",
+      "result": {
+        "record_count": 5,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 1.0,
+          "sourceUrl": 1.0
+        },
+        "required_fields_ok": true,
+        "meets_min_items": true,
+        "recommendations": [],
+        "sample_records": [
+          {
+            "title": "�����ծ�Ǽǽ����������ι�˾���ڵ���2025��12��31����ծ�ۺ�ҵ��ƽ̨ҵ������ʱ���֪ͨ",
+            "date": "2025-12-29",
+            "sourceUrl": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202512/t20251229_854871375.html",
+            "source": "�й�ծȯ��Ϣ��",
+            "author": "",
+            "summary": "2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ���ͻ��������ߣ�010-88170123|��ϵ����|APP����|΢�Ź��ں�|����|ENɨһɨ��ע���ں��ֻ�ɨ��������ص�¼|  ע����ڹ�˾���Ź����г�ָ����Ϣ��¶��ծ�����о������ͻ����Ĺ���֪ͨ��˾�����ܹ����н鹫���г�������Ƹծ������ծȯ�г���۾��ù��ʶ�̬�ȵ������г��������ɷ��淨�ɷ��沿�Ź��º͹淶���ļ�ҵ��ָ��Ӧ��ҵ������ͻ��˻���...",
+            "content": "<body>\n<!-- ������Ŀ���� -->\n<div class=\"common_header\"><meta charset=\"utf-8\"/>\n\n\n<!-- ͷ�� -->\n<div id=\"topTip\">\n<div id=\"topBox\">\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� begin  -->\n<!-- 023��03��20�� ����һ -->\n<!-- ��ӭ����¼�й�ծȯ��Ϣ�� -->\n<span id=\"welcomeWord\">2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ��</span>\n\n<!--�����δ��¼״̬������ʾ�˳���ť����ӭ���β����span������ǩ end  -->\n<!--�ж���û���û���¼���Ѿ���¼״̬����ӭ������ӵǳ�������ť end  -->\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� end  -->\n<div id=\"myHeader\" style=\"d"
+          },
+          {
+            "title": "�����ծ�Ǽǽ����������ι�˾����2026�괢���ծ������ʽ��ҵ��ڼ��հ��ŵ�֪ͨ",
+            "date": "2025-12-19",
+            "sourceUrl": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202512/t20251218_854863840.html",
+            "source": "�й�ծȯ��Ϣ��",
+            "author": "",
+            "summary": "2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ���ͻ��������ߣ�010-88170123|��ϵ����|APP����|΢�Ź��ں�|����|ENɨһɨ��ע���ں��ֻ�ɨ��������ص�¼|  ע����ڹ�˾���Ź����г�ָ����Ϣ��¶��ծ�����о������ͻ����Ĺ���֪ͨ��˾�����ܹ����н鹫���г�������Ƹծ������ծȯ�г���۾��ù��ʶ�̬�ȵ������г��������ɷ��淨�ɷ��沿�Ź��º͹淶���ļ�ҵ��ָ��Ӧ��ҵ������ͻ��˻���...",
+            "content": "<body>\n<!-- ������Ŀ���� -->\n<div class=\"common_header\"><meta charset=\"utf-8\"/>\n\n\n<!-- ͷ�� -->\n<div id=\"topTip\">\n<div id=\"topBox\">\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� begin  -->\n<!-- 023��03��20�� ����һ -->\n<!-- ��ӭ����¼�й�ծȯ��Ϣ�� -->\n<span id=\"welcomeWord\">2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ��</span>\n\n<!--�����δ��¼״̬������ʾ�˳���ť����ӭ���β����span������ǩ end  -->\n<!--�ж���û���û���¼���Ѿ���¼״̬����ӭ������ӵǳ�������ť end  -->\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� end  -->\n<div id=\"myHeader\" style=\"d"
+          },
+          {
+            "title": "����2026��ȫ�����м�ծȯ�г��ڼ������а��ŵ�֪ͨ",
+            "date": "2025-12-19",
+            "sourceUrl": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202512/t20251218_854863820.html",
+            "source": "�й�ծȯ��Ϣ��",
+            "author": "",
+            "summary": "2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ���ͻ��������ߣ�010-88170123|��ϵ����|APP����|΢�Ź��ں�|����|ENɨһɨ��ע���ں��ֻ�ɨ��������ص�¼|  ע����ڹ�˾���Ź����г�ָ����Ϣ��¶��ծ�����о������ͻ����Ĺ���֪ͨ��˾�����ܹ����н鹫���г�������Ƹծ������ծȯ�г���۾��ù��ʶ�̬�ȵ������г��������ɷ��淨�ɷ��沿�Ź��º͹淶���ļ�ҵ��ָ��Ӧ��ҵ������ͻ��˻���...",
+            "content": "<body>\n<!-- ������Ŀ���� -->\n<div class=\"common_header\"><meta charset=\"utf-8\"/>\n\n\n<!-- ͷ�� -->\n<div id=\"topTip\">\n<div id=\"topBox\">\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� begin  -->\n<!-- 023��03��20�� ����һ -->\n<!-- ��ӭ����¼�й�ծȯ��Ϣ�� -->\n<span id=\"welcomeWord\">2026��02��21�� ������ ��ӭ����¼�й�ծȯ��Ϣ��</span>\n\n<!--�����δ��¼״̬������ʾ�˳���ť����ӭ���β����span������ǩ end  -->\n<!--�ж���û���û���¼���Ѿ���¼״̬����ӭ������ӵǳ�������ť end  -->\n<!--��ǰϵͳʱ�估���ʻ�ӭ�� end  -->\n<div id=\"myHeader\" style=\"d"
+          }
+        ]
+      }
+    },
+    {
+      "round": 3,
+      "step": "final_targeted_repair",
+      "result": {
+        "changed": true
+      }
+    },
+    {
+      "round": 3,
+      "step": "static_check",
+      "result": {
+        "error_count": 1,
+        "warning_count": 2,
+        "top_errors": [
+          {
+            "severity": "error",
+            "code": "ERR_008",
+            "message": "检测到从标题提取年份作为日期的模式"
+          }
+        ],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+          },
+          {
+            "severity": "warning",
+            "code": "ERR_003",
+            "message": "日期提取函数可能在分页循环外调用，可能导致只有第一页有日期"
+          }
+        ]
+      }
+    },
+    {
+      "round": 3,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": false,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 10.894,
+        "record_count": 0,
+        "date_fill_rate": 0.0,
+        "status": "no_data",
+        "http_statuses": [],
+        "stdout_tail": "[INFO] ��ʼ��ȡ: https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/\n[INFO] Ŀ�����ڷ�Χ: 2025-12-01 �� 2025-12-31\n\n[INFO] ���ڴ����� 1 ҳ...\n[WARN] δ�ҵ��б��� (div.rightListContent li/tr)������ҳ��ṹ�ѱ��\n[INFO] �Ѵﵽ�������ڻ��޸������ݣ�ֹͣ��ҳ\n[SUCCESS] �ѱ��� 0 �����ݵ� d:\\llm_mcp_genpy\\pygen\\output\\chinabond_news_20260221_112429.json",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 3,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "empty_output",
+        "backup_cause": "schema_mismatch",
+        "confidence": 0.75,
+        "classifier_summary": "脚本执行完成但输出为空"
+      }
+    },
+    {
+      "round": 3,
+      "step": "output_quality",
+      "result": {
+        "record_count": 0,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 0.0,
+          "sourceUrl": 0.0
+        },
+        "required_fields_ok": false,
+        "meets_min_items": false,
+        "recommendations": [
+          "Extract at least 1 items in lightweight validation.",
+          "Ensure required fields are populated: ['title', 'sourceUrl']"
+        ],
+        "sample_records": []
+      }
+    }
+  ],
+  "stopped_reason": "max_retries_exceeded",
+  "primary_cause": "empty_output",
+  "backup_cause": "schema_mismatch"
+}

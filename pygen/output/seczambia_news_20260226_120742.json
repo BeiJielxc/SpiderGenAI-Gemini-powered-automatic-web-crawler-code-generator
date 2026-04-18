@@ -1,0 +1,61 @@
+{
+  "total": 5,
+  "crawlTime": "2026-02-26 12:07:42",
+  "articles": [
+    {
+      "id": "1",
+      "title": "Facebook-f",
+      "date": "",
+      "source": "SEC Zambia",
+      "author": "SEC Zambia",
+      "sourceUrl": "https://www.facebook.com/SecZambia/?_rdc=1&_rdr#",
+      "summary": "",
+      "content": "",
+      "downloadUrl": ""
+    },
+    {
+      "id": "2",
+      "title": "Icon-linkedin",
+      "date": "2026-02-26",
+      "source": "SEC Zambia",
+      "author": "SEC Zambia",
+      "sourceUrl": "https://www.linkedin.com/in/securities-and-exchange-commission-zambia-7a5ba61b1/",
+      "summary": "",
+      "content": "",
+      "downloadUrl": ""
+    },
+    {
+      "id": "3",
+      "title": "JavaScript is not available.",
+      "date": "2026-02-26",
+      "source": "SEC Zambia",
+      "author": "SEC Zambia",
+      "sourceUrl": "https://x.com/SECZambia",
+      "summary": "",
+      "content": "",
+      "downloadUrl": ""
+    },
+    {
+      "id": "4",
+      "title": "Youtube",
+      "date": "2024-03-06",
+      "source": "SEC Zambia",
+      "author": "SEC Zambia",
+      "sourceUrl": "https://www.youtube.com/channel/UCAueHF1A-bIxJ5n_RmkpsxQ",
+      "summary": "",
+      "content": "",
+      "downloadUrl": ""
+    },
+    {
+      "id": "5",
+      "title": "Facebook-f",
+      "date": "",
+      "source": "SEC Zambia",
+      "author": "SEC Zambia",
+      "sourceUrl": "https://www.facebook.com/SecZambia/?_rdc=1&_rdr#",
+      "summary": "",
+      "content": "",
+      "downloadUrl": ""
+    }
+  ]
+}

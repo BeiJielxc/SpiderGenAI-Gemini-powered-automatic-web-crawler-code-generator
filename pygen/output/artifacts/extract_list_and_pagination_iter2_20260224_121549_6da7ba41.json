@@ -1,0 +1,104 @@
+{
+  "baseUrl": "https://www.cityam.com/news/",
+  "bestCandidate": {
+    "selector": ".content-listing__content-item",
+    "titleSelector": ".card__title a",
+    "dateSelector": "",
+    "score": 44,
+    "itemCount": 12,
+    "hasLink": 12,
+    "hasDate": 0
+  },
+  "structureHint": "Each item is a <li class='content-listing__content-item'>; title/link in <h3 class='card__title'> > <a>",
+  "sampleHtml": "<li class=\"content-listing__content-item\">\n<article class=\"card card--has-media card--has-kicker card--has-density-hd-md category__business\">\n<div class=\"card__content\">\n<h3 class=\"card__title\"> <a cmp-ltrk=\"content-container\" cmp-ltrk-idx=\"1\" data-mrf-link=\"https://www.cityam.com/fca-we-dont-want-to-take-risk-decisions-alone/\" href=\"https://www.cityam.com/fca-we-dont-want-to-take-risk-decisions-alone/\" mrfobservableid=\"ec39c608-951f-47f1-9f61-9272563f3a9d\">\n\t\t\t\tFCA: We don’t want to take risk decisions alone\t\t\t</a>\n</h3>\n<div class=\"card__meta\">\n<span class=\"card__kicker card__kicker--busines...\n<li class=\"content-listing__content-item\">\n<article class=\"card card--has-media card--has-kicker card--has-density-hd-md category__business\">\n<div class=\"card__content\">\n<h3 class=\"card__title\"> <a cmp-ltrk=\"content-container\" cmp-ltrk-idx=\"2\" data-mrf-link=\"https://www.cityam.com/magnificent-7-outshone-by-fusty-5/\" href=\"https://www.cityam.com/magnificent-7-outshone-by-fusty-5/\" mrfobservableid=\"0b5e2ff2-97b8-4f39-940e-61a8ed258ff6\">\n\t\t\t\tThere’s a new Magnificent 7, and it’s called the Fusty 5\t\t\t</a>\n</h3>\n<div class=\"card__meta\">\n<span class=\"card__kicker card__kicker--business\">Markets</spa...",
+  "items": [
+    {
+      "title": "FCA: We don’t want to take risk decisions alone",
+      "url": "https://www.cityam.com/fca-we-dont-want-to-take-risk-decisions-alone/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "There’s a new Magnificent 7, and it’s called the Fusty 5",
+      "url": "https://www.cityam.com/magnificent-7-outshone-by-fusty-5/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "‘I see people doing dumb things’: Jamie Dimon warns of crisis-style AI reckoning",
+      "url": "https://www.cityam.com/i-see-people-doing-dumb-things-jamie-dimon-warns-of-crisis-style-ai-reckoning/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Lack of trust in AI tempers Starmer’s tech push",
+      "url": "https://www.cityam.com/lack-of-trust-in-ai-tempers-starmers-tech-push/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Developers shrink Silk Street plans to dodge objections",
+      "url": "https://www.cityam.com/developers-shrink-silk-street-plans-to-dodge-objections/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "UK unemployment will surpass pandemic high, says JP Morgan",
+      "url": "https://www.cityam.com/uk-unemployment-will-surpass-pandemic-high-says-jp-morgan/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Louise Haigh doubles down on demand for OBR overhaul",
+      "url": "https://www.cityam.com/louise-haigh-doubles-down-on-demand-for-obr-overhaul/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Shoplifting cost retailers £400m last year",
+      "url": "https://www.cityam.com/shoplifting-cost-retailers-400m-last-year/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "‘Vulnerable’ Lloyds and Barclays shares dip as tariff turmoil hits FTSE 100",
+      "url": "https://www.cityam.com/vulnerable-lloyds-and-barclays-shares-dip-as-tariff-turmoil-hits-ftse-100/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Pubs to open late during World Cup – a life raft for hospitality?",
+      "url": "https://www.cityam.com/pubs-to-open-late-during-world-cup-a-life-raft-for-hospitality/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Raducanu ditches Nike after eight years to sign £2.6m deal with rival",
+      "url": "https://www.cityam.com/raducanu-ditches-nike-after-eight-years-to-sign-2-6m-deal-with-rival/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Trump calls on Big Tech to protect households from AI power costs",
+      "url": "https://www.cityam.com/trump-calls-on-big-tech-to-protect-households-from-ai-power-costs/",
+      "date": "",
+      "dateText": ""
+    }
+  ],
+  "pagination": {
+    "next": null,
+    "prev": null,
+    "pageNums": [],
+    "totalPages": 0
+  },
+  "dateHints": {
+    "minDate": "",
+    "maxDate": "",
+    "startDate": "",
+    "endDate": "",
+    "hasInRange": false,
+    "hasOlderThanStart": false,
+    "suggestStopPaging": false
+  },
+  "otherCandidates": []
+}

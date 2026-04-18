@@ -1,0 +1,83 @@
+{
+  "url": "https://www.seczambia.org.zm/latest-news/public-notice-launch-of-the-suptech-online-application-portal/",
+  "contentSelector": "div.elementor.elementor-116",
+  "contentTagName": "div",
+  "contentTextLength": 2332,
+  "sampleContentHtml": "<div class=\"elementor elementor-116\" data-elementor-id=\"116\" data-elementor-post-type=\"elementskit_template\" data-elementor-type=\"wp-post\">\n<div class=\"elementor-element elementor-element-0151241 e-flex e-con-boxed e-con e-parent e-lazyloaded\" data-e-type=\"container\" data-element_type=\"container\" data-id=\"0151241\">\n<div class=\"e-con-inner\">\n<div class=\"elementor-element elementor-element-33f3623 e-con-full e-flex e-con e-child\" data-e-type=\"container\" data-element_type=\"container\" data-id=\"33f3623\">\n<div class=\"elementor-element elementor-element-e702097 e-con-full e-flex e-con e-child\" data-e-type=\"container\" data-element_type=\"container\" data-id=\"e702097\">\n<div class=\"elementor-element elementor-element-0a04dd4 elementor-widget-mobile__width-auto elementor-widget elementor-widget-theme-site-logo elementor-widget-image\" data-e-type=\"widget\" data-element_type=\"widget\" data-id=\"0a04dd4\" data-widget_type=\"theme-site-logo.default\">\n<div class=\"elementor-widget-container\">\n<a href=\"https://www.seczambia.org.zm\">\n<img alt=\"\" class=\"attachment-full size-full wp-image-352\" height=\"1040\" sizes=\"(max-width: 2432px) 100vw, 2432px\" src=\"https://www.seczambia.org.zm/wp-content/uploads/2025/05/...",
+  "contentCandidates": [
+    {
+      "selector": "div.elementor.elementor-116",
+      "textLength": 2332,
+      "linkCount": 127,
+      "linkDensity": 0.0544,
+      "textPreview": "Facebook-fIcon-linkedinX-twitterYoutubeFind A LicenseePublications & ReportsOnli"
+    },
+    {
+      "selector": "div.elementor-element.elementor-element-e7d81ab.e-flex.e-con-boxed.e-con.e-parent.e-lazyloaded",
+      "textLength": 2196,
+      "linkCount": 115,
+      "linkDensity": 0.0523,
+      "textPreview": "HomeAbout UsMission and VisionOur BoardOur ValuesSEC SustainabilityManagement & "
+    },
+    {
+      "selector": "div.elementor-element.elementor-element-10aa888.e-flex.e-con-boxed.e-con.e-child",
+      "textLength": 2196,
+      "linkCount": 115,
+      "linkDensity": 0.0523,
+      "textPreview": "HomeAbout UsMission and VisionOur BoardOur ValuesSEC SustainabilityManagement & "
+    },
+    {
+      "selector": "div.elementor-element.elementor-element-d80c3e1.e-con-full.e-flex.e-con.e-child",
+      "textLength": 2113,
+      "linkCount": 106,
+      "linkDensity": 0.0501,
+      "textPreview": "HomeAbout UsMission and VisionOur BoardOur ValuesSEC SustainabilityManagement & "
+    },
+    {
+      "selector": "div.elementor-widget-container",
+      "textLength": 2113,
+      "linkCount": 106,
+      "linkDensity": 0.0501,
+      "textPreview": "HomeAbout UsMission and VisionOur BoardOur ValuesSEC SustainabilityManagement & "
+    },
+    {
+      "selector": "div.elementor.elementor-886",
+      "textLength": 724,
+      "linkCount": 37,
+      "linkDensity": 0.051,
+      "textPreview": "LicensingFind A LicenseeCredit RatingDealers LicenseInvestment AdvisorsDealer's "
+    },
+    {
+      "selector": "div.elementor-element.elementor-element-1813fa0.e-flex.e-con-boxed.e-con.e-parent",
+      "textLength": 724,
+      "linkCount": 37,
+      "linkDensity": 0.051,
+      "textPreview": "LicensingFind A LicenseeCredit RatingDealers LicenseInvestment AdvisorsDealer's "
+    },
+    {
+      "selector": "div.elementor.elementor-2053.elementor-location-single.post-15538.latest-news.type-latest-news.status-publish.has-post-thumbnail.hentry.news-news.news-notices.news-press-release",
+      "textLength": 528,
+      "linkCount": 4,
+      "linkDensity": 0.0076,
+      "textPreview": "Public Notice: Launch of the SupTech Online Application PortalPublic Notice: Lau"
+    },
+    {
+      "selector": "div.elementor-element.elementor-element-46bb288f.e-flex.e-con-boxed.e-con.e-parent.e-lazyloaded",
+      "textLength": 466,
+      "linkCount": 4,
+      "linkDensity": 0.0086,
+      "textPreview": "Public Notice: Launch of the SupTech Online Application PortalRecent PostHere yo"
+    },
+    {
+      "selector": "div.elementor-element.elementor-element-4c29c33a.e-con-full.e-flex.e-con.e-child",
+      "textLength": 404,
+      "linkCount": 4,
+      "linkDensity": 0.0099,
+      "textPreview": "Recent PostHere you may discover additional pertinent and recently published new"
+    }
+  ],
+  "titleSelector": "h1",
+  "titleTagName": "h1.elementor-heading-title.elementor-size-default",
+  "titleText": "Public Notice: Launch of the SupTech Online Application Portal",
+  "structureHint": "10 body container candidates for LLM to choose from; title in <h1.elementor-heading-title.elementor-size-default> (selector: 'h1')"
+}

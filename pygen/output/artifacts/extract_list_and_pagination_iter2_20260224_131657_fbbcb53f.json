@@ -1,0 +1,104 @@
+{
+  "baseUrl": "https://www.cityam.com/news/",
+  "bestCandidate": {
+    "selector": ".content-listing__content-item",
+    "titleSelector": ".card__title a",
+    "dateSelector": "",
+    "score": 44,
+    "itemCount": 12,
+    "hasLink": 12,
+    "hasDate": 0
+  },
+  "structureHint": "Each item is a <li class='content-listing__content-item'>; title/link in <h3 class='card__title'> > <a>",
+  "sampleHtml": "<li class=\"content-listing__content-item\">\n<article class=\"card card--has-media card--has-kicker card--has-density-hd-md category__law-and-professional-services\">\n<div class=\"card__content\">\n<h3 class=\"card__title\"> <a cmp-ltrk=\"content-container\" cmp-ltrk-idx=\"1\" data-mrf-link=\"https://www.cityam.com/lord-mandelson-arrested-what-led-to-police-action/\" href=\"https://www.cityam.com/lord-mandelson-arrested-what-led-to-police-action/\" mrfobservableid=\"d0f642ab-f0d9-4927-99af-1b5a2c886349\">\n\t\t\t\tLord Mandelson arrested: What led to police action?\t\t\t</a>\n</h3>\n<div class=\"card__meta\">\n<span class=\"c...\n<li class=\"content-listing__content-item\">\n<article class=\"card card--has-media card--has-kicker card--has-density-hd-md category__business\">\n<div class=\"card__content\">\n<h3 class=\"card__title\"> <a cmp-ltrk=\"content-container\" cmp-ltrk-idx=\"2\" data-mrf-link=\"https://www.cityam.com/jammie-dodger-owner-tastes-sweet-success-after-return-to-profit/\" href=\"https://www.cityam.com/jammie-dodger-owner-tastes-sweet-success-after-return-to-profit/\" mrfobservableid=\"84f8917f-bc6b-4e9d-b156-e5a9245c1494\">\n\t\t\t\tJammie Dodger owner tastes sweet success after return to profit\t\t\t</a>\n</h3>\n<div class=\"card__me...",
+  "items": [
+    {
+      "title": "Lord Mandelson arrested: What led to police action?",
+      "url": "https://www.cityam.com/lord-mandelson-arrested-what-led-to-police-action/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Jammie Dodger owner tastes sweet success after return to profit",
+      "url": "https://www.cityam.com/jammie-dodger-owner-tastes-sweet-success-after-return-to-profit/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Reddit fined £14m over children’s data protection failures",
+      "url": "https://www.cityam.com/reddit-fined-14m-over-childrens-data-protection-failures/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "FCA: We don’t want to take risk decisions alone",
+      "url": "https://www.cityam.com/fca-we-dont-want-to-take-risk-decisions-alone/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "There’s a new Magnificent 7, and it’s called the Fusty 5",
+      "url": "https://www.cityam.com/magnificent-7-outshone-by-fusty-5/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "‘I see people doing dumb things’: Jamie Dimon warns of crisis-style AI reckoning",
+      "url": "https://www.cityam.com/i-see-people-doing-dumb-things-jamie-dimon-warns-of-crisis-style-ai-reckoning/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Lack of trust in AI tempers Starmer’s tech push",
+      "url": "https://www.cityam.com/lack-of-trust-in-ai-tempers-starmers-tech-push/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Developers shrink Silk Street plans to dodge objections",
+      "url": "https://www.cityam.com/developers-shrink-silk-street-plans-to-dodge-objections/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "UK unemployment will surpass pandemic high, says JP Morgan",
+      "url": "https://www.cityam.com/uk-unemployment-will-surpass-pandemic-high-says-jp-morgan/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Louise Haigh doubles down on demand for OBR overhaul",
+      "url": "https://www.cityam.com/louise-haigh-doubles-down-on-demand-for-obr-overhaul/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Shoplifting cost retailers £400m last year",
+      "url": "https://www.cityam.com/shoplifting-cost-retailers-400m-last-year/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "‘Vulnerable’ Lloyds and Barclays shares dip as tariff turmoil hits FTSE 100",
+      "url": "https://www.cityam.com/vulnerable-lloyds-and-barclays-shares-dip-as-tariff-turmoil-hits-ftse-100/",
+      "date": "",
+      "dateText": ""
+    }
+  ],
+  "pagination": {
+    "next": null,
+    "prev": null,
+    "pageNums": [],
+    "totalPages": 0
+  },
+  "dateHints": {
+    "minDate": "",
+    "maxDate": "",
+    "startDate": "",
+    "endDate": "",
+    "hasInRange": false,
+    "hasOlderThanStart": false,
+    "suggestStopPaging": false
+  },
+  "otherCandidates": []
+}

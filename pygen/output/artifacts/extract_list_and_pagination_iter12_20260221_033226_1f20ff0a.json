@@ -1,0 +1,173 @@
+{
+  "baseUrl": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/index_115.html",
+  "bestCandidate": {
+    "selector": ".rightListContent",
+    "titleSelector": ".rightListImport.unlock a",
+    "dateSelector": "",
+    "score": 100,
+    "itemCount": 10,
+    "hasLink": 10,
+    "hasDate": 10
+  },
+  "items": [
+    {
+      "title": "2026年《债券》期刊征订",
+      "url": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202509/t20250922_854771715.html",
+      "date": "2025-09-25",
+      "dateText": "2025/09/25"
+    },
+    {
+      "title": "关于开展集中债券借贷业务的通知",
+      "url": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202509/t20250911_854758688.html",
+      "date": "2025-09-12",
+      "dateText": "2025/09/12"
+    },
+    {
+      "title": "中央国债登记结算有限责任公司关于债券信息自助披露系统优化及中国债券信息网信息披露模块改版的通知",
+      "url": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202509/t20250908_854755096.html",
+      "date": "2025-09-08",
+      "dateText": "2025/09/08"
+    },
+    {
+      "title": "中央国债登记结算有限责任公司关于简化境外央行类机构开户材料的通知",
+      "url": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202508/t20250811_854726732.html",
+      "date": "2025-08-11",
+      "dateText": "2025/08/11"
+    },
+    {
+      "title": "关于举办“控风险 御波动 谋长局”主题征文活动的通知",
+      "url": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202506/t20250626_854686059.html",
+      "date": "2025-06-27",
+      "dateText": "2025/06/27"
+    },
+    {
+      "title": "中央国债登记结算有限责任公司关于就部分结算业务收费标准公开征求意见的通知",
+      "url": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202505/t20250513_854645427.html",
+      "date": "2025-05-14",
+      "dateText": "2025/05/14"
+    },
+    {
+      "title": "中央国债登记结算有限责任公司关于减免境外央行类机构账户开户费用的通知",
+      "url": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202505/t20250513_854645245.html",
+      "date": "2025-05-13",
+      "dateText": "2025/05/13"
+    },
+    {
+      "title": "“第三届中债估值杯”征文启事",
+      "url": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202505/t20250509_854642240.html",
+      "date": "2025-05-12",
+      "dateText": "2025/05/12"
+    },
+    {
+      "title": "中央国债登记结算有限责任公司关于减免科技创新专项金融债券服务费用的通知",
+      "url": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202505/t20250507_854635919.html",
+      "date": "2025-05-07",
+      "dateText": "2025/05/07"
+    },
+    {
+      "title": "中央国债登记结算有限责任公司关于进一步降低做市结算服务费用的通知",
+      "url": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/202505/t20250507_854635808.html",
+      "date": "2025-05-07",
+      "dateText": "2025/05/07"
+    }
+  ],
+  "pagination": {
+    "next": {
+      "tag": "a",
+      "text": "",
+      "href": null,
+      "onclick": "goPageApp('index_114.html')",
+      "target": "index_114.html",
+      "url": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/index_114.html",
+      "class": "pageNext"
+    },
+    "prev": {
+      "tag": "a",
+      "text": "",
+      "href": null,
+      "onclick": "goPageApp('index.html')",
+      "target": "index.html",
+      "url": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/index.html",
+      "class": "pagePrev"
+    },
+    "pageNums": [
+      {
+        "tag": "a",
+        "text": "1",
+        "href": null,
+        "onclick": "goPageApp('index.html')",
+        "target": "index.html",
+        "url": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/index.html",
+        "class": "pageNum"
+      },
+      {
+        "tag": "a",
+        "text": "2",
+        "href": "index_115.html",
+        "onclick": null,
+        "target": null,
+        "url": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/index_115.html",
+        "class": "pageNum pageChecked"
+      },
+      {
+        "tag": "a",
+        "text": "3",
+        "href": null,
+        "onclick": "goPageApp('index_114.html')",
+        "target": "index_114.html",
+        "url": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/index_114.html",
+        "class": "pageNum"
+      },
+      {
+        "tag": "a",
+        "text": "4",
+        "href": null,
+        "onclick": "goPageApp('index_113.html')",
+        "target": "index_113.html",
+        "url": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/index_113.html",
+        "class": "pageNum"
+      },
+      {
+        "tag": "a",
+        "text": "116",
+        "href": null,
+        "onclick": "goPageApp('index_1.html')",
+        "target": "index_1.html",
+        "url": "https://www.chinabond.com.cn/xwgg/ggtz/xwgg_gsgg/gsgg_zytz_ath/index_1.html",
+        "class": "pageNum"
+      }
+    ],
+    "totalPages": 116
+  },
+  "dateHints": {
+    "minDate": "2025-05-07",
+    "maxDate": "2025-09-25",
+    "startDate": "2025-12-01",
+    "endDate": "2025-12-31",
+    "hasInRange": false,
+    "hasOlderThanStart": true,
+    "suggestStopPaging": false
+  },
+  "otherCandidates": [
+    {
+      "selector": "li",
+      "score": 52,
+      "count": 16
+    },
+    {
+      "selector": "li",
+      "score": 36,
+      "count": 8
+    },
+    {
+      "selector": "li",
+      "score": 34,
+      "count": 7
+    },
+    {
+      "selector": ".toolBar",
+      "score": 32,
+      "count": 6
+    }
+  ]
+}

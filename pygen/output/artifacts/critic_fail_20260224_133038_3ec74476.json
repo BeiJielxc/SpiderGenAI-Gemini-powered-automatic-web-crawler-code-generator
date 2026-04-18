@@ -1,0 +1,609 @@
+{
+  "final_round": 3,
+  "max_retries": 3,
+  "repaired_code": "# === PyGen 注入：HTTP/SSL 韧性层（通用） ===\n# 说明：\n# 1) 优先保持 verify=True；如确需临时绕过（不推荐），可设置环境变量 PYGEN_INSECURE_SSL=1\n# 2) 默认遇到 418/403/429 仅做一次\"预热 cookie + 浏览器化 headers\"的重试\n# 3) 若仍被拦截且本机已安装 Playwright，会自动尝试一次 request-context 兜底\n#    如需禁用：设置 PYGEN_DISABLE_PLAYWRIGHT_FALLBACK=1\nimport os as _pygen_os\nimport ssl as _pygen_ssl\nimport urllib.parse as _pygen_urlparse\n\ntry:\n    # truststore 会让 Python/requests 使用系统证书库（Windows/macOS/Linux），更贴近浏览器行为\n    import truststore as _pygen_truststore  # type: ignore\n    _pygen_truststore.inject_into_ssl()\nexcept Exception:\n    _pygen_truststore = None  # noqa: F401\n\ntry:\n    import requests as _pygen_requests\n    from requests.structures import CaseInsensitiveDict as _pygen_CaseInsensitiveDict\nexcept Exception:\n    _pygen_requests = None  # noqa: F401\n\n_PYGEN_DEFAULT_UA = (\n    \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) \"\n    \"AppleWebKit/537.36 (KHTML, like Gecko) \"\n    \"Chrome/122.0 Safari/537.36\"\n)\n\ndef _pygen_origin(url: str) -> str:\n    try:\n        p = _pygen_urlparse.urlsplit(url)\n        return f\"{p.scheme}://{p.netloc}\"\n    except Exception:\n        return \"\"\n\ndef _pygen_merge_headers(h: dict | None) -> dict:\n    base = {\n        \"User-Agent\": _PYGEN_DEFAULT_UA,\n        \"Accept\": \"application/json,text/plain,*/*\",\n        \"Accept-Language\": \"zh-CN,zh;q=0.9,en;q=0.8\",\n        \"Connection\": \"keep-alive\",\n    }\n    if h:\n        for k, v in h.items():\n            if v is not None:\n                base[k] = v\n    return base\n\ndef _pygen_make_response(status: int, url: str, headers: dict, body: bytes):\n    r = _pygen_requests.Response()\n    r.status_code = status\n    r.url = url\n    r.headers = _pygen_CaseInsensitiveDict(headers or {})\n    r._content = body or b\"\"\n    return r\n\ndef _pygen_playwright_fetch(method: str, url: str, headers: dict, data=None, json=None, timeout: int = 30):\n    \"\"\"\n    兜底：使用 Playwright 的 request context（更像浏览器/更容易过 WAF）。\n    仅当已安装 playwright 且未设置 PYGEN_DISABLE_PLAYWRIGHT_FALLBACK=1 时启用。\n    \"\"\"\n    if _pygen_os.getenv(\"PYGEN_DISABLE_PLAYWRIGHT_FALLBACK\") == \"1\":\n        return None\n    try:\n        from playwright.sync_api import sync_playwright  # type: ignore\n    except Exception:\n        return None\n\n    with sync_playwright() as p:\n        ctx = p.request.new_context(ignore_https_errors=_pygen_os.getenv(\"PYGEN_INSECURE_SSL\") == \"1\",\n                                    extra_http_headers=headers)\n        try:\n            resp = ctx.fetch(url, method=method.upper(), data=data, json=json, timeout=timeout * 1000)\n            body = resp.body()\n            return _pygen_make_response(resp.status, url, dict(resp.headers), body)\n        finally:\n            ctx.dispose()\n\ndef _pygen_install_requests_patch():\n    if _pygen_requests is None:\n        return\n    _orig = _pygen_requests.sessions.Session.request\n\n    def _patched(self, method, url, **kwargs):\n        # 默认超时，避免脚本卡死\n        kwargs.setdefault(\"timeout\", 30)\n\n        # 证书校验策略：默认开启；仅在用户明确设置时关闭\n        if _pygen_os.getenv(\"PYGEN_INSECURE_SSL\") == \"1\":\n            kwargs[\"verify\"] = False\n\n        # 合并\"更像浏览器\"的 headers（很多站会对 UA/Accept 做拦截）\n        headers = _pygen_merge_headers(kwargs.get(\"headers\"))\n        kwargs[\"headers\"] = headers\n\n        # 首次请求\n        try:\n            resp = _orig(self, method, url, **kwargs)\n        except Exception as e:\n            # 若是 SSL 校验错误：truststore 已注入则直接抛出；否则给出更友好的提示\n            msg = str(e)\n            if \"CERTIFICATE_VERIFY_FAILED\" in msg or \"certificate verify failed\" in msg:\n                # 若 playwright 可用，尝试用 request-context 做一次兜底（有些环境下系统信任链更完整）\n                try:\n                    pw_resp = _pygen_playwright_fetch(method, url, headers=headers,\n                                                      data=kwargs.get(\"data\"),\n                                                      json=kwargs.get(\"json\"),\n                                                      timeout=int(kwargs.get(\"timeout\") or 30))\n                    if pw_resp is not None:\n                        return pw_resp\n                except Exception:\n                    pass\n                raise\n            raise\n\n        # WAF/反爬：做一次轻量重试（预热 cookie + 再请求）\n        if resp is not None and getattr(resp, \"status_code\", 0) in (418, 403, 429):\n            try:\n                origin = _pygen_origin(url)\n                if origin:\n                    # 预热：访问首页拿 cookie\n                    _ = _orig(self, \"GET\", origin + \"/\", headers=headers, timeout=15, verify=kwargs.get(\"verify\", True))\n                resp2 = _orig(self, method, url, **kwargs)\n                if resp2 is not None and getattr(resp2, \"status_code\", 0) not in (418, 403, 429):\n                    return resp2\n                # 若仍被拦截，且 playwright 可用，则再尝试一次（自动兜底）\n                pw_resp = _pygen_playwright_fetch(method, url, headers=headers,\n                                                  data=kwargs.get(\"data\"),\n                                                  json=kwargs.get(\"json\"),\n                                                  timeout=int(kwargs.get(\"timeout\") or 30))\n                if pw_resp is not None:\n                    return pw_resp\n            except Exception:\n                # 兜底失败则返回原始响应，交由上层处理\n                return resp\n\n        return resp\n\n    _pygen_requests.sessions.Session.request = _patched\n\n_pygen_install_requests_patch()\n# === PyGen 注入结束 ===\nimport requests\nfrom bs4 import BeautifulSoup\nimport json\nimport os\nimport time\nimport random\nfrom urllib.parse import urljoin\nfrom datetime import datetime\nimport re\nimport urllib3\n\n# 禁用 SSL 警告\nurllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)\n\n# ================= 配置区域 =================\nTARGET_URL = \"https://www.cityam.com/news/\"\nOUTPUT_DIR = \"output\"  # 使用相对路径，确保可移植性\nMAX_ARTICLES = 5  # 限制爬取数量\n\n# 请求头配置\nHEADERS = {\n    \"User-Agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\",\n    \"Accept\": \"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8\",\n    \"Accept-Language\": \"en-US,en;q=0.9\",\n    \"Referer\": \"https://www.cityam.com/\",\n    \"Connection\": \"keep-alive\",\n    \"Upgrade-Insecure-Requests\": \"1\",\n    \"Sec-Fetch-Dest\": \"document\",\n    \"Sec-Fetch-Mode\": \"navigate\",\n    \"Sec-Fetch-Site\": \"same-origin\",\n    \"Sec-Fetch-User\": \"?1\",\n}\n\ndef get_random_delay():\n    \"\"\"生成随机延迟，避免请求过快\"\"\"\n    return random.uniform(1.5, 3.5)\n\ndef clean_html_content(html_content, base_url):\n    \"\"\"\n    清洗HTML内容：\n    1. 将相对路径转换为绝对路径\n    2. 移除无用的标签\n    \"\"\"\n    if not html_content:\n        return \"\"\n    try:\n        soup = BeautifulSoup(html_content, 'html.parser')\n        \n        # 修复图片链接\n        for img in soup.find_all('img'):\n            if img.get('src'):\n                img['src'] = urljoin(base_url, img['src'])\n            # 移除 srcset 属性，避免混淆\n            if img.get('srcset'):\n                del img['srcset']\n                \n        # 修复超链接\n        for a in soup.find_all('a'):\n            if a.get('href'):\n                a['href'] = urljoin(base_url, a['href'])\n        \n        # 移除脚本和样式\n        for script in soup([\"script\", \"style\", \"iframe\", \"noscript\"]):\n            script.decompose()\n\n        # 移除特定的干扰元素 (根据用户策略)\n        for selector in ['header', 'footer', 'aside', '.notice-header', '.newsletter-auto-inject', '.share-tools']:\n            for tag in soup.select(selector):\n                tag.decompose()\n                \n        return str(soup)\n    except Exception as e:\n        print(f\"[WARN] 内容清洗出错: {e}\")\n        return html_content\n\ndef extract_date(soup):\n    \"\"\"\n    尝试多种方式提取发布日期\n    \"\"\"\n    date_str = \"\"\n    \n    # 策略1: 用户指定的选择器\n    time_tag = soup.select_one('time.date-time__time')\n    if time_tag:\n        if time_tag.get('datetime'):\n            date_str = time_tag.get('datetime')\n        else:\n            date_str = time_tag.get_text(strip=True)\n    \n    # 策略2: Meta 标签 (通常更标准)\n    if not date_str:\n        meta_date = soup.find('meta', property='article:published_time') or \\\n                    soup.find('meta', property='og:article:published_time') or \\\n                    soup.find('meta', itemprop='datePublished')\n        if meta_date:\n            date_str = meta_date.get('content')\n\n    # 策略3: JSON-LD\n    if not date_str:\n        try:\n            scripts = soup.find_all('script', type='application/ld+json')\n            for script in scripts:\n                if 'datePublished' in script.string:\n                    data = json.loads(script.string)\n                    if isinstance(data, dict):\n                        date_str = data.get('datePublished', '')\n                    elif isinstance(data, list):\n                        for item in data:\n                            if 'datePublished' in item:\n                                date_str = item.get('datePublished', '')\n                                break\n                    if date_str: break\n        except:\n            pass\n\n    # 格式化日期为 YYYY-MM-DD\n    if date_str:\n        try:\n            # 处理 ISO 格式 2024-02-19T12:00:00+00:00\n            dt = None\n            if 'T' in date_str:\n                dt = datetime.fromisoformat(date_str.replace('Z', '+00:00'))\n            else:\n                # 尝试常见格式\n                for fmt in [\"%Y-%m-%d\", \"%d %B %Y\", \"%B %d, %Y\"]:\n                    try:\n                        dt = datetime.strptime(date_str, fmt)\n                        break\n                    except:\n                        continue\n            \n            if dt:\n                return dt.strftime(\"%Y-%m-%d\")\n        except Exception as e:\n            print(f\"[WARN] 日期格式化失败: {date_str} - {e}\")\n            # 如果解析失败，返回原始字符串的前10位（如果是YYYY-MM-DD格式的话）\n            if re.match(r'\\d{4}-\\d{2}-\\d{2}', date_str):\n                return date_str[:10]\n\n    return datetime.now().strftime(\"%Y-%m-%d\") # 兜底：当前日期\n\ndef crawl_detail_page(url):\n    \"\"\"爬取详情页内容\"\"\"\n    try:\n        print(f\"正在爬取详情页: {url}\")\n        time.sleep(get_random_delay())\n        \n        # 增加 verify=False 以规避 SSLEOFError 等握手问题\n        response = requests.get(url, headers=HEADERS, timeout=20, verify=False)\n        response.raise_for_status()\n        soup = BeautifulSoup(response.text, 'html.parser')\n        \n        # 提取日期\n        pub_date = extract_date(soup)\n        \n        # 提取正文 - 增强选择器策略 (修复 schema_mismatch)\n        selectors = [\n            'div.post-content',                                      # 标准正文\n            'article.content-container.content-container__single',   # 之前使用的\n            'div.entry-content',                                     # 通用 WordPress\n            'article.post',                                          # 通用\n            'main article',                                          # 兜底\n            'article'                                                # 最终兜底\n        ]\n        \n        article_body = None\n        for selector in selectors:\n            found = soup.select_one(selector)\n            # 简单验证：内容区应该包含文本段落，避免选到空容器\n            if found and len(found.find_all('p')) > 0:\n                article_body = found\n                break\n        \n        content_html = \"\"\n        summary = \"\"\n        \n        if article_body:\n            # 移除不需要的元素\n            for tag in article_body.select('.newsletter-auto-inject, .share-tools, aside, .article-header-featured-image, figure.wp-caption, .related-posts, .ad-container, script, style'):\n                tag.decompose()\n\n            # 提取纯文本用于摘要\n            paragraphs = article_body.find_all('p')\n            text_content = [p.get_text(strip=True) for p in paragraphs if p.get_text(strip=True)]\n            \n            # 生成摘要 (前3段或前500字)\n            if text_content:\n                summary_text = \" \".join(text_content[:3])\n                if len(summary_text) > 500:\n                    summary = summary_text[:497] + \"...\"\n                else:\n                    summary = summary_text\n                \n            # 获取清洗后的 HTML\n            try:\n                raw_html = article_body.decode_contents()\n            except Exception:\n                raw_html = str(article_body)\n            \n            content_html = clean_html_content(raw_html, url)\n        else:\n            print(f\"[WARN] 未找到正文内容: {url}\")\n            \n        return {\n            \"date\": pub_date,\n            \"content\": content_html,\n            \"summary\": summary\n        }\n        \n    except Exception as e:\n        print(f\"[ERROR] 详情页爬取失败 {url}: {e}\")\n        return None\n\ndef crawl_news_list():\n    \"\"\"爬取新闻列表页\"\"\"\n    articles = []\n    \n    try:\n        print(f\"正在访问列表页: {TARGET_URL}\")\n        response = requests.get(TARGET_URL, headers=HEADERS, timeout=15, verify=False)\n        response.raise_for_status()\n        \n        soup = BeautifulSoup(response.text, 'html.parser')\n        \n        # 列表项选择器\n        items = soup.select('.content-listing__content-item')\n        print(f\"找到 {len(items)} 个新闻项\")\n        \n        count = 0\n        for item in items:\n            if count >= MAX_ARTICLES:\n                break\n                \n            # 提取标题和链接\n            title_tag = item.select_one('.card__title a')\n            if not title_tag:\n                continue\n                \n            title = title_tag.get_text(strip=True)\n            link = title_tag.get('href')\n            \n            if not link:\n                continue\n                \n            # 补全链接\n            full_link = urljoin(TARGET_URL, link)\n            \n            # 提取作者 (如果有)\n            author = \"City AM\" # 默认\n            \n            print(f\"处理第 {count + 1} 条: {title}\")\n            \n            # 进入详情页获取更多信息\n            detail_data = crawl_detail_page(full_link)\n            \n            if detail_data:\n                article = {\n                    \"id\": str(count + 1),\n                    \"title\": title,\n                    \"date\": detail_data.get('date', ''),\n                    \"author\": author,\n                    \"source\": \"City AM\",\n                    \"sourceUrl\": full_link,\n                    \"summary\": detail_data.get('summary', ''),\n                    \"content\": detail_data.get('content', '')\n                }\n                articles.append(article)\n                count += 1\n            \n    except Exception as e:\n        print(f\"[ERROR] 列表页爬取失败: {e}\")\n        \n    return articles\n\ndef save_results(articles, output_dir):\n    \"\"\"保存结果为 JSON\"\"\"\n    if not os.path.exists(output_dir):\n        os.makedirs(output_dir)\n        \n    timestamp = datetime.now().strftime(\"%Y%m%d_%H%M%S\")\n    filename = f\"cityam_news_{timestamp}.json\"\n    filepath = os.path.join(output_dir, filename)\n    \n    result = {\n        \"total\": len(articles),\n        \"crawlTime\": datetime.now().strftime(\"%Y-%m-%d %H:%M:%S\"),\n        \"articles\": articles\n    }\n    \n    try:\n        with open(filepath, 'w', encoding='utf-8') as f:\n            json.dump(result, f, ensure_ascii=False, indent=2)\n        print(f\"成功保存 {len(articles)} 条数据到: {filepath}\")\n    except Exception as e:\n        print(f\"[ERROR] 保存文件失败: {e}\")\n\ndef main():\n    print(\"=== 开始爬取 City AM 新闻 ===\")\n    articles = crawl_news_list()\n    \n    if articles:\n        save_results(articles, OUTPUT_DIR)\n    else:\n        print(\"未获取到任何新闻数据。\")\n    print(\"=== 爬取任务结束 ===\")\n\nif __name__ == \"__main__\":\n    main()",
+  "rounds": [
+    {
+      "round": 1,
+      "passed": false,
+      "primary_cause": "unknown",
+      "backup_cause": "schema_mismatch",
+      "uncertain": true,
+      "classifier_confidence": 0.3,
+      "record_count": 5,
+      "static_error_count": 1
+    },
+    {
+      "round": 2,
+      "passed": false,
+      "primary_cause": "unknown",
+      "backup_cause": "schema_mismatch",
+      "uncertain": true,
+      "classifier_confidence": 0.3,
+      "record_count": 5,
+      "static_error_count": 1
+    },
+    {
+      "round": 3,
+      "passed": false,
+      "primary_cause": "schema_mismatch",
+      "backup_cause": "unknown",
+      "uncertain": true,
+      "classifier_confidence": 0.3,
+      "record_count": 5,
+      "static_error_count": 1
+    },
+    {
+      "round": 3,
+      "passed": false,
+      "primary_cause": "unknown",
+      "backup_cause": "schema_mismatch",
+      "uncertain": true,
+      "classifier_confidence": 0.3,
+      "record_count": 5,
+      "static_error_count": 1
+    }
+  ],
+  "evidence": [
+    {
+      "round": 1,
+      "step": "static_check",
+      "result": {
+        "error_count": 1,
+        "warning_count": 1,
+        "top_errors": [
+          {
+            "severity": "error",
+            "code": "detail_body_selector_mismatch",
+            "message": "详情页正文未使用 probe_detail_page 推荐的选择器。请将详情页正文容器改为: '#onetrust-consent-sdk'，不要使用泛化的 article/main。"
+          }
+        ],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+          }
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": true,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 37.754,
+        "record_count": 5,
+        "date_fill_rate": 1.0,
+        "status": "partial",
+        "http_statuses": [],
+        "stdout_tail": "=== 开始爬取 City AM 新闻 ===\n正在访问列表页: https://www.cityam.com/news/\n找到 18 个新闻项\n处理第 1 条: Lord Mandelson arrested: What led to police action?\n正在爬取详情页: https://www.cityam.com/lord-mandelson-arrested-what-led-to-police-action/\n处理第 2 条: Jammie Dodger owner tastes sweet success after return to profit\n正在爬取详情页: https://www.cityam.com/jammie-dodger-owner-tastes-sweet-success-after-return-to-profit/\n处理第 3 条: Reddit fined £14m over children’s data protection failures\n正在爬取详情页: https://www.cityam.com/reddit-fined-14m-over-childrens-data-protection-failures/\n处理第 4 条: FCA: We don’t want to take risk decisions alone\n正在爬取详情页: https://www.cityam.com/fca-we-dont-want-to-take-risk-decisions-alone/\n[ERROR] 详情页爬取失败 https://www.cityam.com/fca-we-dont-want-to-take-risk-decisions-alone/: HTTPSConnectionPool(host='www.ci...(truncated)",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 1,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "unknown",
+        "backup_cause": "schema_mismatch",
+        "confidence": 0.3,
+        "classifier_summary": "未能明确分类的故障"
+      }
+    },
+    {
+      "round": 1,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "sample_output_probe",
+        "cause": "unknown",
+        "result": {
+          "sample_size": 5,
+          "required_non_empty_count": {
+            "title": 5,
+            "sourceUrl": 5
+          },
+          "sample": [
+            {
+              "id": "1",
+              "title": "Lord Mandelson arrested: What led to police action?",
+              "date": "2026-02-24",
+              "author": "City AM",
+              "source": "City AM",
+              "sourceUrl": "https://www.cityam.com/lord-mandelson-arrested-what-led-to-police-action/",
+              "summary": "By:Maria Ward-Brennan Senior Reporter Peter Mandelsonwas arrestedon Monday on suspicion of misconduct in public office, but how did we get here?",
+              "content": "<article class=\"content-container content-container__single\">\n\n<figure class=\"article-header-featured-image\">\n\n<img alt=\"Lord Mandelson giving a speech at a business conference, addressing economic policies and industry challenges.\" class=\"media\" decoding=\"sync\" fetchpriority=\"high\" height=\"495\" loading=\"eager\" sizes=\"(max-width: 742px) 100vw, 742px\" src=\"https://www.cityam.com/wp-content/uploads/"
+            },
+            {
+              "id": "2",
+              "title": "Jammie Dodger owner tastes sweet success after return to profit",
+              "date": "2026-02-24",
+              "author": "City AM",
+              "source": "City AM",
+              "sourceUrl": "https://www.cityam.com/jammie-dodger-owner-tastes-sweet-success-after-return-to-profit/",
+              "summary": "By:Felix Armstrong Retail Reporter Profit at the biscuits giant behind Jammie Dodgers and Wagon Wheels hit a sugar rush as the firm turned to a Strictly Come Dancing judge and a “Dubai-inspired” biscuit to boost revenue.",
+              "content": "<article class=\"content-container content-container__single\">\n\n<figure class=\"article-header-featured-image\">\n\n<img alt=\"Freshly baked golden biscuits on a baking tray, showcasing a variety of shapes and textures, ideal for a breakfast feature\" class=\"media\" decoding=\"sync\" fetchpriority=\"high\" height=\"495\" loading=\"eager\" sizes=\"(max-width: 742px) 100vw, 742px\" src=\"https://www.cityam.com/wp-cont"
+            },
+            {
+              "id": "3",
+              "title": "Reddit fined £14m over children’s data protection failures",
+              "date": "2026-02-24",
+              "author": "City AM",
+              "source": "City AM",
+              "sourceUrl": "https://www.cityam.com/reddit-fined-14m-over-childrens-data-protection-failures/",
+              "summary": "By:Saskia Koopman Tech Reporter Social media platform Reddit has been fined £14.47m by the Information Commissioner’s Office (ICO) after a probe found it unlawfully processed children’s personal information.",
+              "content": "<article class=\"content-container content-container__single\">\n\n<figure class=\"article-header-featured-image\">\n\n<img alt=\"Reddit headquarters with ICO logo overlay, symbolizing £14m fine for childrens data protection violations\" class=\"media\" decoding=\"sync\" fetchpriority=\"high\" height=\"495\" loading=\"eager\" src=\"https://www.cityam.com/wp-content/uploads/2025/09/Gemini_Generated_Image_hcsypphcsypphc"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "round": 1,
+      "step": "output_quality",
+      "result": {
+        "record_count": 5,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 1.0,
+          "sourceUrl": 1.0
+        },
+        "required_fields_ok": true,
+        "meets_min_items": true,
+        "recommendations": [],
+        "sample_records": [
+          {
+            "id": "1",
+            "title": "Lord Mandelson arrested: What led to police action?",
+            "date": "2026-02-24",
+            "author": "City AM",
+            "source": "City AM",
+            "sourceUrl": "https://www.cityam.com/lord-mandelson-arrested-what-led-to-police-action/",
+            "summary": "By:Maria Ward-Brennan Senior Reporter Peter Mandelsonwas arrestedon Monday on suspicion of misconduct in public office, but how did we get here?",
+            "content": "<article class=\"content-container content-container__single\">\n\n<figure class=\"article-header-featured-image\">\n\n<img alt=\"Lord Mandelson giving a speech at a business conference, addressing economic policies and industry challenges.\" class=\"media\" decoding=\"sync\" fetchpriority=\"high\" height=\"495\" loading=\"eager\" sizes=\"(max-width: 742px) 100vw, 742px\" src=\"https://www.cityam.com/wp-content/uploads/"
+          },
+          {
+            "id": "2",
+            "title": "Jammie Dodger owner tastes sweet success after return to profit",
+            "date": "2026-02-24",
+            "author": "City AM",
+            "source": "City AM",
+            "sourceUrl": "https://www.cityam.com/jammie-dodger-owner-tastes-sweet-success-after-return-to-profit/",
+            "summary": "By:Felix Armstrong Retail Reporter Profit at the biscuits giant behind Jammie Dodgers and Wagon Wheels hit a sugar rush as the firm turned to a Strictly Come Dancing judge and a “Dubai-inspired” biscuit to boost revenue.",
+            "content": "<article class=\"content-container content-container__single\">\n\n<figure class=\"article-header-featured-image\">\n\n<img alt=\"Freshly baked golden biscuits on a baking tray, showcasing a variety of shapes and textures, ideal for a breakfast feature\" class=\"media\" decoding=\"sync\" fetchpriority=\"high\" height=\"495\" loading=\"eager\" sizes=\"(max-width: 742px) 100vw, 742px\" src=\"https://www.cityam.com/wp-cont"
+          },
+          {
+            "id": "3",
+            "title": "Reddit fined £14m over children’s data protection failures",
+            "date": "2026-02-24",
+            "author": "City AM",
+            "source": "City AM",
+            "sourceUrl": "https://www.cityam.com/reddit-fined-14m-over-childrens-data-protection-failures/",
+            "summary": "By:Saskia Koopman Tech Reporter Social media platform Reddit has been fined £14.47m by the Information Commissioner’s Office (ICO) after a probe found it unlawfully processed children’s personal information.",
+            "content": "<article class=\"content-container content-container__single\">\n\n<figure class=\"article-header-featured-image\">\n\n<img alt=\"Reddit headquarters with ICO logo overlay, symbolizing £14m fine for childrens data protection violations\" class=\"media\" decoding=\"sync\" fetchpriority=\"high\" height=\"495\" loading=\"eager\" src=\"https://www.cityam.com/wp-content/uploads/2025/09/Gemini_Generated_Image_hcsypphcsypphc"
+          }
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "step": "llm_adjudication",
+      "result": {
+        "used": true,
+        "cause": "selector_mismatch",
+        "confidence": 0.9,
+        "reason": "Static check reported a critical 'detail_body_selector_mismatch' error. Although the crawler successfully retrieved 5 records, the 'content' field contains raw HTML (including <article> tags) rather than clean text, confirming the selector configuration is incorrect or too broad."
+      }
+    },
+    {
+      "round": 2,
+      "step": "llm_repair",
+      "result": {
+        "changed": true
+      }
+    },
+    {
+      "round": 2,
+      "step": "static_check",
+      "result": {
+        "error_count": 1,
+        "warning_count": 1,
+        "top_errors": [
+          {
+            "severity": "error",
+            "code": "detail_body_selector_mismatch",
+            "message": "详情页正文未使用 probe_detail_page 推荐的选择器。请将详情页正文容器改为: '#onetrust-consent-sdk'，不要使用泛化的 article/main。"
+          }
+        ],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+          }
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": true,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 22.499,
+        "record_count": 5,
+        "date_fill_rate": 1.0,
+        "status": "success",
+        "http_statuses": [],
+        "stdout_tail": "=== 开始爬取 City AM 新闻 ===\n正在访问列表页: https://www.cityam.com/news/\n找到 18 个新闻项\n处理第 1 条: Lord Mandelson arrested: What led to police action?\n正在爬取详情页: https://www.cityam.com/lord-mandelson-arrested-what-led-to-police-action/\n处理第 2 条: Jammie Dodger owner tastes sweet success after return to profit\n正在爬取详情页: https://www.cityam.com/jammie-dodger-owner-tastes-sweet-success-after-return-to-profit/\n处理第 3 条: Reddit fined £14m over children’s data protection failures\n正在爬取详情页: https://www.cityam.com/reddit-fined-14m-over-childrens-data-protection-failures/\n处理第 4 条: FCA: We don’t want to take risk decisions alone\n正在爬取详情页: https://www.cityam.com/fca-we-dont-want-to-take-risk-decisions-alone/\n处理第 5 条: There’s a new Magnificent 7, and it’s called the Fusty 5\n正在爬取详情页: https://www.cityam.com/magnificent-7-outshon...(truncated)",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 2,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "unknown",
+        "backup_cause": "schema_mismatch",
+        "confidence": 0.3,
+        "classifier_summary": "未能明确分类的故障"
+      }
+    },
+    {
+      "round": 2,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "sample_output_probe",
+        "cause": "unknown",
+        "result": {
+          "sample_size": 5,
+          "required_non_empty_count": {
+            "title": 5,
+            "sourceUrl": 5
+          },
+          "sample": [
+            {
+              "id": "1",
+              "title": "Lord Mandelson arrested: What led to police action?",
+              "date": "2026-02-24",
+              "author": "City AM",
+              "source": "City AM",
+              "sourceUrl": "https://www.cityam.com/lord-mandelson-arrested-what-led-to-police-action/",
+              "summary": "By:Maria Ward-Brennan Senior Reporter Peter Mandelsonwas arrestedon Monday on suspicion of misconduct in public office, but how did we get here?",
+              "content": "\n\n<!-- Ads Injected --><p>Peter Mandelson <a href=\"https://www.cityam.com/police-arrest-lord-mandelson/\" rel=\"noopener noreferrer\" target=\"_blank\">was arrested</a> on Monday on suspicion of misconduct in public office, but how did we get here?</p><p>The Metropolitan Police said in a statement on Monday evening that they had arrested a 72-year-old man in Camden. </p><p>Mandelson was photographed be"
+            },
+            {
+              "id": "2",
+              "title": "Jammie Dodger owner tastes sweet success after return to profit",
+              "date": "2026-02-24",
+              "author": "City AM",
+              "source": "City AM",
+              "sourceUrl": "https://www.cityam.com/jammie-dodger-owner-tastes-sweet-success-after-return-to-profit/",
+              "summary": "By:Felix Armstrong Retail Reporter Profit at the biscuits giant behind Jammie Dodgers and Wagon Wheels hit a sugar rush as the firm turned to a Strictly Come Dancing judge and a “Dubai-inspired” biscuit to boost revenue.",
+              "content": "\n\n<!-- Ads Injected --><p>Profit at the biscuits giant behind Jammie Dodgers and Wagon Wheels hit a sugar rush as the firm turned to a Strictly Come Dancing judge and a “Dubai-inspired” biscuit to boost revenue.</p><p>The group, which includes Burton’s Biscuit Company and Fox’s Biscuits, has <a href=\"https://find-and-update.company-information.service.gov.uk/company/02086754\" rel=\"noopener norefer"
+            },
+            {
+              "id": "3",
+              "title": "Reddit fined £14m over children’s data protection failures",
+              "date": "2026-02-24",
+              "author": "City AM",
+              "source": "City AM",
+              "sourceUrl": "https://www.cityam.com/reddit-fined-14m-over-childrens-data-protection-failures/",
+              "summary": "By:Saskia Koopman Tech Reporter Social media platform Reddit has been fined £14.47m by the Information Commissioner’s Office (ICO) after a probe found it unlawfully processed children’s personal information.",
+              "content": "\n\n<!-- Ads Injected --><p>Social media platform Reddit has been fined £14.47m by the Information Commissioner’s Office (ICO) after a probe found it unlawfully processed children’s personal information. </p><p>The platform was also found to have failed to implement adequate age checks.</p><p>The UK data protection regulator said the US-based company did not implement robust age assurance measures, "
+            }
+          ]
+        }
+      }
+    },
+    {
+      "round": 2,
+      "step": "output_quality",
+      "result": {
+        "record_count": 5,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 1.0,
+          "sourceUrl": 1.0
+        },
+        "required_fields_ok": true,
+        "meets_min_items": true,
+        "recommendations": [],
+        "sample_records": [
+          {
+            "id": "1",
+            "title": "Lord Mandelson arrested: What led to police action?",
+            "date": "2026-02-24",
+            "author": "City AM",
+            "source": "City AM",
+            "sourceUrl": "https://www.cityam.com/lord-mandelson-arrested-what-led-to-police-action/",
+            "summary": "By:Maria Ward-Brennan Senior Reporter Peter Mandelsonwas arrestedon Monday on suspicion of misconduct in public office, but how did we get here?",
+            "content": "\n\n<!-- Ads Injected --><p>Peter Mandelson <a href=\"https://www.cityam.com/police-arrest-lord-mandelson/\" rel=\"noopener noreferrer\" target=\"_blank\">was arrested</a> on Monday on suspicion of misconduct in public office, but how did we get here?</p><p>The Metropolitan Police said in a statement on Monday evening that they had arrested a 72-year-old man in Camden. </p><p>Mandelson was photographed be"
+          },
+          {
+            "id": "2",
+            "title": "Jammie Dodger owner tastes sweet success after return to profit",
+            "date": "2026-02-24",
+            "author": "City AM",
+            "source": "City AM",
+            "sourceUrl": "https://www.cityam.com/jammie-dodger-owner-tastes-sweet-success-after-return-to-profit/",
+            "summary": "By:Felix Armstrong Retail Reporter Profit at the biscuits giant behind Jammie Dodgers and Wagon Wheels hit a sugar rush as the firm turned to a Strictly Come Dancing judge and a “Dubai-inspired” biscuit to boost revenue.",
+            "content": "\n\n<!-- Ads Injected --><p>Profit at the biscuits giant behind Jammie Dodgers and Wagon Wheels hit a sugar rush as the firm turned to a Strictly Come Dancing judge and a “Dubai-inspired” biscuit to boost revenue.</p><p>The group, which includes Burton’s Biscuit Company and Fox’s Biscuits, has <a href=\"https://find-and-update.company-information.service.gov.uk/company/02086754\" rel=\"noopener norefer"
+          },
+          {
+            "id": "3",
+            "title": "Reddit fined £14m over children’s data protection failures",
+            "date": "2026-02-24",
+            "author": "City AM",
+            "source": "City AM",
+            "sourceUrl": "https://www.cityam.com/reddit-fined-14m-over-childrens-data-protection-failures/",
+            "summary": "By:Saskia Koopman Tech Reporter Social media platform Reddit has been fined £14.47m by the Information Commissioner’s Office (ICO) after a probe found it unlawfully processed children’s personal information.",
+            "content": "\n\n<!-- Ads Injected --><p>Social media platform Reddit has been fined £14.47m by the Information Commissioner’s Office (ICO) after a probe found it unlawfully processed children’s personal information. </p><p>The platform was also found to have failed to implement adequate age checks.</p><p>The UK data protection regulator said the US-based company did not implement robust age assurance measures, "
+          }
+        ]
+      }
+    },
+    {
+      "round": 3,
+      "step": "static_check",
+      "result": {
+        "error_count": 1,
+        "warning_count": 1,
+        "top_errors": [
+          {
+            "severity": "error",
+            "code": "detail_body_selector_mismatch",
+            "message": "详情页正文未使用 probe_detail_page 推荐的选择器。请将详情页正文容器改为: '#onetrust-consent-sdk'，不要使用泛化的 article/main。"
+          }
+        ],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+          }
+        ]
+      }
+    },
+    {
+      "round": 3,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": true,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 36.415,
+        "record_count": 5,
+        "date_fill_rate": 1.0,
+        "status": "partial",
+        "http_statuses": [],
+        "stdout_tail": "=== 开始爬取 City AM 新闻 ===\n正在访问列表页: https://www.cityam.com/news/\n找到 18 个新闻项\n处理第 1 条: Lord Mandelson arrested: What led to police action?\n正在爬取详情页: https://www.cityam.com/lord-mandelson-arrested-what-led-to-police-action/\n处理第 2 条: Jammie Dodger owner tastes sweet success after return to profit\n正在爬取详情页: https://www.cityam.com/jammie-dodger-owner-tastes-sweet-success-after-return-to-profit/\n[ERROR] 详情页爬取失败 https://www.cityam.com/jammie-dodger-owner-tastes-sweet-success-after-return-to-profit/: HTTPSConnectionPool(host='www.cityam.com', port=443): Max retries exceeded with url: /jammie-dodger-owner-tastes-sweet-success-after-return-to-profit/ (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1081)')))\n处理第 2 条: Reddit fined £14m ov...(truncated)",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 3,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "schema_mismatch",
+        "backup_cause": "unknown",
+        "confidence": 0.3,
+        "classifier_summary": "未能明确分类的故障"
+      }
+    },
+    {
+      "round": 3,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "sample_output_probe",
+        "cause": "schema_mismatch",
+        "result": {
+          "sample_size": 5,
+          "required_non_empty_count": {
+            "title": 5,
+            "sourceUrl": 5
+          },
+          "sample": [
+            {
+              "id": "1",
+              "title": "Lord Mandelson arrested: What led to police action?",
+              "date": "2026-02-24",
+              "author": "City AM",
+              "source": "City AM",
+              "sourceUrl": "https://www.cityam.com/lord-mandelson-arrested-what-led-to-police-action/",
+              "summary": "By:Maria Ward-Brennan Senior Reporter Peter Mandelsonwas arrestedon Monday on suspicion of misconduct in public office, but how did we get here?",
+              "content": "\n\n<!-- Ads Injected --><p>Peter Mandelson <a href=\"https://www.cityam.com/police-arrest-lord-mandelson/\" rel=\"noopener noreferrer\" target=\"_blank\">was arrested</a> on Monday on suspicion of misconduct in public office, but how did we get here?</p><p>The Metropolitan Police said in a statement on Monday evening that they had arrested a 72-year-old man in Camden. </p><p>Mandelson was photographed be"
+            },
+            {
+              "id": "2",
+              "title": "Reddit fined £14m over children’s data protection failures",
+              "date": "2026-02-24",
+              "author": "City AM",
+              "source": "City AM",
+              "sourceUrl": "https://www.cityam.com/reddit-fined-14m-over-childrens-data-protection-failures/",
+              "summary": "By:Saskia Koopman Tech Reporter Social media platform Reddit has been fined £14.47m by the Information Commissioner’s Office (ICO) after a probe found it unlawfully processed children’s personal information.",
+              "content": "\n\n<!-- Ads Injected --><p>Social media platform Reddit has been fined £14.47m by the Information Commissioner’s Office (ICO) after a probe found it unlawfully processed children’s personal information. </p><p>The platform was also found to have failed to implement adequate age checks.</p><p>The UK data protection regulator said the US-based company did not implement robust age assurance measures, "
+            },
+            {
+              "id": "3",
+              "title": "FCA: We don’t want to take risk decisions alone",
+              "date": "2026-02-24",
+              "author": "City AM",
+              "source": "City AM",
+              "sourceUrl": "https://www.cityam.com/fca-we-dont-want-to-take-risk-decisions-alone/",
+              "summary": "By:Chris Dorrell The City watchdog should not be determining the UK’s risk appetite “alone”, a top official has said, as the regulator continues to try and coax more guidance from the government on itsgrowth push. Sarah Pritchard, the deputy chief executive of the Financial Conduct Authority (FCA), said the regulator was trying to “prompt” a wider conversation about the kinds of risks the governme",
+              "content": "\n\n<!-- Ads Injected --><p>The City watchdog should not be determining the UK’s risk appetite “alone”, a top official has said, as the regulator continues to try and coax more guidance from the government on its <a href=\"https://www.cityam.com/less-jargon-more-advice-fca-rises-to-pro-growth-challenge/\" rel=\"noopener noreferrer\" target=\"_blank\">growth push</a>. </p><p>Sarah Pritchard, the deputy chi"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "round": 3,
+      "step": "output_quality",
+      "result": {
+        "record_count": 5,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 1.0,
+          "sourceUrl": 1.0
+        },
+        "required_fields_ok": true,
+        "meets_min_items": true,
+        "recommendations": [],
+        "sample_records": [
+          {
+            "id": "1",
+            "title": "Lord Mandelson arrested: What led to police action?",
+            "date": "2026-02-24",
+            "author": "City AM",
+            "source": "City AM",
+            "sourceUrl": "https://www.cityam.com/lord-mandelson-arrested-what-led-to-police-action/",
+            "summary": "By:Maria Ward-Brennan Senior Reporter Peter Mandelsonwas arrestedon Monday on suspicion of misconduct in public office, but how did we get here?",
+            "content": "\n\n<!-- Ads Injected --><p>Peter Mandelson <a href=\"https://www.cityam.com/police-arrest-lord-mandelson/\" rel=\"noopener noreferrer\" target=\"_blank\">was arrested</a> on Monday on suspicion of misconduct in public office, but how did we get here?</p><p>The Metropolitan Police said in a statement on Monday evening that they had arrested a 72-year-old man in Camden. </p><p>Mandelson was photographed be"
+          },
+          {
+            "id": "2",
+            "title": "Reddit fined £14m over children’s data protection failures",
+            "date": "2026-02-24",
+            "author": "City AM",
+            "source": "City AM",
+            "sourceUrl": "https://www.cityam.com/reddit-fined-14m-over-childrens-data-protection-failures/",
+            "summary": "By:Saskia Koopman Tech Reporter Social media platform Reddit has been fined £14.47m by the Information Commissioner’s Office (ICO) after a probe found it unlawfully processed children’s personal information.",
+            "content": "\n\n<!-- Ads Injected --><p>Social media platform Reddit has been fined £14.47m by the Information Commissioner’s Office (ICO) after a probe found it unlawfully processed children’s personal information. </p><p>The platform was also found to have failed to implement adequate age checks.</p><p>The UK data protection regulator said the US-based company did not implement robust age assurance measures, "
+          },
+          {
+            "id": "3",
+            "title": "FCA: We don’t want to take risk decisions alone",
+            "date": "2026-02-24",
+            "author": "City AM",
+            "source": "City AM",
+            "sourceUrl": "https://www.cityam.com/fca-we-dont-want-to-take-risk-decisions-alone/",
+            "summary": "By:Chris Dorrell The City watchdog should not be determining the UK’s risk appetite “alone”, a top official has said, as the regulator continues to try and coax more guidance from the government on itsgrowth push. Sarah Pritchard, the deputy chief executive of the Financial Conduct Authority (FCA), said the regulator was trying to “prompt” a wider conversation about the kinds of risks the governme",
+            "content": "\n\n<!-- Ads Injected --><p>The City watchdog should not be determining the UK’s risk appetite “alone”, a top official has said, as the regulator continues to try and coax more guidance from the government on its <a href=\"https://www.cityam.com/less-jargon-more-advice-fca-rises-to-pro-growth-challenge/\" rel=\"noopener noreferrer\" target=\"_blank\">growth push</a>. </p><p>Sarah Pritchard, the deputy chi"
+          }
+        ]
+      }
+    },
+    {
+      "round": 3,
+      "step": "final_targeted_repair",
+      "result": {
+        "changed": true
+      }
+    },
+    {
+      "round": 3,
+      "step": "static_check",
+      "result": {
+        "error_count": 1,
+        "warning_count": 1,
+        "top_errors": [
+          {
+            "severity": "error",
+            "code": "detail_body_selector_mismatch",
+            "message": "详情页正文未使用 probe_detail_page 推荐的选择器。请将详情页正文容器改为: '#onetrust-consent-sdk'，不要使用泛化的 article/main。"
+          }
+        ],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+          }
+        ]
+      }
+    },
+    {
+      "round": 3,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": true,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 20.336,
+        "record_count": 5,
+        "date_fill_rate": 1.0,
+        "status": "success",
+        "http_statuses": [],
+        "stdout_tail": "=== 开始爬取 City AM 新闻 ===\n正在访问列表页: https://www.cityam.com/news/\n找到 18 个新闻项\n处理第 1 条: Lord Mandelson arrested: What led to police action?\n正在爬取详情页: https://www.cityam.com/lord-mandelson-arrested-what-led-to-police-action/\n处理第 2 条: Jammie Dodger owner tastes sweet success after return to profit\n正在爬取详情页: https://www.cityam.com/jammie-dodger-owner-tastes-sweet-success-after-return-to-profit/\n处理第 3 条: Reddit fined £14m over children’s data protection failures\n正在爬取详情页: https://www.cityam.com/reddit-fined-14m-over-childrens-data-protection-failures/\n处理第 4 条: FCA: We don’t want to take risk decisions alone\n正在爬取详情页: https://www.cityam.com/fca-we-dont-want-to-take-risk-decisions-alone/\n处理第 5 条: There’s a new Magnificent 7, and it’s called the Fusty 5\n正在爬取详情页: https://www.cityam.com/magnificent-7-outshon...(truncated)",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 3,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "unknown",
+        "backup_cause": "schema_mismatch",
+        "confidence": 0.3,
+        "classifier_summary": "未能明确分类的故障"
+      }
+    },
+    {
+      "round": 3,
+      "step": "output_quality",
+      "result": {
+        "record_count": 5,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 1.0,
+          "sourceUrl": 1.0
+        },
+        "required_fields_ok": true,
+        "meets_min_items": true,
+        "recommendations": [],
+        "sample_records": [
+          {
+            "id": "1",
+            "title": "Lord Mandelson arrested: What led to police action?",
+            "date": "2026-02-24",
+            "author": "City AM",
+            "source": "City AM",
+            "sourceUrl": "https://www.cityam.com/lord-mandelson-arrested-what-led-to-police-action/",
+            "summary": "By:Maria Ward-Brennan Senior Reporter Peter Mandelsonwas arrestedon Monday on suspicion of misconduct in public office, but how did we get here?",
+            "content": "\n\n<!-- Ads Injected --><p>Peter Mandelson <a href=\"https://www.cityam.com/police-arrest-lord-mandelson/\" rel=\"noopener noreferrer\" target=\"_blank\">was arrested</a> on Monday on suspicion of misconduct in public office, but how did we get here?</p><p>The Metropolitan Police said in a statement on Monday evening that they had arrested a 72-year-old man in Camden. </p><p>Mandelson was photographed be"
+          },
+          {
+            "id": "2",
+            "title": "Jammie Dodger owner tastes sweet success after return to profit",
+            "date": "2026-02-24",
+            "author": "City AM",
+            "source": "City AM",
+            "sourceUrl": "https://www.cityam.com/jammie-dodger-owner-tastes-sweet-success-after-return-to-profit/",
+            "summary": "By:Felix Armstrong Retail Reporter Profit at the biscuits giant behind Jammie Dodgers and Wagon Wheels hit a sugar rush as the firm turned to a Strictly Come Dancing judge and a “Dubai-inspired” biscuit to boost revenue.",
+            "content": "\n\n<!-- Ads Injected --><p>Profit at the biscuits giant behind Jammie Dodgers and Wagon Wheels hit a sugar rush as the firm turned to a Strictly Come Dancing judge and a “Dubai-inspired” biscuit to boost revenue.</p><p>The group, which includes Burton’s Biscuit Company and Fox’s Biscuits, has <a href=\"https://find-and-update.company-information.service.gov.uk/company/02086754\" rel=\"noopener norefer"
+          },
+          {
+            "id": "3",
+            "title": "Reddit fined £14m over children’s data protection failures",
+            "date": "2026-02-24",
+            "author": "City AM",
+            "source": "City AM",
+            "sourceUrl": "https://www.cityam.com/reddit-fined-14m-over-childrens-data-protection-failures/",
+            "summary": "By:Saskia Koopman Tech Reporter Social media platform Reddit has been fined £14.47m by the Information Commissioner’s Office (ICO) after a probe found it unlawfully processed children’s personal information.",
+            "content": "\n\n<!-- Ads Injected --><p>Social media platform Reddit has been fined £14.47m by the Information Commissioner’s Office (ICO) after a probe found it unlawfully processed children’s personal information. </p><p>The platform was also found to have failed to implement adequate age checks.</p><p>The UK data protection regulator said the US-based company did not implement robust age assurance measures, "
+          }
+        ]
+      }
+    }
+  ],
+  "stopped_reason": "max_retries_exceeded",
+  "primary_cause": "unknown",
+  "backup_cause": "schema_mismatch"
+}

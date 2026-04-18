@@ -1,0 +1,252 @@
+{
+  "final_round": 2,
+  "max_retries": 3,
+  "repaired_code": "import os\nimport json\nimport time\nimport re\nfrom datetime import datetime\nfrom urllib.parse import urljoin\nfrom playwright.sync_api import sync_playwright\nfrom bs4 import BeautifulSoup\n\n# ==========================================\n# 配置区域\n# ==========================================\nMAX_ITEMS = 5  # 任务目标：爬取前5条\nOUTPUT_DIR = r\"d:\\llm_mcp_genpy\\pygen\\output\"\nBASE_URL = \"https://www.centralbank.org.bz\"\nSTART_URL = \"https://www.centralbank.org.bz/publications-search\"\n\n# ==========================================\n# 工具函数\n# ==========================================\n\ndef clean_html_content(html_content, base_url):\n    \"\"\"\n    将 HTML 中的相对路径转换为绝对路径\n    修复图片 src 和链接 href\n    \"\"\"\n    if not html_content:\n        return \"\"\n    try:\n        soup = BeautifulSoup(html_content, 'html.parser')\n        \n        # 修复图片链接\n        for img in soup.find_all('img'):\n            if img.get('src'):\n                img['src'] = urljoin(base_url, img['src'])\n                \n        # 修复超链接\n        for a in soup.find_all('a'):\n            if a.get('href'):\n                a['href'] = urljoin(base_url, a['href'])\n                \n        return str(soup)\n    except Exception as e:\n        print(f\"[WARN] Content cleaning failed: {e}\")\n        return html_content\n\ndef parse_date(date_str):\n    \"\"\"\n    解析日期字符串，支持多种格式\n    \"\"\"\n    if not date_str:\n        return \"\"\n    try:\n        date_str = date_str.strip()\n        # 尝试多种常见格式\n        formats = [\n            \"%d %B %Y\",      # 26 February 2026\n            \"%B %d, %Y\",     # February 26, 2026\n            \"%Y-%m-%d\",      # 2026-02-26\n            \"%d/%m/%Y\",      # 26/02/2026\n            \"%m/%d/%Y\"       # 02/26/2026\n        ]\n        for fmt in formats:\n            try:\n                dt = datetime.strptime(date_str, fmt)\n                return dt.strftime(\"%Y-%m-%d\")\n            except:\n                continue\n        return date_str\n    except Exception:\n        return date_str\n\ndef save_results(articles, output_path):\n    \"\"\"保存爬取结果为JSON\"\"\"\n    result = {\n        \"total\": len(articles),\n        \"crawlTime\": datetime.now().strftime(\"%Y-%m-%d %H:%M:%S\"),\n        \"articles\": articles\n    }\n    with open(output_path, 'w', encoding='utf-8') as f:\n        json.dump(result, f, ensure_ascii=False, indent=2)\n    print(f\"[INFO] Saved {len(articles)} articles to {output_path}\")\n\n# ==========================================\n# 爬虫主逻辑\n# ==========================================\n\ndef run_crawler():\n    # 确保输出目录存在\n    os.makedirs(OUTPUT_DIR, exist_ok=True)\n    \n    print(\"[INFO] Starting crawler...\")\n    \n    with sync_playwright() as p:\n        # 启动浏览器，配置反爬参数\n        browser = p.chromium.launch(\n            headless=True,\n            args=[\"--disable-blink-features=AutomationControlled\", \"--no-sandbox\"]\n        )\n        context = browser.new_context(\n            viewport={'width': 1920, 'height': 1080},\n            user_agent=\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\"\n        )\n        \n        # 创建主页面\n        page = context.new_page()\n        articles = []\n        \n        try:\n            print(f\"[INFO] Navigating to {START_URL}\")\n            page.goto(START_URL, wait_until=\"domcontentloaded\", timeout=60000)\n            \n            # 【修复策略1】尝试点击搜索按钮\n            # 某些页面是搜索表单，必须点击搜索才能看到结果\n            try:\n                search_btn = page.query_selector(\"input[type='submit'][value='Search'], button:has-text('Search')\")\n                if search_btn:\n                    print(\"[INFO] Found search button, clicking to load results...\")\n                    search_btn.click()\n                    page.wait_for_load_state(\"networkidle\", timeout=10000)\n            except Exception as e:\n                print(f\"[WARN] Search button interaction failed: {e}\")\n\n            # 循环翻页抓取\n            while len(articles) < MAX_ITEMS:\n                # 【修复策略2】使用多重选择器探测列表项\n                # 针对不同页面结构提供备选方案\n                item_selectors = [\n                    \"ul.item-list li\",           # 原有选择器\n                    \".search-results .item\",     # 常见搜索结果\n                    \".sf_search_result\",         # Sitefinity CMS\n                    \"div.result-item\",           # 通用\n                    \"table tr:has(a)\",           # 表格布局\n                    \"div.row:has(a)\",            # Bootstrap 布局\n                    \"li:has(a)\"                  # 宽泛列表\n                ]\n                \n                items = []\n                chosen_selector = \"\"\n                \n                # 寻找有效的选择器\n                for sel in item_selectors:\n                    try:\n                        # 检查是否存在该选择器的元素\n                        if page.query_selector(sel):\n                            # 进一步验证：必须包含链接\n                            candidates = page.query_selector_all(sel)\n                            valid_candidates = [c for c in candidates if c.query_selector(\"a\")]\n                            if len(valid_candidates) > 0:\n                                items = valid_candidates\n                                chosen_selector = sel\n                                print(f\"[INFO] Found {len(items)} items using selector: {sel}\")\n                                break\n                    except:\n                        continue\n                \n                # 【修复策略3】兜底方案：如果没有找到特定结构的列表，尝试抓取主内容区的所有链接\n                if not items:\n                    print(\"[WARN] No items found with specific selectors. Trying generic fallback...\")\n                    try:\n                        main_content = page.query_selector(\"main, #content, #main, body\")\n                        if main_content:\n                            links = main_content.query_selector_all(\"a\")\n                            # 过滤掉短文本链接，假设新闻标题长度 > 15\n                            # 获取链接的父元素作为 item\n                            potential_items = []\n                            seen_links = set()\n                            for l in links:\n                                txt = l.inner_text().strip()\n                                href = l.get_attribute(\"href\")\n                                if len(txt) > 15 and href and href not in seen_links:\n                                    seen_links.add(href)\n                                    # 获取父元素\n                                    parent = l.evaluate_handle(\"el => el.parentElement\")\n                                    potential_items.append(parent.as_element())\n                            \n                            items = potential_items[:10] # 限制数量\n                            print(f\"[INFO] Fallback: Found {len(items)} potential items from links.\")\n                    except Exception as e:\n                        print(f\"[ERROR] Fallback failed: {e}\")\n\n                if not items:\n                    print(\"[INFO] No items found, stopping.\")\n                    break\n                \n                # 遍历当前页条目\n                for item in items:\n                    if len(articles) >= MAX_ITEMS:\n                        break\n                    \n                    try:\n                        # 1. 提取标题和链接\n                        link_el = item.query_selector(\"a\")\n                        # 如果 item 本身就是 a 标签\n                        if not link_el and item.evaluate(\"el => el.tagName === 'A'\"):\n                            link_el = item\n                            \n                        if not link_el:\n                            continue\n                            \n                        title = link_el.inner_text().strip()\n                        if not title:\n                            continue\n                            \n                        link = link_el.get_attribute(\"href\")\n                        if link:\n                            link = urljoin(BASE_URL, link)\n                        \n                        # 2. 提取日期 (尝试多种方式)\n                        date_val = \"\"\n                        try:\n                            # 优先找日期类名的元素\n                            date_el = item.query_selector(\".date, .time, span[class*='date'], div[class*='date']\")\n                            if date_el:\n                                date_val = parse_date(date_el.inner_text().strip())\n                            \n                            # 如果没找到，扫描 item 文本中的日期格式\n                            if not date_val:\n                                text = item.inner_text()\n                                # 匹配 YYYY-MM-DD 或 DD Month YYYY\n                                date_match = re.search(r'\\d{4}-\\d{2}-\\d{2}|\\d{1,2}\\s+[A-Za-z]+\\s+\\d{4}', text)\n                                if date_match:\n                                    date_val = parse_date(date_match.group(0))\n                        except:\n                            pass\n                        \n                        # 3. 提取摘要\n                        summary = \"\"\n                        try:\n                            summary_el = item.query_selector(\".description, .summary, p\")\n                            if summary_el:\n                                summary = summary_el.inner_text().strip()\n                        except:\n                            pass\n                        \n                        article_data = {\n                            \"id\": str(len(articles) + 1),\n                            \"title\": title,\n                            \"date\": date_val,\n                            \"author\": \"Central Bank of Belize\",\n                            \"source\": \"Central Bank of Belize\",\n                            \"sourceUrl\": link,\n                            \"summary\": summary,\n                            \"content\": \"\"\n                        }\n                        \n                        # 4. 处理详情页\n                        if link:\n                            # 检查是否为文件链接\n                            lower_link = link.lower()\n                            is_file = any(lower_link.endswith(ext) for ext in ['.pdf', '.doc', '.docx', '.xls', '.xlsx'])\n                            \n                            if is_file:\n                                print(f\"[INFO] File detected, skipping detail page: {title[:30]}...\")\n                                article_data[\"content\"] = f'<a href=\"{link}\" target=\"_blank\">Download Document</a>'\n                            else:\n                                print(f\"[INFO] Processing detail page: {title[:30]}...\")\n                                detail_page = context.new_page()\n                                try:\n                                    detail_page.goto(link, wait_until=\"domcontentloaded\", timeout=30000)\n                                    \n                                    # 尝试提取正文\n                                    content_html = \"\"\n                                    # 扩展内容选择器列表\n                                    selectors = [\n                                        \"div.group.margin-large\",\n                                        \"#top\",\n                                        \"div[role='main']\",\n                                        \"article\",\n                                        \".content\",\n                                        \"#content\"\n                                    ]\n                                    \n                                    for sel in selectors:\n                                        if detail_page.query_selector(sel):\n                                            content_html = detail_page.inner_html(sel)\n                                            if len(content_html) > 100:\n                                                break\n                                    \n                                    if not content_html:\n                                        content_html = summary\n                                    \n                                    # 清洗内容\n                                    article_data[\"content\"] = clean_html_content(content_html, link)\n                                    \n                                    # 详情页日期补全\n                                    if not date_val:\n                                        d_el = detail_page.query_selector(\".date, .time, span[class*='date']\")\n                                        if d_el:\n                                            article_data[\"date\"] = parse_date(d_el.inner_text().strip())\n                                            \n                                except Exception as e:\n                                    print(f\"[WARN] Failed to load detail page: {e}\")\n                                    article_data[\"content\"] = f\"<p>Failed to load content. <a href='{link}'>Original Link</a></p>\"\n                                finally:\n                                    detail_page.close()\n                                    time.sleep(0.5)\n                        \n                        articles.append(article_data)\n                        \n                    except Exception as e:\n                        print(f\"[ERROR] Error processing item: {e}\")\n                        continue\n                \n                # 5. 翻页逻辑\n                if len(articles) < MAX_ITEMS:\n                    next_btn = page.query_selector(\"a:has-text('Next'), a:has-text('»'), .pagination .next a\")\n                    if next_btn:\n                        next_url = next_btn.get_attribute(\"href\")\n                        if next_url:\n                            next_url = urljoin(BASE_URL, next_url)\n                            print(f\"[INFO] Navigating to next page: {next_url}\")\n                            page.goto(next_url, wait_until=\"domcontentloaded\", timeout=30000)\n                        else:\n                            break\n                    else:\n                        break\n                else:\n                    break\n                    \n        except Exception as e:\n            print(f\"[ERROR] Main crawler loop failed: {e}\")\n        finally:\n            browser.close()\n            \n        # 保存结果\n        timestamp = datetime.now().strftime(\"%Y%m%d_%H%M%S\")\n        filename = f\"centralbank_belize_news_{timestamp}.json\"\n        output_path = os.path.join(OUTPUT_DIR, filename)\n        save_results(articles, output_path)\n\nif __name__ == \"__main__\":\n    run_crawler()",
+  "rounds": [
+    {
+      "round": 1,
+      "passed": false,
+      "primary_cause": "empty_output",
+      "backup_cause": "schema_mismatch",
+      "uncertain": false,
+      "classifier_confidence": 0.75,
+      "record_count": 0,
+      "static_error_count": 0
+    },
+    {
+      "round": 2,
+      "passed": true,
+      "primary_cause": "unknown",
+      "backup_cause": "schema_mismatch",
+      "uncertain": true,
+      "classifier_confidence": 0.3,
+      "record_count": 5,
+      "static_error_count": 0
+    }
+  ],
+  "evidence": [
+    {
+      "round": 1,
+      "step": "static_check",
+      "result": {
+        "error_count": 0,
+        "warning_count": 1,
+        "top_errors": [],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+          }
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": false,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 20.821,
+        "record_count": 0,
+        "date_fill_rate": 0.0,
+        "status": "no_data",
+        "http_statuses": [],
+        "stdout_tail": "[INFO] Starting crawler...\n[INFO] Navigating to https://www.centralbank.org.bz/publications-search\n[WARN] List items not found or timeout.\n[INFO] Saved 0 articles to d:\\llm_mcp_genpy\\pygen\\output\\centralbank_belize_news_20260227_101038.json",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 1,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "empty_output",
+        "backup_cause": "schema_mismatch",
+        "confidence": 0.75,
+        "classifier_summary": "脚本执行完成但输出为空"
+      }
+    },
+    {
+      "round": 1,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "selector_brittleness_probe",
+        "cause": "empty_output",
+        "result": {
+          "select_calls": 0,
+          "find_calls": 0,
+          "has_chained_find": false
+        }
+      }
+    },
+    {
+      "round": 1,
+      "step": "output_quality",
+      "result": {
+        "record_count": 0,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 0.0,
+          "sourceUrl": 0.0
+        },
+        "required_fields_ok": false,
+        "meets_min_items": false,
+        "recommendations": [
+          "Extract at least 1 items in lightweight validation.",
+          "Ensure required fields are populated: ['title', 'sourceUrl']"
+        ],
+        "sample_records": []
+      }
+    },
+    {
+      "round": 2,
+      "step": "llm_repair",
+      "result": {
+        "changed": true
+      }
+    },
+    {
+      "round": 2,
+      "step": "static_check",
+      "result": {
+        "error_count": 0,
+        "warning_count": 1,
+        "top_errors": [],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+          }
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": true,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 57.517,
+        "record_count": 5,
+        "date_fill_rate": 1.0,
+        "status": "success",
+        "http_statuses": [],
+        "stdout_tail": "[INFO] Starting crawler...\n[INFO] Navigating to https://www.centralbank.org.bz/publications-search\n[INFO] Found 45 items using selector: ul.item-list li\n[INFO] Processing detail page: Monthly Economic Highlights - ...\n[WARN] Failed to load detail page: Page.goto: Download is starting\nCall log:\n  - navigating to \"https://www.centralbank.org.bz/detail-pages/publication/monthly-economic-highlights---december-2025\", waiting until \"domcontentloaded\"\n\n[INFO] Processing detail page: High Court of Belize Affirms D...\n[WARN] Failed to load detail page: Page.goto: Timeout 30000ms exceeded.\nCall log:\n  - navigating to \"https://www.centralbank.org.bz/detail-pages/news/2026/02/25/high-court-of-belize-affirms-decision-on-termination-of--general-manager-of-sfxcu\", waiting until \"domcontentloaded\"\n\n[INFO]...(truncated)",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 2,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "unknown",
+        "backup_cause": "schema_mismatch",
+        "confidence": 0.3,
+        "classifier_summary": "未能明确分类的故障"
+      }
+    },
+    {
+      "round": 2,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "sample_output_probe",
+        "cause": "unknown",
+        "result": {
+          "sample_size": 5,
+          "required_non_empty_count": {
+            "title": 5,
+            "sourceUrl": 5
+          },
+          "sample": [
+            {
+              "id": "1",
+              "title": "Monthly Economic Highlights - December 2025",
+              "date": "2026-02-26",
+              "author": "Central Bank of Belize",
+              "source": "Central Bank of Belize",
+              "sourceUrl": "https://www.centralbank.org.bz/detail-pages/publication/monthly-economic-highlights---december-2025",
+              "summary": "26 February 2026",
+              "content": "<p>Failed to load content. <a href='https://www.centralbank.org.bz/detail-pages/publication/monthly-economic-highlights---december-2025'>Original Link</a></p>"
+            },
+            {
+              "id": "2",
+              "title": "High Court of Belize Affirms Decision on Termination of General Manager of SFXCU",
+              "date": "2026-02-19",
+              "author": "Central Bank of Belize",
+              "source": "Central Bank of Belize",
+              "sourceUrl": "https://www.centralbank.org.bz/detail-pages/news/2026/02/25/high-court-of-belize-affirms-decision-on-termination-of--general-manager-of-sfxcu",
+              "summary": "",
+              "content": "<p>Failed to load content. <a href='https://www.centralbank.org.bz/detail-pages/news/2026/02/25/high-court-of-belize-affirms-decision-on-termination-of--general-manager-of-sfxcu'>Original Link</a></p>"
+            },
+            {
+              "id": "3",
+              "title": "Weekly Monetary Aggregates 11 February 2026",
+              "date": "2026-02-11",
+              "author": "Central Bank of Belize",
+              "source": "Central Bank of Belize",
+              "sourceUrl": "https://www.centralbank.org.bz/detail-pages/publication/weekly-monetary-aggregates-11-february-2026",
+              "summary": "23 February 2026",
+              "content": "<p>Failed to load content. <a href='https://www.centralbank.org.bz/detail-pages/publication/weekly-monetary-aggregates-11-february-2026'>Original Link</a></p>"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "round": 2,
+      "step": "output_quality",
+      "result": {
+        "record_count": 5,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 1.0,
+          "sourceUrl": 1.0
+        },
+        "required_fields_ok": true,
+        "meets_min_items": true,
+        "recommendations": [],
+        "sample_records": [
+          {
+            "id": "1",
+            "title": "Monthly Economic Highlights - December 2025",
+            "date": "2026-02-26",
+            "author": "Central Bank of Belize",
+            "source": "Central Bank of Belize",
+            "sourceUrl": "https://www.centralbank.org.bz/detail-pages/publication/monthly-economic-highlights---december-2025",
+            "summary": "26 February 2026",
+            "content": "<p>Failed to load content. <a href='https://www.centralbank.org.bz/detail-pages/publication/monthly-economic-highlights---december-2025'>Original Link</a></p>"
+          },
+          {
+            "id": "2",
+            "title": "High Court of Belize Affirms Decision on Termination of General Manager of SFXCU",
+            "date": "2026-02-19",
+            "author": "Central Bank of Belize",
+            "source": "Central Bank of Belize",
+            "sourceUrl": "https://www.centralbank.org.bz/detail-pages/news/2026/02/25/high-court-of-belize-affirms-decision-on-termination-of--general-manager-of-sfxcu",
+            "summary": "",
+            "content": "<p>Failed to load content. <a href='https://www.centralbank.org.bz/detail-pages/news/2026/02/25/high-court-of-belize-affirms-decision-on-termination-of--general-manager-of-sfxcu'>Original Link</a></p>"
+          },
+          {
+            "id": "3",
+            "title": "Weekly Monetary Aggregates 11 February 2026",
+            "date": "2026-02-11",
+            "author": "Central Bank of Belize",
+            "source": "Central Bank of Belize",
+            "sourceUrl": "https://www.centralbank.org.bz/detail-pages/publication/weekly-monetary-aggregates-11-february-2026",
+            "summary": "23 February 2026",
+            "content": "<p>Failed to load content. <a href='https://www.centralbank.org.bz/detail-pages/publication/weekly-monetary-aggregates-11-february-2026'>Original Link</a></p>"
+          }
+        ]
+      }
+    }
+  ]
+}

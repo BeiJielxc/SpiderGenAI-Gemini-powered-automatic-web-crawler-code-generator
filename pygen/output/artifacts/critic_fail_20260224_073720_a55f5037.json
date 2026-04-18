@@ -1,0 +1,361 @@
+{
+  "final_round": 3,
+  "max_retries": 3,
+  "repaired_code": "# === PyGen 注入：HTTP/SSL 韧性层（通用） ===\nimport os as _pygen_os\nimport ssl as _pygen_ssl\nimport urllib.parse as _pygen_urlparse\n\ntry:\n    import truststore as _pygen_truststore  # type: ignore\n    _pygen_truststore.inject_into_ssl()\nexcept Exception:\n    _pygen_truststore = None  # noqa: F401\n\ntry:\n    import requests as _pygen_requests\n    from requests.structures import CaseInsensitiveDict as _pygen_CaseInsensitiveDict\nexcept Exception:\n    _pygen_requests = None  # noqa: F401\n\n_PYGEN_DEFAULT_UA = (\n    \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) \"\n    \"AppleWebKit/537.36 (KHTML, like Gecko) \"\n    \"Chrome/122.0 Safari/537.36\"\n)\n\ndef _pygen_origin(url: str) -> str:\n    try:\n        p = _pygen_urlparse.urlsplit(url)\n        return f\"{p.scheme}://{p.netloc}\"\n    except Exception:\n        return \"\"\n\ndef _pygen_merge_headers(h: dict | None) -> dict:\n    base = {\n        \"User-Agent\": _PYGEN_DEFAULT_UA,\n        \"Accept\": \"application/json,text/plain,*/*\",\n        \"Accept-Language\": \"zh-CN,zh;q=0.9,en;q=0.8\",\n        \"Connection\": \"keep-alive\",\n    }\n    if h:\n        for k, v in h.items():\n            if v is not None:\n                base[k] = v\n    return base\n\ndef _pygen_install_requests_patch():\n    if _pygen_requests is None:\n        return\n    _orig = _pygen_requests.sessions.Session.request\n\n    def _patched(self, method, url, **kwargs):\n        kwargs.setdefault(\"timeout\", 30)\n        if _pygen_os.getenv(\"PYGEN_INSECURE_SSL\") == \"1\":\n            kwargs[\"verify\"] = False\n        headers = _pygen_merge_headers(kwargs.get(\"headers\"))\n        kwargs[\"headers\"] = headers\n        return _orig(self, method, url, **kwargs)\n\n    _pygen_requests.sessions.Session.request = _patched\n\n_pygen_install_requests_patch()\n# === PyGen 注入结束 ===\n\nimport os\nimport json\nimport time\nimport re\nfrom datetime import datetime\nfrom urllib.parse import urljoin\nfrom bs4 import BeautifulSoup\nfrom playwright.sync_api import sync_playwright\n\n# 配置常量\nOUTPUT_DIR = \"./output\"\nTARGET_URL = \"https://www.businesswire.com/newsroom\"\nMAX_ITEMS = 5\n\ndef clean_html_content(html_content, base_url):\n    \"\"\"\n    清洗HTML内容：\n    1. 将相对路径转换为绝对路径\n    2. 移除无用标签\n    \"\"\"\n    if not html_content:\n        return \"\"\n    try:\n        soup = BeautifulSoup(html_content, 'html.parser')\n        \n        # 修复图片链接\n        for img in soup.find_all('img'):\n            if img.get('src'):\n                img['src'] = urljoin(base_url, img['src'])\n                \n        # 修复超链接\n        for a in soup.find_all('a'):\n            if a.get('href'):\n                a['href'] = urljoin(base_url, a['href'])\n        \n        # 移除脚本和样式\n        for script in soup([\"script\", \"style\", \"iframe\", \"noscript\"]):\n            script.decompose()\n\n        return str(soup)\n    except Exception as e:\n        print(f\"内容清洗出错: {e}\")\n        return html_content\n\ndef parse_date(date_str):\n    \"\"\"\n    解析日期字符串，支持多种格式\n    \"\"\"\n    if not date_str:\n        return datetime.now().strftime(\"%Y-%m-%d\")\n    \n    try:\n        # 移除干扰词\n        clean_str = re.sub(r'\\s+at\\s+', ' ', date_str)\n        clean_str = re.sub(r'\\s+(ET|PT|CT|MT|GMT|BST).*$', '', clean_str).strip()\n        \n        # 格式：February 24, 2026\n        match = re.search(r'([A-Za-z]+)\\s+(\\d{1,2}),\\s+(\\d{4})', clean_str)\n        if match:\n            dt_str = f\"{match.group(1)} {match.group(2)} {match.group(3)}\"\n            try:\n                return datetime.strptime(dt_str, \"%B %d %Y\").strftime(\"%Y-%m-%d\")\n            except ValueError:\n                return datetime.strptime(dt_str, \"%b %d %Y\").strftime(\"%Y-%m-%d\")\n                \n        # 格式：2/24/2026\n        match = re.search(r'(\\d{1,2})/(\\d{1,2})/(\\d{4})', clean_str)\n        if match:\n            return f\"{match.group(3)}-{match.group(1).zfill(2)}-{match.group(2).zfill(2)}\"\n\n    except Exception as e:\n        print(f\"日期解析警告: {e}\")\n    \n    # 默认返回当前日期\n    return datetime.now().strftime(\"%Y-%m-%d\")\n\ndef crawl_news():\n    \"\"\"\n    爬取 Business Wire 新闻\n    \"\"\"\n    articles = []\n    \n    with sync_playwright() as p:\n        # 启动浏览器\n        browser = p.chromium.launch(\n            headless=True,\n            args=[\n                \"--disable-blink-features=AutomationControlled\", \n                \"--no-sandbox\",\n            ]\n        )\n        context = browser.new_context(\n            viewport={'width': 1920, 'height': 1080},\n            user_agent=\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36\",\n            locale=\"en-US\",\n            ignore_https_errors=True\n        )\n        \n        page = context.new_page()\n        \n        try:\n            print(f\"正在访问列表页: {TARGET_URL}\")\n            # 使用 commit + wait_for_load_state 避免 strict timeout\n            try:\n                page.goto(TARGET_URL, wait_until=\"commit\", timeout=30000)\n                page.wait_for_load_state(\"domcontentloaded\", timeout=30000)\n            except Exception as e:\n                print(f\"页面加载提示: {e}\")\n            \n            # 等待内容渲染\n            page.wait_for_timeout(3000)\n            \n            # 获取所有新闻项链接\n            # 策略：查找 href 包含 /news/home/ 的链接\n            link_locators = page.locator(\"a[href*='/news/home/']\").all()\n            \n            valid_links = []\n            seen_urls = set()\n            \n            print(f\"扫描到 {len(link_locators)} 个潜在链接\")\n            \n            for loc in link_locators:\n                if len(valid_links) >= MAX_ITEMS:\n                    break\n                try:\n                    url = loc.get_attribute(\"href\")\n                    text = loc.inner_text().strip()\n                    if url and url not in seen_urls and len(text) > 10:\n                        full_url = urljoin(TARGET_URL, url)\n                        seen_urls.add(full_url)\n                        valid_links.append({\n                            \"url\": full_url,\n                            \"title\": text,\n                            \"element\": loc\n                        })\n                except:\n                    continue\n            \n            print(f\"找到 {len(valid_links)} 个有效新闻项，准备抓取...\")\n            \n            for idx, item in enumerate(valid_links):\n                try:\n                    title = item[\"title\"]\n                    full_url = item[\"url\"]\n                    \n                    # 尝试在列表页提取日期\n                    date_str = \"\"\n                    try:\n                        # 向上查找日期\n                        parent = item[\"element\"].locator(\"xpath=..\")\n                        parent_text = parent.inner_text()\n                        match = re.search(r'([A-Za-z]+\\s+\\d{1,2},\\s+\\d{4})', parent_text)\n                        if match:\n                            date_str = match.group(1)\n                    except:\n                        pass\n                    \n                    formatted_date = parse_date(date_str)\n                    \n                    print(f\"[{idx+1}/{MAX_ITEMS}] 正在抓取: {title[:30]}...\")\n                    \n                    # 进入详情页\n                    new_page = context.new_page()\n                    try:\n                        new_page.goto(full_url, wait_until=\"domcontentloaded\", timeout=30000)\n                        \n                        # 提取正文\n                        content_html = \"\"\n                        selectors = [\n                            \"div[itemprop='articleBody']\",\n                            \".bw-release-story\",\n                            \".ui-kit-press-release-content\",\n                            \"article\"\n                        ]\n                        \n                        for sel in selectors:\n                            if new_page.locator(sel).count() > 0:\n                                content_html = new_page.locator(sel).first.inner_html()\n                                break\n                        \n                        if not content_html:\n                            content_html = new_page.locator(\"body\").inner_html()\n\n                        # 再次确认标题\n                        if new_page.locator(\"h1\").count() > 0:\n                            title = new_page.locator(\"h1\").first.inner_text().strip()\n                        \n                        # 提取摘要\n                        summary = \"\"\n                        try:\n                            meta_desc = new_page.locator(\"meta[name='description']\").get_attribute(\"content\")\n                            if meta_desc:\n                                summary = meta_desc\n                        except:\n                            pass\n                            \n                        # 清洗内容\n                        cleaned_content = clean_html_content(content_html, full_url)\n                        \n                        article = {\n                            \"id\": str(idx + 1),\n                            \"title\": title,\n                            \"name\": title,  # 【修复】添加 name 字段以满足 Schema 要求\n                            \"date\": formatted_date,\n                            \"source\": \"Business Wire\",\n                            \"author\": \"Business Wire\",\n                            \"sourceUrl\": full_url,\n                            \"summary\": summary,\n                            \"content\": cleaned_content\n                        }\n                        \n                        articles.append(article)\n                        time.sleep(1)\n                        \n                    except Exception as e:\n                        print(f\"抓取详情页失败 {full_url}: {e}\")\n                    finally:\n                        new_page.close()\n                        \n                except Exception as e:\n                    print(f\"处理列表项失败: {e}\")\n                    continue\n                    \n        except Exception as e:\n            print(f\"爬取过程发生错误: {e}\")\n        finally:\n            browser.close()\n            \n    return articles\n\ndef save_results(articles: list, output_dir: str):\n    \"\"\"保存结果为JSON\"\"\"\n    if not os.path.exists(output_dir):\n        os.makedirs(output_dir)\n        \n    timestamp = datetime.now().strftime(\"%Y%m%d_%H%M%S\")\n    filename = f\"BusinessWire_News_{timestamp}.json\"\n    output_path = os.path.join(output_dir, filename)\n    \n    result = {\n        \"total\": len(articles),\n        \"crawlTime\": datetime.now().strftime(\"%Y-%m-%d %H:%M:%S\"),\n        \"articles\": articles\n    }\n    \n    with open(output_path, 'w', encoding='utf-8') as f:\n        json.dump(result, f, ensure_ascii=False, indent=2)\n    \n    print(f\"已保存 {len(articles)} 条新闻到 {output_path}\")\n\ndef main():\n    print(\"开始爬取 Business Wire 新闻...\")\n    start_time = time.time()\n    \n    articles = crawl_news()\n    \n    if articles:\n        save_results(articles, OUTPUT_DIR)\n    else:\n        print(\"未抓取到任何新闻数据。\")\n        \n    end_time = time.time()\n    print(f\"任务完成，耗时: {end_time - start_time:.2f} 秒\")\n\nif __name__ == \"__main__\":\n    main()",
+  "rounds": [
+    {
+      "round": 1,
+      "passed": false,
+      "primary_cause": "empty_output",
+      "backup_cause": "schema_mismatch",
+      "uncertain": false,
+      "classifier_confidence": 0.75,
+      "record_count": 0,
+      "static_error_count": 0
+    },
+    {
+      "round": 2,
+      "passed": false,
+      "primary_cause": "empty_output",
+      "backup_cause": "schema_mismatch",
+      "uncertain": false,
+      "classifier_confidence": 0.75,
+      "record_count": 0,
+      "static_error_count": 0
+    },
+    {
+      "round": 3,
+      "passed": false,
+      "primary_cause": "schema_mismatch",
+      "backup_cause": "empty_output",
+      "uncertain": false,
+      "classifier_confidence": 0.75,
+      "record_count": 0,
+      "static_error_count": 0
+    },
+    {
+      "round": 3,
+      "passed": false,
+      "primary_cause": "empty_output",
+      "backup_cause": "schema_mismatch",
+      "uncertain": false,
+      "classifier_confidence": 0.75,
+      "record_count": 0,
+      "static_error_count": 0
+    }
+  ],
+  "evidence": [
+    {
+      "round": 1,
+      "step": "static_check",
+      "result": {
+        "error_count": 0,
+        "warning_count": 1,
+        "top_errors": [],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+          }
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": false,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 1.304,
+        "record_count": 0,
+        "date_fill_rate": 0.0,
+        "status": "no_data",
+        "http_statuses": [],
+        "stdout_tail": "开始爬取 Business Wire 新闻...\n正在访问列表页: https://www.businesswire.com/newsroom\n爬取过程发生错误: Page.goto: net::ERR_HTTP2_PROTOCOL_ERROR at https://www.businesswire.com/newsroom\nCall log:\n  - navigating to \"https://www.businesswire.com/newsroom\", waiting until \"domcontentloaded\"\n\n未抓取到任何新闻数据。\n任务完成，耗时: 1.30 秒",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 1,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "empty_output",
+        "backup_cause": "schema_mismatch",
+        "confidence": 0.75,
+        "classifier_summary": "脚本执行完成但输出为空"
+      }
+    },
+    {
+      "round": 1,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "selector_brittleness_probe",
+        "cause": "empty_output",
+        "result": {
+          "select_calls": 0,
+          "find_calls": 0,
+          "has_chained_find": false
+        }
+      }
+    },
+    {
+      "round": 1,
+      "step": "output_quality",
+      "result": {
+        "record_count": 0,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 0.0,
+          "sourceUrl": 0.0
+        },
+        "required_fields_ok": false,
+        "meets_min_items": false,
+        "recommendations": [
+          "Extract at least 1 items in lightweight validation.",
+          "Ensure required fields are populated: ['title', 'sourceUrl']"
+        ],
+        "sample_records": []
+      }
+    },
+    {
+      "round": 2,
+      "step": "llm_repair",
+      "result": {
+        "changed": true
+      }
+    },
+    {
+      "round": 2,
+      "step": "static_check",
+      "result": {
+        "error_count": 0,
+        "warning_count": 1,
+        "top_errors": [],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+          }
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": false,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 60.697,
+        "record_count": 0,
+        "date_fill_rate": 0.0,
+        "status": "no_data",
+        "http_statuses": [],
+        "stdout_tail": "开始爬取 Business Wire 新闻...\n正在访问列表页: https://www.businesswire.com/newsroom\n爬取过程发生错误: Page.goto: Timeout 60000ms exceeded.\nCall log:\n  - navigating to \"https://www.businesswire.com/newsroom\", waiting until \"domcontentloaded\"\n\n未抓取到任何新闻数据。\n任务完成，耗时: 60.69 秒",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 2,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "empty_output",
+        "backup_cause": "schema_mismatch",
+        "confidence": 0.75,
+        "classifier_summary": "脚本执行完成但输出为空"
+      }
+    },
+    {
+      "round": 2,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "selector_brittleness_probe",
+        "cause": "empty_output",
+        "result": {
+          "select_calls": 0,
+          "find_calls": 0,
+          "has_chained_find": false
+        }
+      }
+    },
+    {
+      "round": 2,
+      "step": "output_quality",
+      "result": {
+        "record_count": 0,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 0.0,
+          "sourceUrl": 0.0
+        },
+        "required_fields_ok": false,
+        "meets_min_items": false,
+        "recommendations": [
+          "Extract at least 1 items in lightweight validation.",
+          "Ensure required fields are populated: ['title', 'sourceUrl']"
+        ],
+        "sample_records": []
+      }
+    },
+    {
+      "round": 3,
+      "step": "static_check",
+      "result": {
+        "error_count": 0,
+        "warning_count": 1,
+        "top_errors": [],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+          }
+        ]
+      }
+    },
+    {
+      "round": 3,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": false,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 60.736,
+        "record_count": 0,
+        "date_fill_rate": 0.0,
+        "status": "no_data",
+        "http_statuses": [],
+        "stdout_tail": "开始爬取 Business Wire 新闻...\n正在访问列表页: https://www.businesswire.com/newsroom\n爬取过程发生错误: Page.goto: Timeout 60000ms exceeded.\nCall log:\n  - navigating to \"https://www.businesswire.com/newsroom\", waiting until \"domcontentloaded\"\n\n未抓取到任何新闻数据。\n任务完成，耗时: 60.73 秒",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 3,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "schema_mismatch",
+        "backup_cause": "empty_output",
+        "confidence": 0.75,
+        "classifier_summary": "脚本执行完成但输出为空"
+      }
+    },
+    {
+      "round": 3,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "selector_brittleness_probe",
+        "cause": "schema_mismatch",
+        "result": {
+          "select_calls": 0,
+          "find_calls": 0,
+          "has_chained_find": false
+        }
+      }
+    },
+    {
+      "round": 3,
+      "step": "output_quality",
+      "result": {
+        "record_count": 0,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 0.0,
+          "sourceUrl": 0.0
+        },
+        "required_fields_ok": false,
+        "meets_min_items": false,
+        "recommendations": [
+          "Extract at least 1 items in lightweight validation.",
+          "Ensure required fields are populated: ['title', 'sourceUrl']"
+        ],
+        "sample_records": []
+      }
+    },
+    {
+      "round": 3,
+      "step": "final_targeted_repair",
+      "result": {
+        "changed": true
+      }
+    },
+    {
+      "round": 3,
+      "step": "static_check",
+      "result": {
+        "error_count": 0,
+        "warning_count": 1,
+        "top_errors": [],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'url' 而不是 'downloadUrl'"
+          }
+        ]
+      }
+    },
+    {
+      "round": 3,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": false,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 4.403,
+        "record_count": 0,
+        "date_fill_rate": 0.0,
+        "status": "no_data",
+        "http_statuses": [],
+        "stdout_tail": "开始爬取 Business Wire 新闻...\n正在访问列表页: https://www.businesswire.com/newsroom\n页面加载提示: Page.goto: net::ERR_HTTP2_PROTOCOL_ERROR at https://www.businesswire.com/newsroom\nCall log:\n  - navigating to \"https://www.businesswire.com/newsroom\", waiting until \"commit\"\n\n扫描到 0 个潜在链接\n找到 0 个有效新闻项，准备抓取...\n未抓取到任何新闻数据。\n任务完成，耗时: 4.40 秒",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 3,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "empty_output",
+        "backup_cause": "schema_mismatch",
+        "confidence": 0.75,
+        "classifier_summary": "脚本执行完成但输出为空"
+      }
+    },
+    {
+      "round": 3,
+      "step": "output_quality",
+      "result": {
+        "record_count": 0,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 0.0,
+          "sourceUrl": 0.0
+        },
+        "required_fields_ok": false,
+        "meets_min_items": false,
+        "recommendations": [
+          "Extract at least 1 items in lightweight validation.",
+          "Ensure required fields are populated: ['title', 'sourceUrl']"
+        ],
+        "sample_records": []
+      }
+    }
+  ],
+  "stopped_reason": "max_retries_exceeded",
+  "primary_cause": "empty_output",
+  "backup_cause": "schema_mismatch"
+}

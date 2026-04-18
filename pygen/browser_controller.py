@@ -1072,20 +1072,21 @@ class BrowserController:
             
             client = OpenAI(api_key=config.qwen_api_key, base_url=config.qwen_base_url)
             
-            prompt = f"""分析以下网页 HTML 片段，识别其中的导航菜单/目录树结构。
-返回 JSON 格式：
-```json
-{{"success": true, "menu_items": [{{"name": "一级", "children": [{{"name": "二级", "children": []}}]}}]}}
-```
-如果没有找到，返回：{{"success": false, "menu_items": []}}
+            try:
+                from prompts import load as load_prompt
+            except ImportError:
+                from .prompts import load as load_prompt
 
-HTML 片段：
-{html_content[:8000]}"""
-            
+            prompt = load_prompt(
+                "browser/menu_analyze.md",
+                html_content=html_content[:8000],
+            )
+            menu_system_prompt = load_prompt("browser/menu_analyze_system.md").strip()
+
             response = client.chat.completions.create(
                 model=config.qwen_model,
                 messages=[
-                    {"role": "system", "content": "你是一个网页结构分析助手。只返回 JSON。"},
+                    {"role": "system", "content": menu_system_prompt},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.1,

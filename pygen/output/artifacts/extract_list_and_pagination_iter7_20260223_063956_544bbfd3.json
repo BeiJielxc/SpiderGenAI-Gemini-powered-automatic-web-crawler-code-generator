@@ -1,0 +1,125 @@
+{
+  "baseUrl": "https://www.interfax-russia.ru/northwest/news/rossiyskaya-tamozhnya-predupredila-ob-ocheredyah-na-estonskoy-granice",
+  "bestCandidate": {
+    "selector": ".navbar-nav.nav-scroll-sections",
+    "titleSelector": "a.nav-link",
+    "dateSelector": "",
+    "score": 44,
+    "itemCount": 12,
+    "hasLink": 12,
+    "hasDate": 0
+  },
+  "structureHint": "Each item is a <ul class='navbar-nav.nav-scroll-sections'>; title/link in <li class='nav-item'> > <a>",
+  "sampleHtml": "<ul class=\"navbar-nav nav-scroll-sections\" id=\"toggle-section-\">\n<li class=\"nav-item\">\n<a class=\"nav-link\" href=\"https://www.interfax-russia.ru/main\">Главные события</a>\n</li>\n<li class=\"nav-item\">\n<a class=\"nav-link\" href=\"https://www.interfax-russia.ru/report\">Репортажи</a>\n</li>\n<li class=\"nav-item\">\n<a class=\"nav-link\" href=\"https://www.interfax-russia.ru/photo\">Фоторепортажи</a>\n</li>\n<li class=\"nav-item\">\n<a class=\"nav-link\" href=\"https://www.interfax-russia.ru/view\">Точка зрения</a>\n</li>\n<li class=\"nav-item\">\n<a class=\"nav-link\" href=\"https://www.interfax-russia.ru/exclusives\">Эксклюзи...\n<ul class=\"navbar-nav nav-scroll-sections\" id=\"toggle-section-moscow\">\n<li class=\"nav-item\">\n<a class=\"nav-link\" href=\"https://www.interfax-russia.ru/moscow/main\">Главные события</a>\n</li>\n<li class=\"nav-item\">\n<a class=\"nav-link\" href=\"https://www.interfax-russia.ru/moscow/news\">Новости</a>\n</li>\n<li class=\"nav-item\">\n<a class=\"nav-link\" href=\"https://www.interfax-russia.ru/moscow/report\">Репортажи</a>\n</li>\n<li class=\"nav-item\">\n<a class=\"nav-link\" href=\"https://www.interfax-russia.ru/moscow/photo\">Фоторепортажи</a>\n</li>\n<li class=\"nav-item\">\n<a class=\"nav-link\" href=\"https://www.interfax-r...",
+  "items": [
+    {
+      "title": "Главные события",
+      "url": "https://www.interfax-russia.ru/main",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Главные события",
+      "url": "https://www.interfax-russia.ru/moscow/main",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Главные события",
+      "url": "https://www.interfax-russia.ru/center/main",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Главные события",
+      "url": "https://www.interfax-russia.ru/south-and-north-caucasus/main",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Главные события",
+      "url": "https://www.interfax-russia.ru/volga/main",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Главные события",
+      "url": "https://www.interfax-russia.ru/ural/main",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Главные события",
+      "url": "https://www.interfax-russia.ru/siberia/main",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Главные события",
+      "url": "https://www.interfax-russia.ru/far-east/main",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Новости",
+      "url": "https://www.interfax-russia.ru/tourism/news",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Новости",
+      "url": "https://www.interfax-russia.ru/realty/news",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Новости",
+      "url": "https://www.interfax-russia.ru/academia/news",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Военные новости",
+      "url": "https://www.interfax-russia.ru/military/news",
+      "date": "",
+      "dateText": ""
+    }
+  ],
+  "pagination": {
+    "next": null,
+    "prev": null,
+    "pageNums": [],
+    "totalPages": 0
+  },
+  "dateHints": {
+    "minDate": "",
+    "maxDate": "",
+    "startDate": "",
+    "endDate": "",
+    "hasInRange": false,
+    "hasOlderThanStart": false,
+    "suggestStopPaging": false
+  },
+  "otherCandidates": [
+    {
+      "selector": ".nav-item-dropdown__holder",
+      "score": 44,
+      "count": 13
+    },
+    {
+      "selector": ".list-container-item",
+      "score": 40,
+      "count": 10
+    },
+    {
+      "selector": ".list-container-item",
+      "score": 40,
+      "count": 10
+    },
+    {
+      "selector": ".list-container-item",
+      "score": 40,
+      "count": 10
+    }
+  ]
+}

@@ -1,0 +1,169 @@
+{
+  "baseUrl": "https://www.bancaynegocios.com/news/",
+  "bestCandidate": {
+    "selector": ".grid > article",
+    "titleSelector": "a.post-thumbnail",
+    "dateSelector": "",
+    "score": 155,
+    "itemCount": 21,
+    "hasLink": 21,
+    "hasDate": 21
+  },
+  "structureHint": "Each item is a <article>; title/link in <a class='post-thumbnail'>",
+  "sampleHtml": "<article> <span hidden=\"\" id=\"post_image\">https://www.bancaynegocios.com/wp-content/uploads/2023/03/ecopetrol.webp</span> <span hidden=\"\" id=\"post_date\">2026-02-22 16:53:14</span> <span hidden=\"\" id=\"post_modified\">2026-02-22 16:53:14</span> <a class=\"post-thumbnail\" href=\"https://www.bancaynegocios.com/colombia-descarta-importar-gas-desde-venezuela-a-traves-de-ecopetrol/\"> <img alt=\"Colombia descarta importar gas desde Venezuela a través de Ecopetrol\" data-lzysrc=\"https://www.bancaynegocios.com/wp-content/uploads/2023/03/tsize_321x251_ecopetrol.webp\" src=\"https://www.bancaynegocios.com/wp-con...\n<article> <span hidden=\"\" id=\"post_image\">https://www.bancaynegocios.com/wp-content/uploads/2022/11/PuertoLaGuairaVenezuela.jpg</span> <span hidden=\"\" id=\"post_date\">2026-02-22 14:19:19</span> <span hidden=\"\" id=\"post_modified\">2026-02-22 16:31:21</span> <a class=\"post-thumbnail\" href=\"https://www.bancaynegocios.com/en-marzo-entrara-en-vigencia-el-nuevo-protocolo-unificado-de-exportaciones-no-petroleras/\"> <img alt=\"En marzo entrará en vigencia el nuevo Protocolo Unificado de Exportaciones no Petroleras\" data-lzysrc=\"https://www.bancaynegocios.com/wp-content/uploads/2022/11/tsize_321x251_Puert...",
+  "items": [
+    {
+      "title": "",
+      "url": "https://www.bancaynegocios.com/colombia-descarta-importar-gas-desde-venezuela-a-traves-de-ecopetrol/",
+      "date": "2026-02-22",
+      "dateText": "2026-02-22 16:53:14"
+    },
+    {
+      "title": "",
+      "url": "https://www.bancaynegocios.com/en-marzo-entrara-en-vigencia-el-nuevo-protocolo-unificado-de-exportaciones-no-petroleras/",
+      "date": "2026-02-22",
+      "dateText": "2026-02-22 14:19:19"
+    },
+    {
+      "title": "",
+      "url": "https://www.bancaynegocios.com/los-acuerdos-comerciales-de-eeuu-se-mantendran-afirma-gobierno/",
+      "date": "2026-02-22",
+      "dateText": "2026-02-22 13:44:08"
+    },
+    {
+      "title": "",
+      "url": "https://www.bancaynegocios.com/las-nuevas-capacidades-de-la-ia-causan-revuelo-entre-tecnologicas-e-inversores/",
+      "date": "2026-02-22",
+      "dateText": "2026-02-22 13:31:48"
+    },
+    {
+      "title": "",
+      "url": "https://www.bancaynegocios.com/fevearroz-precio-base-de-us0punto38-por-kg-para-productores-garantizaria-estabilidad-en-el-sector/",
+      "date": "2026-02-22",
+      "dateText": "2026-02-22 12:56:39"
+    },
+    {
+      "title": "",
+      "url": "https://www.bancaynegocios.com/cuentas-de-usuarios-y-aliados-no-fueron-vulneradas-cashea-confirma-filtracion-de-datos/",
+      "date": "2026-02-22",
+      "dateText": "2026-02-22 11:56:56"
+    },
+    {
+      "title": "",
+      "url": "https://www.bancaynegocios.com/delcy-rodriguez-afirma-que-constituyente-laboral-garantizara-derechos-y-beneficios-de-los-trabajadores/",
+      "date": "2026-02-22",
+      "dateText": "2026-02-22 11:36:39"
+    },
+    {
+      "title": "",
+      "url": "https://www.bancaynegocios.com/brasil-afirma-que-el-nuevo-arancel-universal-de-ee-uu-evitara-que-pierda-competitividad/",
+      "date": "2026-02-22",
+      "dateText": "2026-02-22 11:10:06"
+    },
+    {
+      "title": "",
+      "url": "https://www.bancaynegocios.com/el-cobre-un-codiciado-metal-que-impulsa-los-resultados-de-las-grandes-empresas-mineras/",
+      "date": "2026-02-22",
+      "dateText": "2026-02-22 10:01:19"
+    },
+    {
+      "title": "",
+      "url": "https://www.bancaynegocios.com/las-tres-empresas-en-las-que-softbank-ejecuta-sus-grandes-inversiones/",
+      "date": "2023-11-01",
+      "dateText": "https://www.bancaynegocios.com/wp-content/uploads/2023/11/1x-1-e1699555326700.jpg"
+    },
+    {
+      "title": "",
+      "url": "https://www.bancaynegocios.com/contrabando-de-hortalizas-afecta-la-produccion-en-cinco-estados-advierten-agricultores/",
+      "date": "2026-02-22",
+      "dateText": "2026-02-22 08:59:29"
+    },
+    {
+      "title": "",
+      "url": "https://www.bancaynegocios.com/este-fin-de-semana-compra-tus-dolares-electronicos-desde-tesoro-enlinea-del-banco-del-tesoro/",
+      "date": "2026-02-22",
+      "dateText": "https://www.bancaynegocios.com/wp-content/uploads/2026/02/WhatsApp-Image-2026-02-22-at-3.38.46-AM.jpeg"
+    },
+    {
+      "title": "",
+      "url": "https://www.bancaynegocios.com/jorge-rodriguez-an-atiende-mas-de-1500-solicitudes-de-privados-de-libertad-por-ley-de-amnistia/",
+      "date": "2026-02-21",
+      "dateText": "2026-02-21 16:30:42"
+    },
+    {
+      "title": "",
+      "url": "https://www.bancaynegocios.com/guyana-deniega-solicitud-de-la-petrolera-de-eeuu-exxonmobil-de-explorar-zona-del-bloque-stabroek/",
+      "date": "2026-02-21",
+      "dateText": "2026-02-21 15:54:39"
+    },
+    {
+      "title": "",
+      "url": "https://www.bancaynegocios.com/trump-anuncia-que-subira-el-nuevo-arancel-global-a-un-15-porciento/",
+      "date": "2026-02-21",
+      "dateText": "2026-02-21 14:01:22"
+    },
+    {
+      "title": "",
+      "url": "https://www.bancaynegocios.com/pdvsa-dice-que-avanza-en-agenda-energetica-con-colombia/",
+      "date": "2026-02-21",
+      "dateText": "2026-02-21 13:08:55"
+    },
+    {
+      "title": "",
+      "url": "https://www.bancaynegocios.com/el-renacer-de-lo-analogico-en-2026-el-mayor-lujo-es-desconectarse/",
+      "date": "2026-02-21",
+      "dateText": "2026-02-21 12:18:20"
+    },
+    {
+      "title": "",
+      "url": "https://www.bancaynegocios.com/caracas-rechaza-renovacion-de-decreto-de-emergencia-dictado-por-ee-uu-sobre-venezuela/",
+      "date": "2026-02-21",
+      "dateText": "2026-02-21 11:34:21"
+    },
+    {
+      "title": "",
+      "url": "https://www.bancaynegocios.com/banco-exterior-cerro-enero-con-una-intermediacion-financiera-de-108-porciento/",
+      "date": "2026-02-21",
+      "dateText": "2026-02-21 10:44:16"
+    },
+    {
+      "title": "",
+      "url": "https://www.bancaynegocios.com/venezuela-anuncia-las-primeras-379-excarcelaciones-tras-aprobacion-de-la-ley-de-amnistia/",
+      "date": "2026-02-21",
+      "dateText": "2026-02-21 10:25:50"
+    },
+    {
+      "title": "",
+      "url": "https://www.bancaynegocios.com/exportan-24-mil-600-kilos-de-cafe-verde-desde-tachira-hacia-estados-unidos/",
+      "date": "2026-02-21",
+      "dateText": "2026-02-21 09:58:32"
+    }
+  ],
+  "pagination": {
+    "next": null,
+    "prev": null,
+    "pageNums": [],
+    "totalPages": 0
+  },
+  "dateHints": {
+    "minDate": "2023-11-01",
+    "maxDate": "2026-02-22",
+    "startDate": "",
+    "endDate": "",
+    "hasInRange": false,
+    "hasOlderThanStart": false,
+    "suggestStopPaging": false
+  },
+  "otherCandidates": [
+    {
+      "selector": "li",
+      "score": 42,
+      "count": 11
+    },
+    {
+      "selector": "li",
+      "score": 34,
+      "count": 7
+    }
+  ]
+}

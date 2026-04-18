@@ -1,0 +1,126 @@
+{
+  "baseUrl": "https://www.bundesbank.de/de/presse/pressenotizen",
+  "bestCandidate": {
+    "selector": ".resultlist__item",
+    "titleSelector": "a.teasable__link",
+    "dateSelector": "div",
+    "score": 40,
+    "itemCount": 10,
+    "hasLink": 10,
+    "hasDate": 0
+  },
+  "structureHint": "Each item is a <li class='resultlist__item'>; title/link in <div class='teasable__data'> > <a>; date in <div class='resultlist__content'>",
+  "sampleHtml": "<li class=\"resultlist__item\">\n<div class=\"resultlist__content\">\n<div class=\"teasable teasable--linked teasable--flex\">\n<div class=\"teasable__main-info\">\n<div class=\"h2\">\n<i aria-hidden=\"true\" class=\"fa fa-angle-right\"></i>\nNettotilgungen am deutschen Rentenmarkt im Dezember 2025\n</div> <div class=\"teasable__download mt-2\">\n<div class=\"metadata\">\n<span class=\"metadata__date\">12.02.2026</span>\n<span class=\"metadata__docid\">\n<span class=\"metadata__type\">\nPressenotiz\n</span>\n</span>\n<span class=\"metadata__authors\">\nDeutsche Bundesbank\n</span> </div>\n</div>\n<div class=\"teasable__text\">\n<div class=\"...\n<li class=\"resultlist__item\">\n<div class=\"resultlist__content\">\n<div class=\"teasable teasable--linked teasable--flex\">\n<div class=\"teasable__main-info\">\n<div class=\"h2\">\n<i aria-hidden=\"true\" class=\"fa fa-angle-right\"></i>\nDie deutsche Zahlungsbilanz im Dezember 2025\n</div> <div class=\"teasable__download mt-2\">\n<div class=\"metadata\">\n<span class=\"metadata__date\">12.02.2026</span>\n<span class=\"metadata__docid\">\n<span class=\"metadata__type\">\nPressenotiz\n</span>\n</span>\n<span class=\"metadata__authors\">\nDeutsche Bundesbank\n</span><a class=\"metadata__lang\" href=\"https://www.bundesbank.de/en/press/p...",
+  "items": [
+    {
+      "title": "Nettotilgungen am deutschen Rentenmarkt im Dezember 2025",
+      "url": "https://www.bundesbank.de/de/presse/pressenotizen/nettotilgungen-am-deutschen-rentenmarkt-im-dezember-2025-971262",
+      "date": "2512-02-20",
+      "dateText": "Nettotilgungen am deutschen Rentenmarkt im Dezember 202512.02.2026PressenotizDeutsche BundesbankAm deutschen Rentenmarkt war die Emissionstätigkeit im Dezember 2025 – wie häufig zum Ende eines Jahres – schwächer als im Vormonat. Insgesamt wurden inländische Schuldverschreibungen für 55,9 Mrd € emittiert, verglichen mit 106,3 Mrd € im November. Nach Abzug der gegenüber dem Vormonat höheren Tilgungen und unter Berücksichtigung der Eigenbestandsveränderungen der Emittenten verringerte sich der Umlauf heimischer Rentenwerte um 26,4 Mrd €. Daneben sank der Umlauf ausländischer Schuldverschreibungen in Deutschland im Dezember um 7,6 Mrd €, sodass im Ergebnis 33,9 Mrd € an die Anleger zurückflossen.Nettotilgungen am deutschen Rentenmarkt im Dezember 2025"
+    },
+    {
+      "title": "EN",
+      "url": "https://www.bundesbank.de/en/press/press-releases/german-balance-of-payments-in-december-2025-945046",
+      "date": "2512-02-20",
+      "dateText": "Die deutsche Zahlungsbilanz im Dezember 202512.02.2026PressenotizDeutsche BundesbankENDie deutsche Leistungsbilanz verzeichnete im Dezember 2025 einen Überschuss von 16,1 Mrd €. Das Ergebnis lag um 1,9 Mrd € über dem Niveau des Vormonats. Zwar ging der Aktivsaldo im Warenhandel zurück. Stärker jedoch weitete sich das Plus im Bereich der „unsichtbaren“ Leistungstransaktionen aus, die neben Dienstleistungen auch Primär- und Sekundäreinkommen umfassen.Die deutsche Zahlungsbilanz im Dezember 2025"
+    },
+    {
+      "title": "EN",
+      "url": "https://www.bundesbank.de/en/press/press-releases/january-results-of-the-bank-lending-survey-in-germany-936652",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "EN",
+      "url": "https://www.bundesbank.de/en/press/press-releases/acquisition-of-financial-assets-and-external-financing-in-germany-in-the-third-quarter-of-2025-936616",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Hoher Nettoabsatz am deutschen Rentenmarkt im November 2025",
+      "url": "https://www.bundesbank.de/de/presse/pressenotizen/hoher-nettoabsatz-am-deutschen-rentenmarkt-im-november-2025-936610",
+      "date": "2512-01-20",
+      "dateText": "Hoher Nettoabsatz am deutschen Rentenmarkt im November 202512.01.2026PressenotizDeutsche BundesbankIm November 2025 lag das Emissionsvolumen am deutschen Rentenmarkt mit einem Brutto-Absatz von 106,3 Mrd € unter dem Vormonat (127,3 Mrd €).Hoher Nettoabsatz am deutschen Rentenmarkt im November 2025"
+    },
+    {
+      "title": "EN",
+      "url": "https://www.bundesbank.de/en/press/press-releases/german-balance-of-payments-in-november-2025-936550",
+      "date": "2512-01-20",
+      "dateText": "Die deutsche Zahlungsbilanz im November 202512.01.2026PressenotizDeutsche BundesbankENDie deutsche Leistungsbilanz verzeichnete im November 2025 einen Überschuss von 15,1 Mrd €. Das Ergebnis lag um 0,3 Mrd € über dem Niveau des Vormonats. Zwar ging der Aktivsaldo im Warenhandel zurück. Etwas kräftiger war jedoch der Umschwung ins Plus im Bereich der „unsichtbaren“ Leistungstransaktionen, die neben Dienstleistungen auch Primär- und Sekundärein­kommen umfassen.Die deutsche Zahlungsbilanz im November 2025"
+    },
+    {
+      "title": "EN",
+      "url": "https://www.bundesbank.de/en/press/press-releases/announcement-of-the-basic-rate-of-interest-as-of-1-january-2026-basic-rate-of-interest-unchanged-at-1-27--973976",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "EN",
+      "url": "https://www.bundesbank.de/en/press/press-releases/bundesbank-s-forecast-for-germany-economy-will-gradually-recover-965032",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Überdurchschnittlich hoher Nettoabsatz deutscher Rentenpapiere im Oktober 2025",
+      "url": "https://www.bundesbank.de/de/presse/pressenotizen/ueberdurchschnittlich-hoher-nettoabsatz-deutscher-rentenpapiere-im-oktober-2025-973490",
+      "date": "2512-12-20",
+      "dateText": "Überdurchschnittlich hoher Nettoabsatz deutscher Rentenpapiere im Oktober 202512.12.2025PressenotizDeutsche BundesbankIm Oktober 2025 lag das Emissionsvolumen am deutschen Rentenmarkt mit einem Bruttoabsatz von 127,3 Mrd € unter dem Vormonat (139,3 Mrd €). Nach Abzug der im Vergleich zum Vormonat niedrigeren Tilgungen und unter Berücksichtigung der Eigenbestandsveränderungen der Emittenten wurden inländische Schuldverschreibungen für netto 19,1 Mrd € begeben.Überdurchschnittlich hoher Nettoabsatz deutscher Rentenpapiere im Oktober 2025"
+    },
+    {
+      "title": "EN",
+      "url": "https://www.bundesbank.de/en/press/press-releases/german-balance-of-payments-in-october-2025-973752",
+      "date": "2512-12-20",
+      "dateText": "Die deutsche Zahlungsbilanz im Oktober 202512.12.2025PressenotizDeutsche BundesbankENDie deutsche Leistungsbilanz verzeichnete im Oktober 2025 einen Überschuss von 14,8 Mrd €. Das Ergebnis lag um 1,0 Mrd € unter dem Niveau des Vormonats.Die deutsche Zahlungsbilanz im Oktober 2025"
+    }
+  ],
+  "pagination": {
+    "next": null,
+    "prev": null,
+    "pageNums": [
+      {
+        "tag": "a",
+        "text": "1",
+        "href": "/action/de/724000/bbksearch?pageNumString=0",
+        "onclick": null,
+        "target": null,
+        "url": "https://www.bundesbank.de/action/de/724000/bbksearch?pageNumString=0",
+        "class": "page-link page-link--goty"
+      },
+      {
+        "tag": "a",
+        "text": "2",
+        "href": "/action/de/724000/bbksearch?pageNumString=1",
+        "onclick": null,
+        "target": null,
+        "url": "https://www.bundesbank.de/action/de/724000/bbksearch?pageNumString=1",
+        "class": "page-link page-link--goty"
+      },
+      {
+        "tag": "a",
+        "text": "3",
+        "href": "/action/de/724000/bbksearch?pageNumString=2",
+        "onclick": null,
+        "target": null,
+        "url": "https://www.bundesbank.de/action/de/724000/bbksearch?pageNumString=2",
+        "class": "page-link page-link--goty"
+      }
+    ],
+    "totalPages": 3
+  },
+  "dateHints": {
+    "minDate": "2512-01-20",
+    "maxDate": "2512-12-20",
+    "startDate": "",
+    "endDate": "",
+    "hasInRange": false,
+    "hasOlderThanStart": false,
+    "suggestStopPaging": false
+  },
+  "otherCandidates": [
+    {
+      "selector": ".navbar-aside__listitem",
+      "score": 36,
+      "count": 8
+    }
+  ]
+}

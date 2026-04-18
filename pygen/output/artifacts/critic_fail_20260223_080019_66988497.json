@@ -1,0 +1,411 @@
+{
+  "final_round": 3,
+  "max_retries": 3,
+  "repaired_code": "import os\nimport json\nimport time\nimport random\nfrom datetime import datetime\nfrom urllib.parse import urljoin\nfrom bs4 import BeautifulSoup\nfrom playwright.sync_api import sync_playwright\n\n# ================= 配置区域 =================\nOUTPUT_DIR = r\"d:\\llm_mcp_genpy\\pygen\\output\"\nTARGET_URL = \"https://www.cityam.com/news/\"\nMAX_ITEMS = 10  # 限制爬取前10条\n\n# 确保输出目录存在\nos.makedirs(OUTPUT_DIR, exist_ok=True)\n\ndef clean_html_content(html_content, base_url):\n    \"\"\"\n    清洗HTML内容：\n    1. 将相对路径转换为绝对路径\n    2. 移除无用的标签属性\n    \"\"\"\n    if not html_content:\n        return \"\"\n    try:\n        soup = BeautifulSoup(html_content, 'html.parser')\n        \n        # 修复图片链接\n        for img in soup.find_all('img'):\n            if img.get('src'):\n                img['src'] = urljoin(base_url, img['src'])\n            if img.get('srcset'):\n                del img['srcset'] # 移除srcset简化处理\n                \n        # 修复超链接\n        for a in soup.find_all('a'):\n            if a.get('href'):\n                a['href'] = urljoin(base_url, a['href'])\n                \n        return str(soup)\n    except Exception as e:\n        print(f\"[Warn] 内容清洗出错: {e}\")\n        return html_content\n\ndef extract_date_from_page(page, soup):\n    \"\"\"\n    尝试从详情页提取发布日期\n    优先级: Meta标签 -> Time标签 -> JSON-LD -> 正则匹配\n    \"\"\"\n    # 1. 尝试 Meta 标签\n    try:\n        meta_date = page.locator('meta[property=\"article:published_time\"]').get_attribute(\"content\")\n        if meta_date:\n            return meta_date.split('T')[0]\n    except:\n        pass\n\n    # 2. 尝试 Time 标签\n    try:\n        time_el = soup.find('time')\n        if time_el and time_el.get('datetime'):\n            return time_el['datetime'].split('T')[0]\n    except:\n        pass\n\n    # 3. 尝试 JSON-LD\n    try:\n        scripts = soup.find_all('script', type='application/ld+json')\n        for script in scripts:\n            try:\n                if not script.string: continue\n                data = json.loads(script.string)\n                if isinstance(data, dict):\n                    if 'datePublished' in data:\n                        return data['datePublished'].split('T')[0]\n                elif isinstance(data, list):\n                    for item in data:\n                        if 'datePublished' in item:\n                            return item['datePublished'].split('T')[0]\n            except:\n                continue\n    except:\n        pass\n        \n    # 4. 默认返回当天日期作为兜底\n    return datetime.now().strftime(\"%Y-%m-%d\")\n\ndef safe_goto(page, url, max_retries=3):\n    \"\"\"\n    带重试机制的页面跳转\n    \"\"\"\n    for i in range(max_retries):\n        try:\n            # 减少超时时间，避免长时间卡死\n            page.goto(url, wait_until=\"domcontentloaded\", timeout=30000)\n            return True\n        except Exception as e:\n            print(f\"[Warn] 访问失败 (尝试 {i+1}/{max_retries}): {e}\")\n            time.sleep(1)\n    return False\n\ndef extract_detail(context, url):\n    \"\"\"\n    进入详情页提取内容\n    \"\"\"\n    page = context.new_page()\n    article_data = {\n        \"title\": \"\",\n        \"date\": \"\",\n        \"author\": \"\",\n        \"source\": \"City A.M.\",\n        \"sourceUrl\": url,\n        \"summary\": \"\",\n        \"content\": \"\"\n    }\n    \n    try:\n        # print(f\"-> 正在访问详情页: {url}\")\n        \n        if not safe_goto(page, url):\n            print(f\"[Error] 无法访问详情页: {url}\")\n            return article_data\n        \n        # 减少等待时间，防止总任务超时\n        time.sleep(1)\n        \n        # 处理 Cookie 弹窗\n        try:\n            cookie_btn = page.locator(\"#onetrust-accept-btn-handler\")\n            if cookie_btn.is_visible(timeout=2000):\n                cookie_btn.click()\n        except:\n            pass\n\n        # 等待标题可见\n        try:\n            page.wait_for_selector(\"h1\", state=\"visible\", timeout=5000)\n        except:\n            pass\n        \n        # 获取页面HTML进行解析\n        html = page.content()\n        soup = BeautifulSoup(html, 'html.parser')\n        \n        # 1. 提取标题\n        h1 = soup.find(\"h1\")\n        if h1:\n            article_data['title'] = h1.get_text(strip=True)\n        else:\n            article_data['title'] = page.title()\n\n        # 2. 提取日期\n        article_data['date'] = extract_date_from_page(page, soup)\n        \n        # 3. 提取作者\n        author_el = soup.select_one(\".author-name, .article-author, a[rel='author']\")\n        if author_el:\n            article_data['author'] = author_el.get_text(strip=True)\n\n        # 4. 提取正文\n        # 尝试多个可能的正文容器选择器\n        content_selectors = [\n            \"div.post-content\", \n            \"div.entry-content\", \n            \"article.content-container\", \n            \"div.article-body\",\n            \"article\"\n        ]\n        content_container = None\n        for selector in content_selectors:\n            content_container = soup.select_one(selector)\n            if content_container:\n                break\n        \n        if content_container:\n            # 移除不需要的元素\n            remove_selectors = [\n                \".article-header\", \".article-footer\", \".read-more\", \".newsletter-auto-inject\", \n                \".ad-container\", \"script\", \"style\", \".wp-caption-text\", \"iframe\", \n                \"div[id^='google_ads']\", \".related-articles\", \".share-buttons\"\n            ]\n            for selector in remove_selectors:\n                for tag in content_container.select(selector):\n                    tag.decompose()\n            \n            # 提取纯文本摘要\n            article_data['summary'] = content_container.get_text(strip=True)[:200] + \"...\"\n            \n            # 清洗HTML内容\n            article_data['content'] = clean_html_content(str(content_container), url)\n        else:\n            print(f\"[Warn] 未找到正文容器: {url}\")\n\n    except Exception as e:\n        print(f\"[Error] 解析详情页失败 {url}: {e}\")\n    finally:\n        try:\n            page.close()\n        except:\n            pass\n        \n    return article_data\n\ndef crawl_news():\n    \"\"\"\n    主爬虫逻辑\n    \"\"\"\n    results = []\n    \n    with sync_playwright() as p:\n        # 启动浏览器\n        browser = p.chromium.launch(\n            headless=True,\n            args=[\n                \"--disable-blink-features=AutomationControlled\",\n                \"--no-sandbox\",\n                \"--disable-infobars\"\n            ]\n        )\n        \n        context = browser.new_context(\n            viewport={'width': 1920, 'height': 1080},\n            user_agent=\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36\"\n        )\n        \n        page = context.new_page()\n        \n        try:\n            print(f\"正在访问列表页: {TARGET_URL}\")\n            if not safe_goto(page, TARGET_URL):\n                print(\"无法访问列表页，终止爬取\")\n                return []\n            \n            # 处理 Cookie 弹窗\n            try:\n                page.wait_for_selector(\"#onetrust-accept-btn-handler\", state=\"visible\", timeout=5000)\n                page.click(\"#onetrust-accept-btn-handler\")\n                time.sleep(1)\n            except:\n                pass\n\n            # 等待列表加载\n            try:\n                page.wait_for_selector(\"article, .post, .card\", state=\"visible\", timeout=10000)\n            except:\n                print(\"等待列表元素超时，尝试直接解析\")\n            \n            # 提取列表项\n            list_html = page.content()\n            list_soup = BeautifulSoup(list_html, 'html.parser')\n            \n            # 尝试多种列表选择器，确保能抓到内容\n            items = list_soup.select(\"article\")\n            if not items:\n                items = list_soup.select(\"div.post\")\n            if not items:\n                items = list_soup.select(\"div.card\")\n            if not items:\n                # 最后的兜底：查找所有包含链接的 div\n                items = list_soup.select(\"div.content-listing__content-item\")\n                \n            print(f\"找到 {len(items)} 个潜在新闻项\")\n            \n            links_to_crawl = []\n            \n            for item in items:\n                if len(links_to_crawl) >= MAX_ITEMS:\n                    break\n                \n                # 在每个 item 中寻找最可能的标题链接\n                # 策略：找 href 包含 /news/ 或 /20xx/ 的链接，且文本长度 > 10\n                a_tags = item.find_all('a', href=True)\n                for a in a_tags:\n                    url = urljoin(TARGET_URL, a['href'])\n                    title = a.get_text(strip=True)\n                    \n                    # 简单的过滤逻辑\n                    if len(title) > 10 and (\"/news/\" in url or \"/20\" in url):\n                        if not any(l['url'] == url for l in links_to_crawl):\n                            links_to_crawl.append({\"url\": url, \"title\": title})\n                        break # 找到一个有效链接后跳过当前 item 的其他链接\n            \n            print(f\"筛选出 {len(links_to_crawl)} 个有效链接，开始爬取...\")\n            \n            # 遍历详情页\n            for i, link_info in enumerate(links_to_crawl):\n                print(f\"[{i+1}/{len(links_to_crawl)}] 处理: {link_info['title']}\")\n                \n                article = extract_detail(context, link_info['url'])\n                \n                # 兜底标题\n                if not article['title']:\n                    article['title'] = link_info['title']\n                \n                article['id'] = str(i + 1)\n                results.append(article)\n                \n        except Exception as e:\n            print(f\"[Error] 列表页爬取失败: {e}\")\n        finally:\n            browser.close()\n            \n    return results\n\ndef save_results(articles: list, output_dir: str):\n    \"\"\"\n    保存结果为JSON\n    \"\"\"\n    if not articles:\n        print(\"没有爬取到任何数据，跳过保存。\")\n        return\n\n    timestamp = datetime.now().strftime(\"%Y%m%d_%H%M%S\")\n    filename = f\"CityAM_News_{timestamp}.json\"\n    output_path = os.path.join(output_dir, filename)\n    \n    result_data = {\n        \"total\": len(articles),\n        \"crawlTime\": datetime.now().strftime(\"%Y-%m-%d %H:%M:%S\"),\n        \"articles\": articles\n    }\n    \n    try:\n        with open(output_path, 'w', encoding='utf-8') as f:\n            json.dump(result_data, f, ensure_ascii=False, indent=2)\n        print(f\"\\n成功保存 {len(articles)} 条数据到: {output_path}\")\n    except Exception as e:\n        print(f\"保存文件失败: {e}\")\n\ndef main():\n    print(\"=== 开始爬取 City A.M. 新闻 ===\")\n    start_time = time.time()\n    \n    articles = crawl_news()\n    \n    save_results(articles, OUTPUT_DIR)\n    \n    end_time = time.time()\n    print(f\"\\n=== 爬取结束，耗时: {end_time - start_time:.2f} 秒 ===\")\n\nif __name__ == \"__main__\":\n    main()",
+  "rounds": [
+    {
+      "round": 1,
+      "passed": false,
+      "primary_cause": "blocked_by_waf",
+      "backup_cause": "schema_mismatch",
+      "uncertain": false,
+      "classifier_confidence": 0.95,
+      "record_count": 5,
+      "static_error_count": 0
+    },
+    {
+      "round": 2,
+      "passed": false,
+      "primary_cause": "timeout",
+      "backup_cause": "schema_mismatch",
+      "uncertain": false,
+      "classifier_confidence": 0.99,
+      "record_count": 0,
+      "static_error_count": 0
+    },
+    {
+      "round": 3,
+      "passed": false,
+      "primary_cause": "schema_mismatch",
+      "backup_cause": "timeout",
+      "uncertain": false,
+      "classifier_confidence": 0.99,
+      "record_count": 0,
+      "static_error_count": 0
+    },
+    {
+      "round": 3,
+      "passed": false,
+      "primary_cause": "empty_output",
+      "backup_cause": "schema_mismatch",
+      "uncertain": false,
+      "classifier_confidence": 0.75,
+      "record_count": 0,
+      "static_error_count": 0
+    }
+  ],
+  "evidence": [
+    {
+      "round": 1,
+      "step": "static_check",
+      "result": {
+        "error_count": 0,
+        "warning_count": 2,
+        "top_errors": [],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+          },
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'url' 而不是 'downloadUrl'"
+          }
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": true,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 50.493,
+        "record_count": 5,
+        "date_fill_rate": 1.0,
+        "status": "blocked",
+        "http_statuses": [],
+        "stdout_tail": "=== 开始爬取 City A.M. 新闻 ===\n正在访问列表页: https://www.cityam.com/news/\n已关闭 Cookie 弹窗\n找到 18 个新闻项，将爬取前 10 个\n\n[1/10] 处理: Rolls-Royce: FTSE 100 giant set to splash £1bn on shareholders\n-> 正在访问详情页: https://www.cityam.com/rolls-royce-ftse-100-giant-set-to-splash-1bn-on-shareholders/\n\n[2/10] 处理: FTSE 100 Live: Stocks set to dip after Trump’s fresh tariffs salvo\n-> 正在访问详情页: https://www.cityam.com/ftse-100-live-stocks-set-to-dip-after-trumps-fresh-tariffs-salvo/\n\n[3/10] 处理: Job vacancies at lowest level since 2021 as London worst affected\n-> 正在访问详情页: https://www.cityam.com/job-vacancies-lowest-since-2021-london-worst-affected/\n\n[4/10] 处理: Bank to business lending growth to halve amid global tensions\n-> 正在访问详情页: https://www.cityam.com/bank-to-business-lending-growth-to-halve-amid-global-tensions/\n\n[5/10] 处...(truncated)",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 1,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "blocked_by_waf",
+        "backup_cause": "schema_mismatch",
+        "confidence": 0.95,
+        "classifier_summary": "请求被网站反爬系统拦截"
+      }
+    },
+    {
+      "round": 1,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "network_probe",
+        "cause": "blocked_by_waf",
+        "result": {
+          "ok": false,
+          "status": null,
+          "error": "The read operation timed out",
+          "challenge_detected": false
+        }
+      }
+    },
+    {
+      "round": 1,
+      "step": "output_quality",
+      "result": {
+        "record_count": 5,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 1.0,
+          "sourceUrl": 1.0
+        },
+        "required_fields_ok": true,
+        "meets_min_items": true,
+        "recommendations": [],
+        "sample_records": [
+          {
+            "title": "Rolls-Royce: FTSE 100 giant set to splash £1bn on shareholders",
+            "date": "2026-02-23",
+            "author": "",
+            "source": "City A.M.",
+            "sourceUrl": "https://www.cityam.com/rolls-royce-ftse-100-giant-set-to-splash-1bn-on-shareholders/",
+            "summary": "Rolls-Royce was the second best performer in the FTSE 100 in 2024.City darling Rolls-Royce is gearing up plans to dish out bumper returns to investors this week asthe firmdelivers its annual results.T...",
+            "content": "<article class=\"content-container content-container__single\" data-mrf-recirculation=\"content-container\">\n<figure class=\"article-header-featured-image\">\n<div class=\"notice-header notice-header--is-full-content-width notice-header--is-bordered\">\n<div id=\"inimage\" style=\"min-height: 0;\"><div id=\"google_ads_iframe_/154725070,4152489/0367-cityam.com/markets/article/inimage_0__container__\" style=\"border",
+            "id": "1"
+          },
+          {
+            "title": "FTSE 100 Live: Stocks set to dip after Trump’s fresh tariffs salvo",
+            "date": "2026-02-23",
+            "author": "",
+            "source": "City A.M.",
+            "sourceUrl": "https://www.cityam.com/ftse-100-live-stocks-set-to-dip-after-trumps-fresh-tariffs-salvo/",
+            "summary": "Trump's new tariff offensive is set to hit the FTSE 100. (Image: Getty)Good morning and welcome back to theCity AMliveblog.Tariffs are once more redefining market sentiment.Last Friday, a number of FT...",
+            "content": "<article class=\"content-container content-container__single\" data-mrf-recirculation=\"content-container\">\n<figure class=\"article-header-featured-image\">\n<div class=\"notice-header notice-header--is-full-content-width notice-header--is-bordered\">\n<div id=\"inimage\" style=\"min-height: 0;\"><div id=\"google_ads_iframe_/154725070,4152489/0367-cityam.com/markets/article/inimage_0__container__\" style=\"border",
+            "id": "2"
+          },
+          {
+            "title": "Job vacancies at lowest level since 2021 as London worst affected",
+            "date": "2026-02-23",
+            "author": "",
+            "source": "City A.M.",
+            "sourceUrl": "https://www.cityam.com/job-vacancies-lowest-since-2021-london-worst-affected/",
+            "summary": "Graduate roles plummeted by almost fifty per cent in JanuaryThe UK’s job market took another hit after total vacancies fell to the lowest level since 2021, with London the region facing the biggest dr...",
+            "content": "<article class=\"content-container content-container__single\" data-mrf-recirculation=\"content-container\">\n<figure class=\"article-header-featured-image\">\n<div class=\"notice-header notice-header--is-full-content-width notice-header--is-bordered\">\n<div id=\"inimage\" style=\"min-height: 0;\"><div id=\"google_ads_iframe_/154725070,4152489/0367-cityam.com/business/article/inimage_0__container__\" style=\"borde",
+            "id": "3"
+          }
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "step": "llm_repair",
+      "result": {
+        "changed": true
+      }
+    },
+    {
+      "round": 2,
+      "step": "static_check",
+      "result": {
+        "error_count": 0,
+        "warning_count": 2,
+        "top_errors": [],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+          },
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'url' 而不是 'downloadUrl'"
+          }
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": false,
+        "timed_out": true,
+        "exit_code": 1,
+        "duration_seconds": 120.124,
+        "record_count": 0,
+        "date_fill_rate": 0.0,
+        "status": "timeout",
+        "http_statuses": [],
+        "stdout_tail": "",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 2,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "timeout",
+        "backup_cause": "schema_mismatch",
+        "confidence": 0.99,
+        "classifier_summary": "脚本执行超时"
+      }
+    },
+    {
+      "round": 2,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "network_probe",
+        "cause": "timeout",
+        "result": {
+          "ok": true,
+          "status": 200,
+          "error": null,
+          "challenge_detected": false
+        }
+      }
+    },
+    {
+      "round": 2,
+      "step": "output_quality",
+      "result": {
+        "record_count": 0,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 0.0,
+          "sourceUrl": 0.0
+        },
+        "required_fields_ok": false,
+        "meets_min_items": false,
+        "recommendations": [
+          "Extract at least 1 items in lightweight validation.",
+          "Ensure required fields are populated: ['title', 'sourceUrl']"
+        ],
+        "sample_records": []
+      }
+    },
+    {
+      "round": 3,
+      "step": "static_check",
+      "result": {
+        "error_count": 0,
+        "warning_count": 2,
+        "top_errors": [],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+          },
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'url' 而不是 'downloadUrl'"
+          }
+        ]
+      }
+    },
+    {
+      "round": 3,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": false,
+        "timed_out": true,
+        "exit_code": 1,
+        "duration_seconds": 120.11,
+        "record_count": 0,
+        "date_fill_rate": 0.0,
+        "status": "timeout",
+        "http_statuses": [],
+        "stdout_tail": "",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 3,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "schema_mismatch",
+        "backup_cause": "timeout",
+        "confidence": 0.99,
+        "classifier_summary": "脚本执行超时"
+      }
+    },
+    {
+      "round": 3,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "selector_brittleness_probe",
+        "cause": "schema_mismatch",
+        "result": {
+          "select_calls": 3,
+          "find_calls": 1,
+          "has_chained_find": false
+        }
+      }
+    },
+    {
+      "round": 3,
+      "step": "output_quality",
+      "result": {
+        "record_count": 0,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 0.0,
+          "sourceUrl": 0.0
+        },
+        "required_fields_ok": false,
+        "meets_min_items": false,
+        "recommendations": [
+          "Extract at least 1 items in lightweight validation.",
+          "Ensure required fields are populated: ['title', 'sourceUrl']"
+        ],
+        "sample_records": []
+      }
+    },
+    {
+      "round": 3,
+      "step": "final_targeted_repair",
+      "result": {
+        "changed": true
+      }
+    },
+    {
+      "round": 3,
+      "step": "static_check",
+      "result": {
+        "error_count": 0,
+        "warning_count": 2,
+        "top_errors": [],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+          },
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'url' 而不是 'downloadUrl'"
+          }
+        ]
+      }
+    },
+    {
+      "round": 3,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": false,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 28.261,
+        "record_count": 0,
+        "date_fill_rate": 0.0,
+        "status": "no_data",
+        "http_statuses": [],
+        "stdout_tail": "=== 开始爬取 City A.M. 新闻 ===\n正在访问列表页: https://www.cityam.com/news/\n等待列表元素超时，尝试直接解析\n找到 21 个潜在新闻项\n筛选出 0 个有效链接，开始爬取...\n没有爬取到任何数据，跳过保存。\n\n=== 爬取结束，耗时: 27.58 秒 ===",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 3,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "empty_output",
+        "backup_cause": "schema_mismatch",
+        "confidence": 0.75,
+        "classifier_summary": "脚本执行完成但输出为空"
+      }
+    },
+    {
+      "round": 3,
+      "step": "output_quality",
+      "result": {
+        "record_count": 0,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 0.0,
+          "sourceUrl": 0.0
+        },
+        "required_fields_ok": false,
+        "meets_min_items": false,
+        "recommendations": [
+          "Extract at least 1 items in lightweight validation.",
+          "Ensure required fields are populated: ['title', 'sourceUrl']"
+        ],
+        "sample_records": []
+      }
+    }
+  ],
+  "stopped_reason": "max_retries_exceeded",
+  "primary_cause": "empty_output",
+  "backup_cause": "schema_mismatch"
+}

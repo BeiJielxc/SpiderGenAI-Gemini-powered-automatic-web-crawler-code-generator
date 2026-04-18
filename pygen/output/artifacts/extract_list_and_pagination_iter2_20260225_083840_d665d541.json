@@ -1,0 +1,187 @@
+{
+  "baseUrl": "https://cb.is/news-and-publications/news/",
+  "bestCandidate": {
+    "selector": ".bread-crumbs-sibling.bread-crumbs-sibling--children",
+    "titleSelector": "a.bread-crumbs-link",
+    "dateSelector": "",
+    "score": 44,
+    "itemCount": 12,
+    "hasLink": 12,
+    "hasDate": 0
+  },
+  "structureHint": "Each item is a <li class='bread-crumbs-sibling.bread-crumbs-sibling--children'>; title/link in <a class='bread-crumbs-link'>",
+  "sampleHtml": "<li b-qsa93g7bah=\"\" class=\"bread-crumbs-sibling bread-crumbs-sibling--children\"><a b-qsa93g7bah=\"\" class=\"bread-crumbs-link\" href=\"/monetary-policy/\">Monetary Policy</a></li>\n<li b-qsa93g7bah=\"\" class=\"bread-crumbs-sibling bread-crumbs-sibling--children\"><a b-qsa93g7bah=\"\" class=\"bread-crumbs-link\" href=\"/financial-stability/\">Financial Stability</a></li>",
+  "items": [
+    {
+      "title": "Monetary Policy",
+      "url": "https://cb.is/monetary-policy/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Financial Stability",
+      "url": "https://cb.is/financial-stability/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Financial Supervision",
+      "url": "https://cb.is/financial-supervision/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "About the Bank",
+      "url": "https://cb.is/about-the-bank/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Payments",
+      "url": "https://cb.is/payments/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Licenses",
+      "url": "https://cb.is/licenses/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Statistics",
+      "url": "https://cb.is/statistics/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Consumers",
+      "url": "https://cb.is/consumers/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Laws and regulations",
+      "url": "https://cb.is/laws-and-regulations/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Reporting and forms",
+      "url": "https://cb.is/reporting-and-forms/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Knowledge bank",
+      "url": "https://cb.is/knowledge-bank/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Markets and market operations",
+      "url": "https://cb.is/markets-and-market-operations/",
+      "date": "",
+      "dateText": ""
+    }
+  ],
+  "pagination": {
+    "next": {
+      "tag": "a",
+      "text": "Next",
+      "href": "/news-and-publications/news/?index=1",
+      "onclick": null,
+      "target": null,
+      "url": "https://cb.is/news-and-publications/news/?index=1",
+      "class": "page-link"
+    },
+    "prev": null,
+    "pageNums": [
+      {
+        "tag": "a",
+        "text": "1",
+        "href": "/news-and-publications/news/?index=0",
+        "onclick": null,
+        "target": null,
+        "url": "https://cb.is/news-and-publications/news/?index=0",
+        "class": "page-link veva-paging-link--active"
+      },
+      {
+        "tag": "a",
+        "text": "2",
+        "href": "/news-and-publications/news/?index=1",
+        "onclick": null,
+        "target": null,
+        "url": "https://cb.is/news-and-publications/news/?index=1",
+        "class": "page-link"
+      },
+      {
+        "tag": "a",
+        "text": "3",
+        "href": "/news-and-publications/news/?index=2",
+        "onclick": null,
+        "target": null,
+        "url": "https://cb.is/news-and-publications/news/?index=2",
+        "class": "page-link"
+      },
+      {
+        "tag": "a",
+        "text": "4",
+        "href": "/news-and-publications/news/?index=3",
+        "onclick": null,
+        "target": null,
+        "url": "https://cb.is/news-and-publications/news/?index=3",
+        "class": "page-link"
+      },
+      {
+        "tag": "a",
+        "text": "5",
+        "href": "/news-and-publications/news/?index=4",
+        "onclick": null,
+        "target": null,
+        "url": "https://cb.is/news-and-publications/news/?index=4",
+        "class": "page-link"
+      },
+      {
+        "tag": "a",
+        "text": "6",
+        "href": "/news-and-publications/news/?index=5",
+        "onclick": null,
+        "target": null,
+        "url": "https://cb.is/news-and-publications/news/?index=5",
+        "class": "page-link"
+      },
+      {
+        "tag": "a",
+        "text": "251",
+        "href": "/news-and-publications/news/?index=250",
+        "onclick": null,
+        "target": null,
+        "url": "https://cb.is/news-and-publications/news/?index=250",
+        "class": "page-link"
+      }
+    ],
+    "totalPages": 251
+  },
+  "dateHints": {
+    "minDate": "",
+    "maxDate": "",
+    "startDate": "",
+    "endDate": "",
+    "hasInRange": false,
+    "hasOlderThanStart": false,
+    "suggestStopPaging": false
+  },
+  "otherCandidates": [
+    {
+      "selector": ".wrap-grid > div",
+      "score": 44,
+      "count": 12
+    },
+    {
+      "selector": ".page-item.jump-link",
+      "score": 34,
+      "count": 7
+    }
+  ]
+}

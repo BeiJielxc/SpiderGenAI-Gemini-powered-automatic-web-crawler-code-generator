@@ -1,0 +1,168 @@
+{
+  "passed": true,
+  "summary": "Critic passed in round 1.",
+  "confidence": 0.9,
+  "issues": [],
+  "recommendations": [
+    "检查完整的错误日志",
+    "使用调试模式运行脚本",
+    "逐步排查代码逻辑"
+  ],
+  "details": {
+    "final_round": 1,
+    "max_retries": 3,
+    "rounds": [
+      {
+        "round": 1,
+        "passed": true,
+        "primary_cause": "unknown",
+        "backup_cause": "schema_mismatch",
+        "uncertain": true,
+        "classifier_confidence": 0.3,
+        "record_count": 5,
+        "static_error_count": 0
+      }
+    ],
+    "evidence": [
+      {
+        "round": 1,
+        "step": "static_check",
+        "result": {
+          "error_count": 0,
+          "warning_count": 1,
+          "top_errors": [],
+          "top_warnings": [
+            {
+              "severity": "warning",
+              "code": "ERR_006",
+              "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+            }
+          ]
+        }
+      },
+      {
+        "round": 1,
+        "step": "lightweight_runtime",
+        "result": {
+          "execution_success": true,
+          "timed_out": false,
+          "exit_code": 0,
+          "duration_seconds": 21.921,
+          "record_count": 5,
+          "date_fill_rate": 1.0,
+          "status": "success",
+          "http_statuses": [],
+          "stdout_tail": "开始执行爬虫任务...\n目标: https://www.centralbank.org.bz/publications-search\n限制: 5 条\n正在访问列表页: https://www.centralbank.org.bz/publications-search\n当前页发现 20 条数据\n处理: High Court of Belize Affirms Decision on Termination of General Manager of SFXCU ()\n正在抓取详情页: https://www.centralbank.org.bz/detail-pages/news/2026/02/25/high-court-of-belize-affirms-decision-on-termination-of--general-manager-of-sfxcu\n处理: Weekly Monetary Aggregates 11 February 2026 (2026-02-23)\n正在抓取详情页: https://www.centralbank.org.bz/detail-pages/publication/weekly-monetary-aggregates-11-february-2026\n访问详情页异常 (可能是文件下载): Page.goto: Download is starting\nCall log:\n  - navigating to \"https://www.centralbank.org.bz/detail-pages/publication/weekly-monetary-aggregates-11-february-2026\", waiting until \"domcontentloaded\"\n\n处理: Treasury Bill Auction N...(truncated)",
+          "stderr_tail": ""
+        }
+      },
+      {
+        "round": 1,
+        "step": "cause_ranking",
+        "result": {
+          "primary_cause": "unknown",
+          "backup_cause": "schema_mismatch",
+          "confidence": 0.3,
+          "classifier_summary": "未能明确分类的故障"
+        }
+      },
+      {
+        "round": 1,
+        "step": "minimal_experiment",
+        "result": {
+          "type": "sample_output_probe",
+          "cause": "unknown",
+          "result": {
+            "sample_size": 5,
+            "required_non_empty_count": {
+              "title": 5,
+              "sourceUrl": 5
+            },
+            "sample": [
+              {
+                "id": "1",
+                "title": "High Court of Belize Affirms Decision on Termination of General Manager of SFXCU",
+                "date": "2026-02-25",
+                "source": "Central Bank of Belize",
+                "author": "",
+                "sourceUrl": "https://www.centralbank.org.bz/detail-pages/news/2026/02/25/high-court-of-belize-affirms-decision-on-termination-of--general-manager-of-sfxcu",
+                "summary": "The Central Bank of Belize advises that, by decision delivered on 19 February 2026, the High Court dismissed a claim brought against the Registrar of Credit Unions (Registrar) challenging the decision to terminate Mr. Rafael Dominguez as the General Manager of Saint Francis Xavier Credit Union …",
+                "content": "\n    "
+              },
+              {
+                "id": "2",
+                "title": "Weekly Monetary Aggregates 11 February 2026",
+                "date": "2026-02-23",
+                "source": "Central Bank of Belize",
+                "author": "",
+                "sourceUrl": "https://www.centralbank.org.bz/detail-pages/publication/weekly-monetary-aggregates-11-february-2026",
+                "summary": "The Weekly Monetary Aggregates summarizes the weekly activity of the banking system.",
+                "content": "<p>File Download or Error: <a href='https://www.centralbank.org.bz/detail-pages/publication/weekly-monetary-aggregates-11-february-2026'>https://www.centralbank.org.bz/detail-pages/publication/weekly-monetary-aggregates-11-february-2026</a></p>"
+              },
+              {
+                "id": "3",
+                "title": "Treasury Bill Auction Notice #4 of 2026",
+                "date": "2026-02-17",
+                "source": "Central Bank of Belize",
+                "author": "",
+                "sourceUrl": "https://www.centralbank.org.bz/detail-pages/news/2026/02/17/treasury-bill-auction-notice--4-of-2026",
+                "summary": "Tenders are invited for an issue of Government of Belize Treasury Bills. The amount of the issue will be …",
+                "content": "\n    "
+              }
+            ]
+          }
+        }
+      },
+      {
+        "round": 1,
+        "step": "output_quality",
+        "result": {
+          "record_count": 5,
+          "required_fields": [
+            "title",
+            "sourceUrl"
+          ],
+          "field_fill_rate": {
+            "title": 1.0,
+            "sourceUrl": 1.0
+          },
+          "required_fields_ok": true,
+          "meets_min_items": true,
+          "recommendations": [],
+          "sample_records": [
+            {
+              "id": "1",
+              "title": "High Court of Belize Affirms Decision on Termination of General Manager of SFXCU",
+              "date": "2026-02-25",
+              "source": "Central Bank of Belize",
+              "author": "",
+              "sourceUrl": "https://www.centralbank.org.bz/detail-pages/news/2026/02/25/high-court-of-belize-affirms-decision-on-termination-of--general-manager-of-sfxcu",
+              "summary": "The Central Bank of Belize advises that, by decision delivered on 19 February 2026, the High Court dismissed a claim brought against the Registrar of Credit Unions (Registrar) challenging the decision to terminate Mr. Rafael Dominguez as the General Manager of Saint Francis Xavier Credit Union …",
+              "content": "\n    "
+            },
+            {
+              "id": "2",
+              "title": "Weekly Monetary Aggregates 11 February 2026",
+              "date": "2026-02-23",
+              "source": "Central Bank of Belize",
+              "author": "",
+              "sourceUrl": "https://www.centralbank.org.bz/detail-pages/publication/weekly-monetary-aggregates-11-february-2026",
+              "summary": "The Weekly Monetary Aggregates summarizes the weekly activity of the banking system.",
+              "content": "<p>File Download or Error: <a href='https://www.centralbank.org.bz/detail-pages/publication/weekly-monetary-aggregates-11-february-2026'>https://www.centralbank.org.bz/detail-pages/publication/weekly-monetary-aggregates-11-february-2026</a></p>"
+            },
+            {
+              "id": "3",
+              "title": "Treasury Bill Auction Notice #4 of 2026",
+              "date": "2026-02-17",
+              "source": "Central Bank of Belize",
+              "author": "",
+              "sourceUrl": "https://www.centralbank.org.bz/detail-pages/news/2026/02/17/treasury-bill-auction-notice--4-of-2026",
+              "summary": "Tenders are invited for an issue of Government of Belize Treasury Bills. The amount of the issue will be …",
+              "content": "\n    "
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

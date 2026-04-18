@@ -1,0 +1,83 @@
+{
+  "url": "https://www.seczambia.org.zm",
+  "contentSelector": "div.elementor.elementor-11",
+  "contentTagName": "div",
+  "contentTextLength": 4595,
+  "sampleContentHtml": "<div class=\"elementor elementor-11\" data-elementor-id=\"11\" data-elementor-post-type=\"page\" data-elementor-type=\"wp-page\">\n<div class=\"elementor-element elementor-element-4b15dd2a e-flex e-con-boxed e-con e-parent e-lazyloaded\" data-e-type=\"container\" data-element_type=\"container\" data-id=\"4b15dd2a\" data-settings='{\"background_background\":\"slideshow\",\"background_slideshow_gallery\":[{\"id\":10637,\"url\":\"https:\\/\\/www.seczambia.org.zm\\/wp-content\\/uploads\\/2025\\/07\\/Image-1.-iStock-515706884-scaled.jpg\"},{\"id\":10638,\"url\":\"https:\\/\\/www.seczambia.org.zm\\/wp-content\\/uploads\\/2025\\/07\\/Image-4.-iStock-1028053258-scaled.jpg\"},{\"id\":10639,\"url\":\"https:\\/\\/www.seczambia.org.zm\\/wp-content\\/uploads\\/2025\\/07\\/Image-3.-iStock-681407458-scaled.jpg\"},{\"id\":10640,\"url\":\"https:\\/\\/www.seczambia.org.zm\\/wp-content\\/uploads\\/2025\\/07\\/Image-2.-iStock-1324848369-scaled.jpg\"}],\"background_slideshow_ken_burns\":\"yes\",\"shape_divider_bottom\":\"curve\",\"shape_divider_bottom_negative\":\"yes\",\"background_slideshow_loop\":\"yes\",\"background_slideshow_slide_duration\":5000,\"background_slideshow_slide_transition\":\"fade\",\"background_slideshow_transition_duration\":500,\"background_slideshow_ken_burns_zoom_direction\":\"i...",
+  "contentCandidates": [
+    {
+      "selector": "div.elementor.elementor-11",
+      "textLength": 4595,
+      "linkCount": 43,
+      "linkDensity": 0.0094,
+      "textPreview": "The Securities and Exchange Commission of ZambiaRegulating & Developing the Capi"
+    },
+    {
+      "selector": "div.elementor.elementor-116",
+      "textLength": 2332,
+      "linkCount": 127,
+      "linkDensity": 0.0544,
+      "textPreview": "Facebook-fIcon-linkedinX-twitterYoutubeFind A LicenseePublications & ReportsOnli"
+    },
+    {
+      "selector": "div.elementor-element.elementor-element-e7d81ab.e-flex.e-con-boxed.e-con.e-parent.e-lazyloaded",
+      "textLength": 2196,
+      "linkCount": 115,
+      "linkDensity": 0.0523,
+      "textPreview": "HomeAbout UsMission and VisionOur BoardOur ValuesSEC SustainabilityManagement & "
+    },
+    {
+      "selector": "div.elementor-element.elementor-element-10aa888.e-flex.e-con-boxed.e-con.e-child",
+      "textLength": 2196,
+      "linkCount": 115,
+      "linkDensity": 0.0523,
+      "textPreview": "HomeAbout UsMission and VisionOur BoardOur ValuesSEC SustainabilityManagement & "
+    },
+    {
+      "selector": "div.elementor-element.elementor-element-bc4f7e5.e-flex.e-con-boxed.e-con.e-parent",
+      "textLength": 2191,
+      "linkCount": 19,
+      "linkDensity": 0.0087,
+      "textPreview": "News & Regulatory UpdatesNewsEventsReportsNoticesLusaka | October 14, 2025 – In "
+    },
+    {
+      "selector": "div.elementor-element.elementor-element-dda5aeb.e-con-full.e-flex.e-con.e-child",
+      "textLength": 2166,
+      "linkCount": 19,
+      "linkDensity": 0.0088,
+      "textPreview": "NewsEventsReportsNoticesLusaka | October 14, 2025 – In a coordinated effort to e"
+    },
+    {
+      "selector": "div.elementor-element.elementor-element-62bbb6f.e-n-tabs-none.elementor-widget.elementor-widget-n-tabs",
+      "textLength": 2166,
+      "linkCount": 19,
+      "linkDensity": 0.0088,
+      "textPreview": "NewsEventsReportsNoticesLusaka | October 14, 2025 – In a coordinated effort to e"
+    },
+    {
+      "selector": "div.e-n-tabs.e-activated",
+      "textLength": 2166,
+      "linkCount": 19,
+      "linkDensity": 0.0088,
+      "textPreview": "NewsEventsReportsNoticesLusaka | October 14, 2025 – In a coordinated effort to e"
+    },
+    {
+      "selector": "div.e-n-tabs-content",
+      "textLength": 2142,
+      "linkCount": 19,
+      "linkDensity": 0.0089,
+      "textPreview": "Lusaka | October 14, 2025 – In a coordinated effort to enhance Zambia’s legal an"
+    },
+    {
+      "selector": "div.elementor-element.elementor-element-d80c3e1.e-con-full.e-flex.e-con.e-child",
+      "textLength": 2113,
+      "linkCount": 106,
+      "linkDensity": 0.0501,
+      "textPreview": "HomeAbout UsMission and VisionOur BoardOur ValuesSEC SustainabilityManagement & "
+    }
+  ],
+  "titleSelector": "h1",
+  "titleTagName": "h1.elementor-heading-title.elementor-size-default",
+  "titleText": "Regulating & Developing the Capital Markets",
+  "structureHint": "10 body container candidates for LLM to choose from; title in <h1.elementor-heading-title.elementor-size-default> (selector: 'h1')"
+}

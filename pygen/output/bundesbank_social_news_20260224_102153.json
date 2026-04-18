@@ -1,0 +1,17 @@
+{
+  "total": 1,
+  "crawlTime": "2026-02-24 10:21:53",
+  "targetUrl": "https://www.news.bundesbank.de/news-de",
+  "articles": [
+    {
+      "title": "",
+      "date": "2026-02-24",
+      "source": "Deutsche Bundesbank",
+      "author": "Deutsche Bundesbank",
+      "sourceUrl": "https://www.news.bundesbank.de/news-de",
+      "summary": "",
+      "content": "<div class=\"css-1xm7x96\"><div class=\"swiper swiper-initialized swiper-horizontal swiper-backface-hidden\"><div class=\"swiper-wrapper\"><div class=\"swiper-slide swiper-slide-active\" style=\"width: 304.25px; margin-right: 10px;\"><div class=\"css-1hutsvj\"><div class=\"css-dziz54\"><div class=\"css-1966goc\"></div></div></div></div><div class=\"swiper-slide swiper-slide-next\" style=\"width: 304.25px; margin-rig",
+      "id": "20260224_1"
+    }
+  ]
+}

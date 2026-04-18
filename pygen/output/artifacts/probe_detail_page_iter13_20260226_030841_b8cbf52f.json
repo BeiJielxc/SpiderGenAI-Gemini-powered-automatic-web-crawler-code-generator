@@ -1,0 +1,85 @@
+{
+  "url": "https://supervalores.gob.pa/comunicado-5-4/",
+  "contentSelector": "section.elementor-section.elementor-top-section.elementor-element.elementor-element-345aac21.elementor-section-content-middle.elementor-hidden-desktop.elementor-section-boxed.elementor-section-height-default.elementor-section-height-default",
+  "contentTagName": "section",
+  "contentTextLength": 2606,
+  "sampleContentHtml": "<section class=\"elementor-section elementor-top-section elementor-element elementor-element-345aac21 elementor-section-content-middle elementor-hidden-desktop elementor-section-boxed elementor-section-height-default elementor-section-height-default\" data-e-type=\"section\" data-element_type=\"section\" data-id=\"345aac21\" data-settings='{\"background_background\":\"classic\"}'>\n<div class=\"elementor-container elementor-column-gap-no\">\n<div class=\"elementor-column elementor-col-50 elementor-top-column elementor-element elementor-element-4a4e58a7\" data-e-type=\"column\" data-element_type=\"column\" data-id=\"4a4e58a7\" data-settings='{\"background_background\":\"classic\"}'>\n<div class=\"elementor-widget-wrap elementor-element-populated\">\n<div class=\"elementor-background-overlay\"></div>\n<div class=\"elementor-element elementor-element-559f940 elementor-nav-menu__align-start elementor-nav-menu--stretch elementor-nav-menu--dropdown-tablet elementor-nav-menu__text-align-aside elementor-nav-menu--toggle elementor-nav-menu--burger elementor-widget elementor-widget-nav-menu\" data-e-type=\"widget\" data-element_type=\"widget\" data-id=\"559f940\" data-settings='{\"full_width\":\"stretch\",\"layout\":\"vertical\",\"submenu_ico...",
+  "contentCandidates": [
+    {
+      "selector": "section.elementor-section.elementor-top-section.elementor-element.elementor-element-345aac21.elementor-section-content-middle.elementor-hidden-desktop.elementor-section-boxed.elementor-section-height-default.elementor-section-height-default",
+      "textLength": 2606,
+      "linkCount": 112,
+      "linkDensity": 0.043,
+      "textPreview": "InicioInformacióngeneralQuienes Somos?Asuntos InternacionalesReseña HistóricaOrg"
+    },
+    {
+      "selector": "section.elementor-section.elementor-top-section.elementor-element.elementor-element-7f6021d6.elementor-section-content-middle.elementor-hidden-tablet.elementor-hidden-phone.elementor-section-boxed.elementor-section-height-default.elementor-section-height-default",
+      "textLength": 2600,
+      "linkCount": 112,
+      "linkDensity": 0.0431,
+      "textPreview": "InicioInformacióngeneralQuienes Somos?Asuntos InternacionalesReseña HistóricaOrg"
+    },
+    {
+      "selector": "div.elementor-container.elementor-column-gap-no",
+      "textLength": 2600,
+      "linkCount": 112,
+      "linkDensity": 0.0431,
+      "textPreview": "InicioInformacióngeneralQuienes Somos?Asuntos InternacionalesReseña HistóricaOrg"
+    },
+    {
+      "selector": "div.elementor-column.elementor-col-100.elementor-top-column.elementor-element.elementor-element-3cfac787.elementor-hidden-tablet.elementor-hidden-mobile",
+      "textLength": 2600,
+      "linkCount": 112,
+      "linkDensity": 0.0431,
+      "textPreview": "InicioInformacióngeneralQuienes Somos?Asuntos InternacionalesReseña HistóricaOrg"
+    },
+    {
+      "selector": "div.elementor-widget-wrap.elementor-element-populated",
+      "textLength": 2600,
+      "linkCount": 112,
+      "linkDensity": 0.0431,
+      "textPreview": "InicioInformacióngeneralQuienes Somos?Asuntos InternacionalesReseña HistóricaOrg"
+    },
+    {
+      "selector": "div.elementor-widget-container",
+      "textLength": 2600,
+      "linkCount": 112,
+      "linkDensity": 0.0431,
+      "textPreview": "InicioInformacióngeneralQuienes Somos?Asuntos InternacionalesReseña HistóricaOrg"
+    },
+    {
+      "selector": "div.elementor-column.elementor-col-50.elementor-top-column.elementor-element.elementor-element-4a4e58a7",
+      "textLength": 2600,
+      "linkCount": 112,
+      "linkDensity": 0.0431,
+      "textPreview": "InicioInformacióngeneralQuienes Somos?Asuntos InternacionalesReseña HistóricaOrg"
+    },
+    {
+      "selector": "#content",
+      "textLength": 1792,
+      "linkCount": 138,
+      "linkDensity": 0.077,
+      "textPreview": "Comunicado #526 de enero de 2026porSMVProceso de disolución de personas jurídica"
+    },
+    {
+      "selector": "li.post-attachment.mime-application-pdf",
+      "textLength": 27,
+      "linkCount": 1,
+      "linkDensity": 0.0,
+      "textPreview": "[FILE] Comunicado5-Proceso(103 kB)",
+      "isFileContainer": true,
+      "fileExt": "pdf"
+    },
+    {
+      "selector": "section.elementor-section.elementor-top-section.elementor-element.elementor-element-5093641.elementor-section-boxed.elementor-section-height-default.elementor-section-height-default",
+      "textLength": 372,
+      "linkCount": 13,
+      "linkDensity": 0.0349,
+      "textPreview": "Panamá, Ciudad de Panamá, Calle 50, Edificio Global Plaza Piso 8(507)501-1700   "
+    }
+  ],
+  "titleSelector": "h1",
+  "titleTagName": "h1.entry-title",
+  "titleText": "Comunicado #5",
+  "structureHint": "10 body container candidates for LLM to choose from; title in <h1.entry-title> (selector: 'h1')"
+}

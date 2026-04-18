@@ -1,0 +1,514 @@
+{
+  "final_round": 3,
+  "max_retries": 3,
+  "repaired_code": "# === PyGen 注入：HTTP/SSL 韧性层（通用） ===\n# 说明：\n# 1) 优先保持 verify=True；如确需临时绕过（不推荐），可设置环境变量 PYGEN_INSECURE_SSL=1\n# 2) 默认遇到 418/403/429 仅做一次\"预热 cookie + 浏览器化 headers\"的重试\n# 3) 若仍被拦截且本机已安装 Playwright，会自动尝试一次 request-context 兜底\n#    如需禁用：设置 PYGEN_DISABLE_PLAYWRIGHT_FALLBACK=1\nimport os as _pygen_os\nimport ssl as _pygen_ssl\nimport urllib.parse as _pygen_urlparse\n\ntry:\n    # truststore 会让 Python/requests 使用系统证书库（Windows/macOS/Linux），更贴近浏览器行为\n    import truststore as _pygen_truststore  # type: ignore\n    _pygen_truststore.inject_into_ssl()\nexcept Exception:\n    _pygen_truststore = None  # noqa: F401\n\ntry:\n    import requests as _pygen_requests\n    from requests.structures import CaseInsensitiveDict as _pygen_CaseInsensitiveDict\nexcept Exception:\n    _pygen_requests = None  # noqa: F401\n\n_PYGEN_DEFAULT_UA = (\n    \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) \"\n    \"AppleWebKit/537.36 (KHTML, like Gecko) \"\n    \"Chrome/122.0 Safari/537.36\"\n)\n\ndef _pygen_origin(url: str) -> str:\n    try:\n        p = _pygen_urlparse.urlsplit(url)\n        return f\"{p.scheme}://{p.netloc}\"\n    except Exception:\n        return \"\"\n\ndef _pygen_merge_headers(h: dict | None) -> dict:\n    base = {\n        \"User-Agent\": _PYGEN_DEFAULT_UA,\n        \"Accept\": \"application/json,text/plain,*/*\",\n        \"Accept-Language\": \"zh-CN,zh;q=0.9,en;q=0.8\",\n        \"Connection\": \"keep-alive\",\n    }\n    if h:\n        for k, v in h.items():\n            if v is not None:\n                base[k] = v\n    return base\n\ndef _pygen_make_response(status: int, url: str, headers: dict, body: bytes):\n    r = _pygen_requests.Response()\n    r.status_code = status\n    r.url = url\n    r.headers = _pygen_CaseInsensitiveDict(headers or {})\n    r._content = body or b\"\"\n    return r\n\ndef _pygen_playwright_fetch(method: str, url: str, headers: dict, data=None, json=None, timeout: int = 30):\n    \"\"\"\n    兜底：使用 Playwright 的 request context（更像浏览器/更容易过 WAF）。\n    仅当已安装 playwright 且未设置 PYGEN_DISABLE_PLAYWRIGHT_FALLBACK=1 时启用。\n    \"\"\"\n    if _pygen_os.getenv(\"PYGEN_DISABLE_PLAYWRIGHT_FALLBACK\") == \"1\":\n        return None\n    try:\n        from playwright.sync_api import sync_playwright  # type: ignore\n    except Exception:\n        return None\n\n    with sync_playwright() as p:\n        ctx = p.request.new_context(ignore_https_errors=_pygen_os.getenv(\"PYGEN_INSECURE_SSL\") == \"1\",\n                                    extra_http_headers=headers)\n        try:\n            resp = ctx.fetch(url, method=method.upper(), data=data, json=json, timeout=timeout * 1000)\n            body = resp.body()\n            return _pygen_make_response(resp.status, url, dict(resp.headers), body)\n        finally:\n            ctx.dispose()\n\ndef _pygen_install_requests_patch():\n    if _pygen_requests is None:\n        return\n    _orig = _pygen_requests.sessions.Session.request\n\n    def _patched(self, method, url, **kwargs):\n        # 默认超时，避免脚本卡死\n        kwargs.setdefault(\"timeout\", 30)\n\n        # 证书校验策略：默认开启；仅在用户明确设置时关闭\n        if _pygen_os.getenv(\"PYGEN_INSECURE_SSL\") == \"1\":\n            kwargs[\"verify\"] = False\n\n        # 合并\"更像浏览器\"的 headers（很多站会对 UA/Accept 做拦截）\n        headers = _pygen_merge_headers(kwargs.get(\"headers\"))\n        kwargs[\"headers\"] = headers\n\n        # 首次请求\n        try:\n            resp = _orig(self, method, url, **kwargs)\n        except Exception as e:\n            # 若是 SSL 校验错误：truststore 已注入则直接抛出；否则给出更友好的提示\n            msg = str(e)\n            if \"CERTIFICATE_VERIFY_FAILED\" in msg or \"certificate verify failed\" in msg:\n                # 若 playwright 可用，尝试用 request-context 做一次兜底（有些环境下系统信任链更完整）\n                try:\n                    pw_resp = _pygen_playwright_fetch(method, url, headers=headers,\n                                                      data=kwargs.get(\"data\"),\n                                                      json=kwargs.get(\"json\"),\n                                                      timeout=int(kwargs.get(\"timeout\") or 30))\n                    if pw_resp is not None:\n                        return pw_resp\n                except Exception:\n                    pass\n                raise\n            raise\n\n        # WAF/反爬：做一次轻量重试（预热 cookie + 再请求）\n        if resp is not None and getattr(resp, \"status_code\", 0) in (418, 403, 429):\n            try:\n                origin = _pygen_origin(url)\n                if origin:\n                    # 预热：访问首页拿 cookie\n                    _ = _orig(self, \"GET\", origin + \"/\", headers=headers, timeout=15, verify=kwargs.get(\"verify\", True))\n                resp2 = _orig(self, method, url, **kwargs)\n                if resp2 is not None and getattr(resp2, \"status_code\", 0) not in (418, 403, 429):\n                    return resp2\n                # 若仍被拦截，且 playwright 可用，则再尝试一次（自动兜底）\n                pw_resp = _pygen_playwright_fetch(method, url, headers=headers,\n                                                  data=kwargs.get(\"data\"),\n                                                  json=kwargs.get(\"json\"),\n                                                  timeout=int(kwargs.get(\"timeout\") or 30))\n                if pw_resp is not None:\n                    return pw_resp\n            except Exception:\n                # 兜底失败则返回原始响应，交由上层处理\n                return resp\n\n        return resp\n\n    _pygen_requests.sessions.Session.request = _patched\n\n_pygen_install_requests_patch()\n# === PyGen 注入结束 ===\nimport os\nimport json\nimport time\nimport requests\nimport re\nfrom datetime import datetime\nfrom urllib.parse import urljoin, urlparse\nfrom bs4 import BeautifulSoup\n\n# ==========================================\n# 配置区域\n# ==========================================\nTARGET_URL = \"https://www.seczambia.org.zm/resources/multimedia/news/\"\nOUTPUT_DIR = r\"d:\\llm_mcp_genpy\\pygen\\output\"\nMAX_ARTICLES = 5\nREQUEST_TIMEOUT = 30\nRETRY_COUNT = 3\nRETRY_DELAY = 2\n\n# 请求头\nHEADERS = {\n    \"User-Agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\",\n    \"Accept\": \"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7\",\n    \"Accept-Language\": \"en-US,en;q=0.9\",\n    \"Referer\": \"https://www.seczambia.org.zm/\",\n    \"Connection\": \"keep-alive\",\n    \"Upgrade-Insecure-Requests\": \"1\"\n}\n\n# ==========================================\n# 工具函数\n# ==========================================\n\ndef ensure_dir(path):\n    if not os.path.exists(path):\n        os.makedirs(path)\n\ndef get_request(url, retries=RETRY_COUNT):\n    \"\"\"发送GET请求，带重试机制\"\"\"\n    for i in range(retries):\n        try:\n            response = requests.get(url, headers=HEADERS, timeout=REQUEST_TIMEOUT, verify=False)\n            response.raise_for_status()\n            response.encoding = 'utf-8'\n            return response\n        except Exception as e:\n            print(f\"[警告] 请求失败 {url} (尝试 {i+1}/{retries}): {e}\")\n            time.sleep(RETRY_DELAY)\n    return None\n\ndef clean_html_content(html_content, base_url):\n    \"\"\"清洗HTML内容：相对路径转绝对路径\"\"\"\n    if not html_content:\n        return \"\"\n    try:\n        soup = BeautifulSoup(html_content, 'html.parser')\n        \n        for tag in soup.find_all(['script', 'style', 'iframe', 'form']):\n            tag.decompose()\n\n        for img in soup.find_all('img'):\n            if img.get('src'):\n                img['src'] = urljoin(base_url, img['src'])\n            if img.get('data-src'):\n                img['src'] = urljoin(base_url, img['data-src'])\n                \n        for a in soup.find_all('a'):\n            if a.get('href'):\n                a['href'] = urljoin(base_url, a['href'])\n                \n        return str(soup)\n    except Exception as e:\n        print(f\"[错误] 内容清洗出错: {e}\")\n        return html_content\n\ndef normalize_date(date_str):\n    \"\"\"统一日期格式化\"\"\"\n    if not date_str:\n        return \"\"\n    try:\n        # 常见格式尝试\n        formats = [\n            \"%Y-%m-%d\", \"%Y/%m/%d\", \n            \"%B %d, %Y\", \"%d %B %Y\",  # January 1, 2024 / 1 January 2024\n            \"%b %d, %Y\", \"%d %b %Y\",  # Jan 1, 2024\n            \"%Y-%m-%dT%H:%M:%S%z\"\n        ]\n        \n        # 清理多余空格\n        date_str = date_str.strip()\n        \n        for fmt in formats:\n            try:\n                dt = datetime.strptime(date_str.split('T')[0], fmt)\n                return dt.strftime(\"%Y-%m-%d\")\n            except:\n                continue\n                \n        # 正则提取 YYYY-MM-DD\n        match = re.search(r'(\\d{4}[-/]\\d{1,2}[-/]\\d{1,2})', date_str)\n        if match:\n            return match.group(1).replace('/', '-')\n            \n    except Exception:\n        pass\n    return date_str\n\ndef extract_date_from_text(text):\n    \"\"\"从文本中提取日期\"\"\"\n    if not text:\n        return \"\"\n    # 匹配 2024-01-01\n    match = re.search(r'(\\d{4}[-/]\\d{1,2}[-/]\\d{1,2})', text)\n    if match:\n        return normalize_date(match.group(1))\n    # 匹配 January 1, 2024\n    match = re.search(r'([A-Z][a-z]+ \\d{1,2},? \\d{4})', text)\n    if match:\n        return normalize_date(match.group(1))\n    return \"\"\n\ndef parse_detail_page(url, list_date=None):\n    \"\"\"解析详情页\"\"\"\n    print(f\"-> 正在抓取详情页: {url}\")\n    resp = get_request(url)\n    if not resp:\n        return {\"date\": list_date, \"content\": \"\", \"downloadUrl\": \"\"}\n    \n    soup = BeautifulSoup(resp.text, 'html.parser')\n    \n    # 提取标题\n    title = \"\"\n    h1 = soup.find('h1')\n    if h1:\n        title = h1.get_text(strip=True)\n    \n    # 提取日期 (优先使用详情页日期，若无则使用列表页传入的日期)\n    date = \"\"\n    date_selectors = [\n        '.elementor-post-info__item--type-date',\n        '.entry-date', 'time.published', 'time.updated',\n        '.posted-on time', 'meta[property=\"article:published_time\"]'\n    ]\n    \n    for selector in date_selectors:\n        if 'meta' in selector:\n            meta = soup.select_one(selector)\n            if meta and meta.get('content'):\n                date = normalize_date(meta['content'])\n                break\n        else:\n            el = soup.select_one(selector)\n            if el:\n                date = normalize_date(el.get_text(strip=True))\n                break\n    \n    if not date and list_date:\n        date = list_date\n    if not date:\n        date = extract_date_from_text(resp.text)\n    if not date:\n        date = datetime.now().strftime(\"%Y-%m-%d\") # 最终兜底\n\n    # 提取正文\n    content_html = \"\"\n    content_selectors = [\n        'div.elementor-widget-theme-post-content',\n        'div.elementor-location-single',\n        '.entry-content',\n        'article',\n        'main'\n    ]\n    \n    for selector in content_selectors:\n        content_div = soup.select_one(selector)\n        if content_div:\n            # 移除干扰元素\n            for remove in ['.sharedaddy', '.jp-relatedposts', '.elementor-widget-social-icons', '.post-navigation']:\n                for tag in content_div.select(remove):\n                    tag.decompose()\n            content_html = str(content_div)\n            break\n            \n    content_html = clean_html_content(content_html, url)\n    \n    # 提取下载链接\n    download_url = \"\"\n    if content_html:\n        c_soup = BeautifulSoup(content_html, 'html.parser')\n        for a in c_soup.find_all('a', href=True):\n            if a['href'].lower().endswith('.pdf'):\n                download_url = urljoin(url, a['href'])\n                break\n    \n    return {\n        \"title\": title,\n        \"date\": date,\n        \"content\": content_html,\n        \"downloadUrl\": download_url\n    }\n\ndef crawl_news():\n    \"\"\"主爬取逻辑\"\"\"\n    articles = []\n    current_url = TARGET_URL\n    page_count = 1\n    \n    while len(articles) < MAX_ARTICLES and current_url:\n        print(f\"\\n[INFO] 正在处理第 {page_count} 页: {current_url}\")\n        resp = get_request(current_url)\n        if not resp:\n            break\n            \n        soup = BeautifulSoup(resp.text, 'html.parser')\n        \n        # [修复] 使用更广泛的候选选择器列表，解决 0 条新闻的问题\n        # 很多 Elementor 站点使用 div 而不是 article，或者 class 不同\n        candidate_selectors = [\n            'article.elementor-post', \n            'div.elementor-post',\n            '.elementor-grid-item',\n            'article.post',\n            'div.post',\n            '.elementor-posts-container > article',\n            '.elementor-posts-container > div',\n            '.news-item',\n            'div[class*=\"post-\"]' # 宽泛匹配\n        ]\n        \n        items = []\n        for sel in candidate_selectors:\n            found = soup.select(sel)\n            # 过滤掉非内容项（如空的 grid item）\n            valid_items = [i for i in found if i.get_text(strip=True)]\n            if valid_items:\n                items = valid_items\n                print(f\"[INFO] 使用选择器 '{sel}' 找到 {len(items)} 条新闻\")\n                break\n        \n        # 兜底：如果仍未找到，尝试直接查找标题链接\n        if not items:\n            print(\"[INFO] 未找到标准容器，尝试通过标题链接查找...\")\n            # 查找 h2/h3/h4 下的链接，通常是文章标题\n            headers = soup.select('h2 a, h3 a, h4 a')\n            # 去重并获取父级容器作为 item\n            seen_links = set()\n            for h in headers:\n                href = h.get('href')\n                if href and href not in seen_links:\n                    seen_links.add(href)\n                    # 构造一个伪 item，方便后续统一处理\n                    parent = h.find_parent('div') or h.find_parent('article') or h.parent\n                    if parent:\n                        items.append(parent)\n            print(f\"[INFO] 通过标题链接推断出 {len(items)} 条潜在新闻\")\n\n        print(f\"[INFO] 当前页准备处理 {len(items)} 条新闻\")\n        \n        for item in items:\n            if len(articles) >= MAX_ARTICLES:\n                break\n                \n            try:\n                # 提取标题和链接\n                title_tag = item.select_one('.elementor-post__title a, .entry-title a, h2 a, h3 a, h4 a')\n                if not title_tag:\n                    # 尝试直接找链接\n                    title_tag = item.find('a', href=True)\n                \n                if not title_tag:\n                    continue\n                    \n                link = urljoin(current_url, title_tag['href'])\n                \n                # 过滤无效链接\n                if link == current_url or link.strip('/') == \"https://www.seczambia.org.zm\":\n                    continue\n                \n                list_title = title_tag.get_text(strip=True)\n                \n                # 尝试在列表页提取日期（作为备用）\n                list_date = \"\"\n                date_tag = item.select_one('.elementor-post-date, .published, .date, time, .elementor-post-info__item--type-date')\n                if date_tag:\n                    list_date = normalize_date(date_tag.get_text(strip=True))\n                \n                # 提取摘要\n                summary = \"\"\n                excerpt_tag = item.select_one('.elementor-post__excerpt, .entry-summary, p')\n                if excerpt_tag:\n                    summary = excerpt_tag.get_text(strip=True)[:200] + \"...\"\n                \n                # 进入详情页\n                detail = parse_detail_page(link, list_date)\n                \n                final_title = detail.get(\"title\") or list_title\n                if not final_title:\n                    continue\n\n                article = {\n                    \"id\": str(len(articles) + 1),\n                    \"title\": final_title,\n                    \"date\": detail.get(\"date\"),\n                    \"source\": \"SEC Zambia\",\n                    \"author\": \"SEC Zambia\",\n                    \"sourceUrl\": link,\n                    \"summary\": summary,\n                    \"content\": detail.get(\"content\", \"\"),\n                    \"downloadUrl\": detail.get(\"downloadUrl\", \"\")\n                }\n                \n                articles.append(article)\n                print(f\"[成功] 已采集: {article['title']} ({article['date']})\")\n                time.sleep(1)\n                \n            except Exception as e:\n                print(f\"[错误] 处理单条新闻时出错: {e}\")\n                continue\n        \n        # 翻页逻辑\n        if len(articles) < MAX_ARTICLES:\n            next_link = soup.select_one('a.page-numbers.next, a.next.page-numbers, a.next')\n            if next_link and next_link.get('href'):\n                current_url = urljoin(current_url, next_link['href'])\n                page_count += 1\n                print(f\"[翻页] 发现下一页: {current_url}\")\n                time.sleep(2)\n            else:\n                print(\"[结束] 没有更多页面了\")\n                break\n        else:\n            break\n            \n    return articles\n\ndef save_results(articles, output_dir):\n    \"\"\"保存结果为JSON\"\"\"\n    ensure_dir(output_dir)\n    timestamp = datetime.now().strftime(\"%Y%m%d_%H%M%S\")\n    filename = f\"seczambia_news_{timestamp}.json\"\n    filepath = os.path.join(output_dir, filename)\n    \n    result = {\n        \"total\": len(articles),\n        \"crawlTime\": datetime.now().strftime(\"%Y-%m-%d %H:%M:%S\"),\n        \"articles\": articles\n    }\n    \n    with open(filepath, 'w', encoding='utf-8') as f:\n        json.dump(result, f, ensure_ascii=False, indent=2)\n        \n    print(f\"\\n[完成] 结果已保存至: {filepath}\")\n    print(f\"共采集 {len(articles)} 条新闻\")\n\ndef main():\n    import urllib3\n    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)\n    \n    print(\"=== 开始爬取赞比亚SEC新闻 ===\")\n    articles = crawl_news()\n    save_results(articles, OUTPUT_DIR)\n\nif __name__ == \"__main__\":\n    main()",
+  "rounds": [
+    {
+      "round": 1,
+      "passed": false,
+      "primary_cause": "unknown",
+      "backup_cause": "schema_mismatch",
+      "uncertain": true,
+      "classifier_confidence": 0.3,
+      "record_count": 5,
+      "static_error_count": 1
+    },
+    {
+      "round": 2,
+      "passed": false,
+      "primary_cause": "empty_output",
+      "backup_cause": "schema_mismatch",
+      "uncertain": false,
+      "classifier_confidence": 0.75,
+      "record_count": 0,
+      "static_error_count": 1
+    },
+    {
+      "round": 3,
+      "passed": false,
+      "primary_cause": "schema_mismatch",
+      "backup_cause": "pagination_date_lost",
+      "uncertain": false,
+      "classifier_confidence": 0.75,
+      "record_count": 0,
+      "static_error_count": 1
+    },
+    {
+      "round": 3,
+      "passed": false,
+      "primary_cause": "unknown",
+      "backup_cause": "schema_mismatch",
+      "uncertain": true,
+      "classifier_confidence": 0.3,
+      "record_count": 5,
+      "static_error_count": 1
+    }
+  ],
+  "evidence": [
+    {
+      "round": 1,
+      "step": "static_check",
+      "result": {
+        "error_count": 1,
+        "warning_count": 2,
+        "top_errors": [
+          {
+            "severity": "error",
+            "code": "detail_body_selector_mismatch",
+            "message": "详情页正文未使用 probe_detail_page 返回的任一候选选择器。请从 probe 的 contentCandidates 中任选一个作为正文容器，不要使用泛化的 article/main。"
+          }
+        ],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+          },
+          {
+            "severity": "warning",
+            "code": "ERR_003",
+            "message": "日期提取函数可能在分页循环外调用，可能导致只有第一页有日期"
+          }
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": true,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 19.94,
+        "record_count": 5,
+        "date_fill_rate": 1.0,
+        "status": "success",
+        "http_statuses": [],
+        "stdout_tail": "=== 开始爬取赞比亚SEC新闻 ===\n\n[INFO] 正在处理第 1 页: https://www.seczambia.org.zm/resources/multimedia/news/\n[INFO] 当前页发现 6 条新闻\n-> 正在抓取详情页: https://www.seczambia.org.zm\n[成功] 已采集: Regulating & Developing the Capital Markets (2026-02-26)\n-> 正在抓取详情页: https://www.seczambia.org.zm\n[成功] 已采集: Regulating & Developing the Capital Markets (2026-02-26)\n-> 正在抓取详情页: https://www.seczambia.org.zm\n[成功] 已采集: Regulating & Developing the Capital Markets (2026-02-26)\n-> 正在抓取详情页: https://www.seczambia.org.zm\n[成功] 已采集: Regulating & Developing the Capital Markets (2026-02-26)\n-> 正在抓取详情页: https://www.seczambia.org.zm\n[成功] 已采集: Regulating & Developing the Capital Markets (2026-02-26)\n\n[完成] 结果已保存至: d:\\llm_mcp_genpy\\pygen\\output\\seczambia_news_20260226_120415.json\n共采集 5 条新闻",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 1,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "unknown",
+        "backup_cause": "schema_mismatch",
+        "confidence": 0.3,
+        "classifier_summary": "未能明确分类的故障"
+      }
+    },
+    {
+      "round": 1,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "sample_output_probe",
+        "cause": "unknown",
+        "result": {
+          "sample_size": 5,
+          "required_non_empty_count": {
+            "title": 5,
+            "sourceUrl": 5
+          },
+          "sample": [
+            {
+              "id": "1",
+              "title": "Regulating & Developing the Capital Markets",
+              "date": "2026-02-26",
+              "source": "Securities and Exchange Commission (SEC) Zambia",
+              "author": "SEC Zambia",
+              "sourceUrl": "https://www.seczambia.org.zm",
+              "summary": "",
+              "content": "",
+              "downloadUrl": ""
+            },
+            {
+              "id": "2",
+              "title": "Regulating & Developing the Capital Markets",
+              "date": "2026-02-26",
+              "source": "Securities and Exchange Commission (SEC) Zambia",
+              "author": "SEC Zambia",
+              "sourceUrl": "https://www.seczambia.org.zm",
+              "summary": "",
+              "content": "",
+              "downloadUrl": ""
+            },
+            {
+              "id": "3",
+              "title": "Regulating & Developing the Capital Markets",
+              "date": "2026-02-26",
+              "source": "Securities and Exchange Commission (SEC) Zambia",
+              "author": "SEC Zambia",
+              "sourceUrl": "https://www.seczambia.org.zm",
+              "summary": "Lusaka | October 14, 2025 – In a coordinated effort to enhance Zambia’s legal and institutional response to serious financial",
+              "content": "",
+              "downloadUrl": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "round": 1,
+      "step": "output_quality",
+      "result": {
+        "record_count": 5,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 1.0,
+          "sourceUrl": 1.0
+        },
+        "required_fields_ok": true,
+        "meets_min_items": true,
+        "recommendations": [],
+        "sample_records": [
+          {
+            "id": "1",
+            "title": "Regulating & Developing the Capital Markets",
+            "date": "2026-02-26",
+            "source": "Securities and Exchange Commission (SEC) Zambia",
+            "author": "SEC Zambia",
+            "sourceUrl": "https://www.seczambia.org.zm",
+            "summary": "",
+            "content": "",
+            "downloadUrl": ""
+          },
+          {
+            "id": "2",
+            "title": "Regulating & Developing the Capital Markets",
+            "date": "2026-02-26",
+            "source": "Securities and Exchange Commission (SEC) Zambia",
+            "author": "SEC Zambia",
+            "sourceUrl": "https://www.seczambia.org.zm",
+            "summary": "",
+            "content": "",
+            "downloadUrl": ""
+          },
+          {
+            "id": "3",
+            "title": "Regulating & Developing the Capital Markets",
+            "date": "2026-02-26",
+            "source": "Securities and Exchange Commission (SEC) Zambia",
+            "author": "SEC Zambia",
+            "sourceUrl": "https://www.seczambia.org.zm",
+            "summary": "Lusaka | October 14, 2025 – In a coordinated effort to enhance Zambia’s legal and institutional response to serious financial",
+            "content": "",
+            "downloadUrl": ""
+          }
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "step": "llm_adjudication",
+      "result": {
+        "used": true,
+        "cause": "selector_mismatch",
+        "confidence": 0.95,
+        "reason": "The crawler extracted 5 identical records where the title ('Regulating & Developing the Capital Markets') appears to be a site slogan and the sourceUrl is the homepage root ('https://www.seczambia.org.zm') for all items. This indicates the selectors are targeting static site elements (like the logo or header) instead of the actual news list items."
+      }
+    },
+    {
+      "round": 2,
+      "step": "llm_repair",
+      "result": {
+        "changed": true
+      }
+    },
+    {
+      "round": 2,
+      "step": "static_check",
+      "result": {
+        "error_count": 1,
+        "warning_count": 2,
+        "top_errors": [
+          {
+            "severity": "error",
+            "code": "detail_body_selector_mismatch",
+            "message": "详情页正文未使用 probe_detail_page 返回的任一候选选择器。请从 probe 的 contentCandidates 中任选一个作为正文容器，不要使用泛化的 article/main。"
+          }
+        ],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+          },
+          {
+            "severity": "warning",
+            "code": "ERR_003",
+            "message": "日期提取函数可能在分页循环外调用，可能导致只有第一页有日期"
+          }
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": false,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 9.737,
+        "record_count": 0,
+        "date_fill_rate": 0.0,
+        "status": "no_data",
+        "http_statuses": [],
+        "stdout_tail": "=== 开始爬取赞比亚SEC新闻 ===\n\n[INFO] 正在处理第 1 页: https://www.seczambia.org.zm/resources/multimedia/news/\n[INFO] 当前页发现 0 条新闻\n[翻页] 发现下一页: https://www.seczambia.org.zm/resources/multimedia/news/?e-page-895e501=2\n\n[INFO] 正在处理第 2 页: https://www.seczambia.org.zm/resources/multimedia/news/?e-page-895e501=2\n[INFO] 当前页发现 0 条新闻\n[翻页] 发现下一页: https://www.seczambia.org.zm/resources/multimedia/news/?e-page-895e501=3\n\n[INFO] 正在处理第 3 页: https://www.seczambia.org.zm/resources/multimedia/news/?e-page-895e501=3\n[INFO] 当前页发现 0 条新闻\n[结束] 没有更多页面了\n\n[完成] 结果已保存至: d:\\llm_mcp_genpy\\pygen\\output\\seczambia_news_20260226_120540.json\n共采集 0 条新闻",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 2,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "empty_output",
+        "backup_cause": "schema_mismatch",
+        "confidence": 0.75,
+        "classifier_summary": "脚本执行完成但输出为空"
+      }
+    },
+    {
+      "round": 2,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "selector_brittleness_probe",
+        "cause": "empty_output",
+        "result": {
+          "select_calls": 6,
+          "find_calls": 1,
+          "has_chained_find": false
+        }
+      }
+    },
+    {
+      "round": 2,
+      "step": "output_quality",
+      "result": {
+        "record_count": 0,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 0.0,
+          "sourceUrl": 0.0
+        },
+        "required_fields_ok": false,
+        "meets_min_items": false,
+        "recommendations": [
+          "Extract at least 5 items in lightweight validation.",
+          "Ensure required fields are populated: ['title', 'sourceUrl']"
+        ],
+        "sample_records": []
+      }
+    },
+    {
+      "round": 3,
+      "step": "static_check",
+      "result": {
+        "error_count": 1,
+        "warning_count": 2,
+        "top_errors": [
+          {
+            "severity": "error",
+            "code": "detail_body_selector_mismatch",
+            "message": "详情页正文未使用 probe_detail_page 返回的任一候选选择器。请从 probe 的 contentCandidates 中任选一个作为正文容器，不要使用泛化的 article/main。"
+          }
+        ],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+          },
+          {
+            "severity": "warning",
+            "code": "ERR_003",
+            "message": "日期提取函数可能在分页循环外调用，可能导致只有第一页有日期"
+          }
+        ]
+      }
+    },
+    {
+      "round": 3,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": false,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 9.808,
+        "record_count": 0,
+        "date_fill_rate": 0.0,
+        "status": "no_data",
+        "http_statuses": [],
+        "stdout_tail": "=== 开始爬取赞比亚SEC新闻 ===\n\n[INFO] 正在处理第 1 页: https://www.seczambia.org.zm/resources/multimedia/news/\n[INFO] 当前页发现 0 条新闻\n[翻页] 发现下一页: https://www.seczambia.org.zm/resources/multimedia/news/?e-page-895e501=2\n\n[INFO] 正在处理第 2 页: https://www.seczambia.org.zm/resources/multimedia/news/?e-page-895e501=2\n[INFO] 当前页发现 0 条新闻\n[翻页] 发现下一页: https://www.seczambia.org.zm/resources/multimedia/news/?e-page-895e501=3\n\n[INFO] 正在处理第 3 页: https://www.seczambia.org.zm/resources/multimedia/news/?e-page-895e501=3\n[INFO] 当前页发现 0 条新闻\n[结束] 没有更多页面了\n\n[完成] 结果已保存至: d:\\llm_mcp_genpy\\pygen\\output\\seczambia_news_20260226_120550.json\n共采集 0 条新闻",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 3,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "schema_mismatch",
+        "backup_cause": "pagination_date_lost",
+        "confidence": 0.75,
+        "classifier_summary": "脚本执行完成但输出为空"
+      }
+    },
+    {
+      "round": 3,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "selector_brittleness_probe",
+        "cause": "schema_mismatch",
+        "result": {
+          "select_calls": 6,
+          "find_calls": 1,
+          "has_chained_find": false
+        }
+      }
+    },
+    {
+      "round": 3,
+      "step": "output_quality",
+      "result": {
+        "record_count": 0,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 0.0,
+          "sourceUrl": 0.0
+        },
+        "required_fields_ok": false,
+        "meets_min_items": false,
+        "recommendations": [
+          "Extract at least 5 items in lightweight validation.",
+          "Ensure required fields are populated: ['title', 'sourceUrl']"
+        ],
+        "sample_records": []
+      }
+    },
+    {
+      "round": 3,
+      "step": "final_targeted_repair",
+      "result": {
+        "changed": true
+      }
+    },
+    {
+      "round": 3,
+      "step": "static_check",
+      "result": {
+        "error_count": 1,
+        "warning_count": 2,
+        "top_errors": [
+          {
+            "severity": "error",
+            "code": "detail_body_selector_mismatch",
+            "message": "详情页正文未使用 probe_detail_page 返回的任一候选选择器。请从 probe 的 contentCandidates 中任选一个作为正文容器，不要使用泛化的 article/main。"
+          }
+        ],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+          },
+          {
+            "severity": "warning",
+            "code": "ERR_003",
+            "message": "日期提取函数可能在分页循环外调用，可能导致只有第一页有日期"
+          }
+        ]
+      }
+    },
+    {
+      "round": 3,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": true,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 35.989,
+        "record_count": 5,
+        "date_fill_rate": 0.6,
+        "status": "partial",
+        "http_statuses": [],
+        "stdout_tail": "=== 开始爬取赞比亚SEC新闻 ===\n\n[INFO] 正在处理第 1 页: https://www.seczambia.org.zm/resources/multimedia/news/\n[INFO] 使用选择器 '.elementor-grid-item' 找到 8 条新闻\n[INFO] 当前页准备处理 8 条新闻\n-> 正在抓取详情页: https://www.facebook.com/SecZambia/?_rdc=1&_rdr#\n[警告] 请求失败 https://www.facebook.com/SecZambia/?_rdc=1&_rdr# (尝试 1/3): 400 Client Error: Bad Request for url: https://www.facebook.com/login/?next=https%3A%2F%2Fwww.facebook.com%2FSecZambia%2F\n[警告] 请求失败 https://www.facebook.com/SecZambia/?_rdc=1&_rdr# (尝试 2/3): 400 Client Error: Bad Request for url: https://www.facebook.com/login/?next=https%3A%2F%2Fwww.facebook.com%2FSecZambia%2F\n[警告] 请求失败 https://www.facebook.com/SecZambia/?_rdc=1&_rdr# (尝试 3/3): 400 Client Error: Bad Request for url: https://www.facebook.com/login/?next=https%3A%2F%2Fwww.facebook.com%2FSecZambia%2F\n[成功]...(truncated)",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 3,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "unknown",
+        "backup_cause": "schema_mismatch",
+        "confidence": 0.3,
+        "classifier_summary": "未能明确分类的故障"
+      }
+    },
+    {
+      "round": 3,
+      "step": "output_quality",
+      "result": {
+        "record_count": 5,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 1.0,
+          "sourceUrl": 1.0
+        },
+        "required_fields_ok": true,
+        "meets_min_items": true,
+        "recommendations": [],
+        "sample_records": [
+          {
+            "id": "1",
+            "title": "Facebook-f",
+            "date": "",
+            "source": "SEC Zambia",
+            "author": "SEC Zambia",
+            "sourceUrl": "https://www.facebook.com/SecZambia/?_rdc=1&_rdr#",
+            "summary": "",
+            "content": "",
+            "downloadUrl": ""
+          },
+          {
+            "id": "2",
+            "title": "Icon-linkedin",
+            "date": "2026-02-26",
+            "source": "SEC Zambia",
+            "author": "SEC Zambia",
+            "sourceUrl": "https://www.linkedin.com/in/securities-and-exchange-commission-zambia-7a5ba61b1/",
+            "summary": "",
+            "content": "",
+            "downloadUrl": ""
+          },
+          {
+            "id": "3",
+            "title": "JavaScript is not available.",
+            "date": "2026-02-26",
+            "source": "SEC Zambia",
+            "author": "SEC Zambia",
+            "sourceUrl": "https://x.com/SECZambia",
+            "summary": "",
+            "content": "",
+            "downloadUrl": ""
+          }
+        ]
+      }
+    }
+  ],
+  "stopped_reason": "max_retries_exceeded",
+  "primary_cause": "unknown",
+  "backup_cause": "schema_mismatch"
+}

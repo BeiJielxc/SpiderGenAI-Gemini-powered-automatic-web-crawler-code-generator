@@ -1,0 +1,638 @@
+{
+  "total": 57,
+  "crawlTime": "2026-02-12 12:27:54",
+  "dateRange": "2026-01-01 to 2026-01-31",
+  "downloadHeaders": {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Referer": "https://www.ccxi.com.cn/creditrating/result"
+  },
+  "reports": [
+    {
+      "category": "企业评级/主体评级",
+      "name": "中国铁建股份有限公司",
+      "date": "2026-01-28",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260210-1770692112584-37yub0-中国铁建股份有限公司-2026年度中国铁建股份有限公司信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": "稳定"
+      }
+    },
+    {
+      "category": "企业评级/主体评级",
+      "name": "上海市北高新(集团)有限公司",
+      "date": "2026-01-27",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260128-1769579220597-wP7vRW-上海市北高新集团有限公司-2026年度上海市北高新(集团)有限公司信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": "稳定"
+      }
+    },
+    {
+      "category": "企业评级/主体评级",
+      "name": "四川发展(控股)有限责任公司",
+      "date": "2026-01-09",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260119-1768800248903-51b1mx-四川发展控股有限责任公司-2026年度四川发展(控股)有限责任公司信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": "稳定"
+      }
+    },
+    {
+      "category": "企业评级/中期票据",
+      "name": "中国铁建股份有限公司2026年度第一期中期票据(品种二)",
+      "date": "2026-01-28",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260202-1770021917537-KhE0A8-中国铁建股份有限公司2026年度第一期中期票据品种二-中国铁建股份有限公司2026年度第一期中期票据信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/中期票据",
+      "name": "中国铁建股份有限公司2026年度第一期中期票据(品种一)",
+      "date": "2026-01-28",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260202-1770021898229-8nN159-中国铁建股份有限公司2026年度第一期中期票据品种一-中国铁建股份有限公司2026年度第一期中期票据信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/中期票据",
+      "name": "中国长江电力股份有限公司2026年度第二期科技创新债券",
+      "date": "2026-01-26",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260209-1770625614102-2I2MvG-中国长江电力股份有限公司2026年度第二期科技创新债券-中国长江电力股份有限公司2026年度第二期科技创新债券信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAAsti",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/中期票据",
+      "name": "中国长江电力股份有限公司2026年度第一期科技创新债券",
+      "date": "2026-01-26",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260209-1770625374862-789Ofj-中国长江电力股份有限公司2026年度第一期科技创新债券-中国长江电力股份有限公司2026年度第一期科技创新债券信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAAsti",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/中期票据",
+      "name": "厦门象屿金象控股集团有限公司2026年度第一期中期票据",
+      "date": "2026-01-21",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260211-1770774897825-N53V7Y-厦门象屿金象控股集团有限公司2026年度第一期中期票据-厦门象屿金象控股集团有限公司2026年度第一期中期票据信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/中期票据",
+      "name": "安徽国贸集团控股有限公司2026年度第一期中期票据(品种一)",
+      "date": "2026-01-16",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260210-1770709217729-7t2y72-安徽国贸集团控股有限公司2026年度第一期中期票据品种一-安徽国贸集团控股有限公司2026年度第一期中期票据（品种一）信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/中期票据",
+      "name": "甘肃省电力投资集团有限责任公司2026年度第一期中期票据",
+      "date": "2026-01-16",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260127-1769481928783-1Sw2Y8-甘肃省电力投资集团有限责任公司2026年度第一期中期票据-甘肃省电力投资集团有限责任公司2026年度第一期中期票据信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/中期票据",
+      "name": "绿城房地产集团有限公司2026年度第一期中期票据",
+      "date": "2026-01-15",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260130-1769752863058-uw5D46-绿城房地产集团有限公司2026年度第一期中期票据-绿城房地产集团有限公司2026年度第一期中期票据信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/中期票据",
+      "name": "中国光大控股有限公司2026年度第一期中期票据",
+      "date": "2026-01-09",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260203-1770099098348-9u1ICl-中国光大控股有限公司2026年度第一期中期票据-中国光大控股有限公司2026年度第一期中期票据信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/中期票据",
+      "name": "深圳市地铁集团有限公司2026年度第二期中期票据(品种一)",
+      "date": "2026-01-08",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260119-1768792210987-Nx6BTW-深圳市地铁集团有限公司2026年度第二期中期票据品种一-深圳市地铁集团有限公司2026年度第二期中期票据信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/中期票据",
+      "name": "深圳市地铁集团有限公司2026年度第二期中期票据(品种二)",
+      "date": "2026-01-08",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260119-1768792231938-M994Q3-深圳市地铁集团有限公司2026年度第二期中期票据品种二-深圳市地铁集团有限公司2026年度第二期中期票据信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/中期票据",
+      "name": "北京市海淀区国有资本运营有限公司2026年度第一期中期票据(品种二)",
+      "date": "2026-01-07",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260126-1769405291025-V3XyX4-北京市海淀区国有资本运营有限公司2026年度第一期中期票据品种二-北京市海淀区国有资本运营有限公司2026年度第一期中期票据信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/中期票据",
+      "name": "北京市海淀区国有资本运营有限公司2026年度第一期中期票据(品种一)",
+      "date": "2026-01-07",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260126-1769405271172-PcU702-北京市海淀区国有资本运营有限公司2026年度第一期中期票据品种一-北京市海淀区国有资本运营有限公司2026年度第一期中期票据信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/中期票据",
+      "name": "甘肃电投能源发展股份有限公司2026年度第一期中期票据",
+      "date": "2026-01-06",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260120-1768878377792-75Bh26-甘肃电投能源发展股份有限公司2026年度第一期中期票据-甘肃电投能源发展股份有限公司2026年度第一期中期票据信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/中期票据",
+      "name": "上海联和投资有限公司2026年度第一期中期票据",
+      "date": "2026-01-05",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260126-1769405416805-a9A7hH-上海联和投资有限公司2026年度第一期中期票据-上海联和投资有限公司2026年度第一期中期票据信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": "稳定"
+      }
+    },
+    {
+      "category": "企业评级/中期票据",
+      "name": "中建方程投资发展集团有限公司2026年度第一期中期票据(可持续挂钩)",
+      "date": "2026-01-04",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260120-1768878270587-87SE36-中建方程投资发展集团有限公司2026年度第一期中期票据可持续挂钩-中建方程投资发展集团有限公司2026年度第一期中期票据(可持续挂钩)信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AA+",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/企业债券",
+      "name": "2026年第三期中国铁路建设债券(10年期)",
+      "date": "2026-01-29",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260205-1770271747457-O6363J-2026年第三期中国铁路建设债券10年期-2026年第三期中国铁路建设债券信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": "稳定"
+      }
+    },
+    {
+      "category": "企业评级/企业债券",
+      "name": "2026年第三期中国铁路建设债券(30年期)",
+      "date": "2026-01-29",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260205-1770271774045-2Wc01U-2026年第三期中国铁路建设债券30年期-2026年第三期中国铁路建设债券信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": "稳定"
+      }
+    },
+    {
+      "category": "企业评级/企业债券",
+      "name": "2026年第二期中国铁路建设债券",
+      "date": "2026-01-15",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260122-1769063901031-309s82-2026年第二期中国铁路建设债券-2026年第二期中国铁路建设债券信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": "稳定"
+      }
+    },
+    {
+      "category": "企业评级/企业债券",
+      "name": "2026年第二期中国铁路建设债券",
+      "date": "2026-01-15",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260122-1769063918143-q21YR9-2026年第二期中国铁路建设债券-2026年第二期中国铁路建设债券信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": "稳定"
+      }
+    },
+    {
+      "category": "企业评级/企业债券",
+      "name": "2026年第一期中国铁路建设债券",
+      "date": "2026-01-05",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260112-1768203767557-GB4529-2026年第一期中国铁路建设债券-2026年第一期中国铁路建设债券信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": "稳定"
+      }
+    },
+    {
+      "category": "企业评级/企业债券",
+      "name": "2026年第一期中国铁路建设债券",
+      "date": "2026-01-05",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260112-1768203794222-vdh2L2-2026年第一期中国铁路建设债券-2026年第一期中国铁路建设债券信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": "稳定"
+      }
+    },
+    {
+      "category": "企业评级/企业债券",
+      "name": "2025年第三期中国铁路建设债券(30年期)(第三次续发行)",
+      "date": "2026-01-05",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260112-1768204434700-9832Lz-2025年第三期中国铁路建设债券30年期第三次续发行-2025年第三期中国铁路建设债券（30年期）（第三次续发行）信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": "稳定"
+      }
+    },
+    {
+      "category": "企业评级/公司债券",
+      "name": "中国中化股份有限公司2026年面向专业投资者公开发行可续期公司债券(第二期)",
+      "date": "2026-01-30",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260209-1770622384067-S79Ly3-中国中化股份有限公司2026年面向专业投资者公开发行可续期公司债券第二期-中国中化股份有限公司2026年面向专业投资者公开发行可续期公司债券（第二期）信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/公司债券",
+      "name": "中国光大集团股份公司2026年面向专业投资者公开发行可续期公司债券(第二期)(品种一)",
+      "date": "2026-01-30",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260206-1770357169811-PB6mAb-中国光大集团股份公司2026年面向专业投资者公开发行可续期公司债券第二期品种一-中国光大集团股份公司2026年面向专业投资者公开发行可续期公司债券（第二期）信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/公司债券",
+      "name": "中国光大集团股份公司2026年面向专业投资者公开发行可续期公司债券(第二期)(品种二)",
+      "date": "2026-01-30",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260206-1770357152990-d7457a-中国光大集团股份公司2026年面向专业投资者公开发行可续期公司债券第二期品种二-中国光大集团股份公司2026年面向专业投资者公开发行可续期公司债券（第二期）信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/公司债券",
+      "name": "厦门国贸集团股份有限公司2026年面向专业投资者公开发行可续期公司债券(第二期)",
+      "date": "2026-01-28",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260206-1770357449790-1O92n6-厦门国贸集团股份有限公司2026年面向专业投资者公开发行可续期公司债券第二期-厦门国贸集团股份有限公司2026年面向专业投资者公开发行可续期公司债券（第二期）信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/公司债券",
+      "name": "北京金隅集团股份有限公司2026年面向专业投资者公开发行科技创新可续期公司债券(第二期)(品种二)",
+      "date": "2026-01-27",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260202-1770017821979-8c8qK8-北京金隅集团股份有限公司2026年面向专业投资者公开发行科技创新可续期公司债券第二期品种二-北京金隅集团股份有限公司2026年面向专业投资者公开发行科技创新可续期公司债券（第二期）信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAAsti",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/公司债券",
+      "name": "北京金隅集团股份有限公司2026年面向专业投资者公开发行科技创新可续期公司债券(第二期)(品种一)",
+      "date": "2026-01-27",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260202-1770017842616-VY653w-北京金隅集团股份有限公司2026年面向专业投资者公开发行科技创新可续期公司债券第二期品种一-北京金隅集团股份有限公司2026年面向专业投资者公开发行科技创新可续期公司债券（第二期）信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAAsti",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/公司债券",
+      "name": "中国中信集团有限公司2026年面向专业投资者公开发行公司债券(第一期)(品种二)",
+      "date": "2026-01-26",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260203-1770099854322-MeK45i-中国中信集团有限公司2026年面向专业投资者公开发行公司债券第一期品种二-中国中信集团有限公司2026年面向专业投资者公开发行公司债券（第一期）信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/公司债券",
+      "name": "中国长江电力股份有限公司2026年面向专业投资者公开发行科技创新公司债券(第一期)",
+      "date": "2026-01-26",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260203-1770100302660-Lon97J-中国长江电力股份有限公司2026年面向专业投资者公开发行科技创新公司债券第一期-中国长江电力股份有限公司2026年面向专业投资者公开发行科技创新公司债券（第一期）信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAAsti",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/公司债券",
+      "name": "中国中信集团有限公司2026年面向专业投资者公开发行公司债券(第一期)(品种一)",
+      "date": "2026-01-26",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260203-1770099838311-1w6S25-中国中信集团有限公司2026年面向专业投资者公开发行公司债券第一期品种一-中国中信集团有限公司2026年面向专业投资者公开发行公司债券（第一期）信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/公司债券",
+      "name": "广州越秀资本控股集团股份有限公司2026年面向专业投资者公开发行公司债券(第一期)(品种一)",
+      "date": "2026-01-26",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260129-1769671224810-48302H-广州越秀资本控股集团股份有限公司2026年面向专业投资者公开发行公司债券第一期品种一-广州越秀资本控股集团股份有限公司2026年面向专业投资者公开发行公司债券（第一期）信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/公司债券",
+      "name": "广东省路桥建设发展有限公司2026年面向专业投资者公开发行公司债券(第一期)(品种二)",
+      "date": "2026-01-22",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260204-1770186807901-M5p2H6-广东省路桥建设发展有限公司2026年面向专业投资者公开发行公司债券第一期品种二-广东省路桥建设发展有限公司2026年面向专业投资者公开发行公司债券（第一期）信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/公司债券",
+      "name": "广东省路桥建设发展有限公司2026年面向专业投资者公开发行公司债券(第一期)(品种一)",
+      "date": "2026-01-22",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260204-1770186824083-O7f5wH-广东省路桥建设发展有限公司2026年面向专业投资者公开发行公司债券第一期品种一-广东省路桥建设发展有限公司2026年面向专业投资者公开发行公司债券（第一期）信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/公司债券",
+      "name": "北京市海淀区国有资本运营有限公司2026年面向专业投资者公开发行公司债券(第二期)(品种一)",
+      "date": "2026-01-21",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260129-1769668717753-J3r042-北京市海淀区国有资本运营有限公司2026年面向专业投资者公开发行公司债券第二期品种一-北京市海淀区国有资本运营有限公司2026年面向专业投资者公开发行公司债券（第二期）信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/公司债券",
+      "name": "广州市城市建设开发有限公司2026年面向专业投资者公开发行公司债券(第一期)(品种一)",
+      "date": "2026-01-21",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260209-1770622518813-x9322c-广州市城市建设开发有限公司2026年面向专业投资者公开发行公司债券第一期品种一-广州市城市建设开发有限公司2026年面向专业投资者公开发行公司债券（第一期）信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/公司债券",
+      "name": "北京市海淀区国有资本运营有限公司2026年面向专业投资者公开发行公司债券(第二期)(品种二)",
+      "date": "2026-01-21",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260129-1769668731750-4i25ni-北京市海淀区国有资本运营有限公司2026年面向专业投资者公开发行公司债券第二期品种二-北京市海淀区国有资本运营有限公司2026年面向专业投资者公开发行公司债券（第二期）信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/公司债券",
+      "name": "中电建路桥集团有限公司2026年面向专业投资者公开发行可续期公司债券(第一期)(品种二)",
+      "date": "2026-01-21",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260127-1769493639023-1s6e2F-中电建路桥集团有限公司2026年面向专业投资者公开发行可续期公司债券第一期品种二-中电建路桥集团有限公司2026年面向专业投资者公开发行可续期公司债券（第一期）信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/公司债券",
+      "name": "中电建路桥集团有限公司2026年面向专业投资者公开发行可续期公司债券(第一期)(品种一)",
+      "date": "2026-01-21",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260127-1769493593771-vy36sS-中电建路桥集团有限公司2026年面向专业投资者公开发行可续期公司债券第一期品种一-中电建路桥集团有限公司2026年面向专业投资者公开发行可续期公司债券（第一期）信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/公司债券",
+      "name": "广州市城市建设开发有限公司2026年面向专业投资者公开发行公司债券(第一期)(品种二)",
+      "date": "2026-01-21",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260209-1770622536001-3Zn46i-广州市城市建设开发有限公司2026年面向专业投资者公开发行公司债券第一期品种二-广州市城市建设开发有限公司2026年面向专业投资者公开发行公司债券（第一期）信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/公司债券",
+      "name": "中国光大集团股份公司2026年面向专业投资者公开发行可续期公司债券(第一期)(品种二)",
+      "date": "2026-01-19",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260126-1769416469256-X78Dm4-中国光大集团股份公司2026年面向专业投资者公开发行可续期公司债券第一期品种二-中国光大集团股份公司2026年面向专业投资者公开发行可续期公司债券（第一期）信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/公司债券",
+      "name": "中国光大集团股份公司2026年面向专业投资者公开发行可续期公司债券(第一期)(品种二)",
+      "date": "2026-01-19",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260126-1769416469256-X78Dm4-中国光大集团股份公司2026年面向专业投资者公开发行可续期公司债券第一期品种二-中国光大集团股份公司2026年面向专业投资者公开发行可续期公司债券（第一期）信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/公司债券",
+      "name": "新疆投资发展(集团)有限责任公司2026年面向专业投资者公开发行公司债券(第一期)(品种二)",
+      "date": "2026-01-14",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260126-1769416652487-u5d33B-新疆投资发展集团有限责任公司2026年面向专业投资者公开发行公司债券第一期品种二-新疆投资发展（集团）有限责任公司2026年面向专业投资者公开发行公司债券（第一期）信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/公司债券",
+      "name": "新疆投资发展(集团)有限责任公司2026年面向专业投资者公开发行公司债券(第一期)(品种一)",
+      "date": "2026-01-14",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260126-1769416623495-CyXs2l-新疆投资发展集团有限责任公司2026年面向专业投资者公开发行公司债券第一期品种一-新疆投资发展（集团）有限责任公司2026年面向专业投资者公开发行公司债券（第一期）信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/公司债券",
+      "name": "中国中化股份有限公司2026年面向专业投资者公开发行可续期公司债券(第一期)",
+      "date": "2026-01-12",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260119-1768814111242-mCA89E-中国中化股份有限公司2026年面向专业投资者公开发行可续期公司债券第一期-中国中化股份有限公司2026年面向专业投资者公开发行可续期公司债券（第一期）信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/公司债券",
+      "name": "深圳市资本运营集团有限公司2026年面向专业投资者公开发行科技创新公司债券(第一期)",
+      "date": "2026-01-09",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260120-1768889469820-sa4Wy9-深圳市资本运营集团有限公司2026年面向专业投资者公开发行科技创新公司债券第一期-深圳市资本运营集团有限公司2026年面向专业投资者公开发行科技创新公司债券（第一期）信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAAsti",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/公司债券",
+      "name": "北京市国有资产经营有限责任公司2026年面向专业投资者公开发行科技创新公司债券(第一期)(品种二)",
+      "date": "2026-01-09",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260116-1768529808820-y0092e-北京市国有资产经营有限责任公司2026年面向专业投资者公开发行科技创新公司债券第一期品种二-北京市国有资产经营有限责任公司2026年面向专业投资者公开发行科技创新公司债券（第一期）信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAAsti",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/公司债券",
+      "name": "北京金隅集团股份有限公司2026年面向专业投资者公开发行科技创新可续期公司债券(第一期)品种二",
+      "date": "2026-01-09",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260115-1768456842977-0rrKR7-北京金隅集团股份有限公司2026年面向专业投资者公开发行科技创新可续期公司债券第一期品种二-北京金隅集团股份有限公司2026年面向专业投资者公开发行科技创新可续期公司债券（第一期）信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAAsti",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/公司债券",
+      "name": "北京金隅集团股份有限公司2026年面向专业投资者公开发行科技创新可续期公司债券(第一期)品种一",
+      "date": "2026-01-09",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260115-1768456868583-ln3L2g-北京金隅集团股份有限公司2026年面向专业投资者公开发行科技创新可续期公司债券第一期品种一-北京金隅集团股份有限公司2026年面向专业投资者公开发行科技创新可续期公司债券（第一期）信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAAsti",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/公司债券",
+      "name": "北京市国有资产经营有限责任公司2026年面向专业投资者公开发行科技创新公司债券(第一期)(品种一)",
+      "date": "2026-01-09",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260116-1768529834094-R439hR-北京市国有资产经营有限责任公司2026年面向专业投资者公开发行科技创新公司债券第一期品种一-北京市国有资产经营有限责任公司2026年面向专业投资者公开发行科技创新公司债券（第一期）信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAAsti",
+        "outlook": ""
+      }
+    },
+    {
+      "category": "企业评级/公司债券",
+      "name": "中国石化集团资本有限公司2026年面向专业投资者公开发行科技创新公司债券(第一期)(品种二)",
+      "date": "2026-01-08",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260115-1768463069655-VVUwYr-中国石化集团资本有限公司2026年面向专业投资者公开发行科技创新公司债券第一期品种二-中国石化集团资本有限公司2026年面向专业投资者公开发行科技创新公司债券（第一期）信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": "稳定"
+      }
+    },
+    {
+      "category": "企业评级/公司债券",
+      "name": "中国石化集团资本有限公司2026年面向专业投资者公开发行科技创新公司债券(第一期)(品种一)",
+      "date": "2026-01-08",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260115-1768463034106-jK0wY8-中国石化集团资本有限公司2026年面向专业投资者公开发行科技创新公司债券第一期品种一-中国石化集团资本有限公司2026年面向专业投资者公开发行科技创新公司债券（第一期）信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": "稳定"
+      }
+    },
+    {
+      "category": "企业评级/公司债券",
+      "name": "远东国际融资租赁有限公司2026年面向专业投资者公开发行公司债券(第一期)",
+      "date": "2026-01-06",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260120-1768878502157-o58308-远东国际融资租赁有限公司2026年面向专业投资者公开发行公司债券第一期-远东国际融资租赁有限公司2026年面向专业投资者公开发行公司债券（第一期）信用评级报告.pdf",
+      "fileType": "pdf",
+      "details": {
+        "level": "AAA",
+        "outlook": ""
+      }
+    }
+  ]
+}

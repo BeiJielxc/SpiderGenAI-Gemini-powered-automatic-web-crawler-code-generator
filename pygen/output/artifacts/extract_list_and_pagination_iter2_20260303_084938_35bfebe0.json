@@ -1,0 +1,91 @@
+{
+  "baseUrl": "https://www.seczambia.org.zm/resources/multimedia/news/",
+  "bestCandidate": {
+    "selector": "div.elementor-element.elementor-element-ecfb4e2.e-con-full.e-flex.e-con.e-child > .elementor-element.elementor-element-35ac47c.e-con-full.e-flex.e-con.e-child",
+    "bareSelector": ".elementor-element.elementor-element-35ac47c.e-con-full.e-flex.e-con.e-child",
+    "candidateSelectors": [
+      {
+        "selector": "div.elementor-element.elementor-element-ecfb4e2.e-con-full.e-flex.e-con.e-child > .elementor-element.elementor-element-35ac47c.e-con-full.e-flex.e-con.e-child",
+        "label": "parent-qualified (direct child)",
+        "totalMatches": 6,
+        "visibleMatches": 6
+      },
+      {
+        "selector": ".elementor-element.elementor-element-35ac47c.e-con-full.e-flex.e-con.e-child",
+        "label": "bare (unqualified)",
+        "totalMatches": 6,
+        "visibleMatches": 6
+      }
+    ],
+    "titleSelector": ".elementor-heading-title.elementor-size-default a",
+    "dateSelector": "",
+    "score": 92,
+    "itemCount": 6,
+    "hasLink": 6,
+    "hasDate": 0
+  },
+  "structureHint": "parent container: <div class='elementor-element.elementor-element-ecfb4e2.e-con-full.e-flex.e-con.e-child'>; Each item is a <div class='elementor-element.elementor-element-35ac47c.e-con-full.e-flex.e-con.e-child'>; title/link in <h1 class='elementor-heading-title.elementor-size-default'> > <a>",
+  "sampleHtml": "<div class=\"elementor-element elementor-element-35ac47c e-con-full e-flex e-con e-child\" data-e-type=\"container\" data-element_type=\"container\" data-id=\"35ac47c\">\n<div class=\"elementor-element elementor-element-357dc06 e-con-full e-flex e-con e-child\" data-e-type=\"container\" data-element_type=\"container\" data-id=\"357dc06\">\n<div class=\"elementor-element elementor-element-cf845b9 elementor-widget elementor-widget-theme-post-title elementor-page-title elementor-widget-heading\" data-e-type=\"widget\" data-element_type=\"widget\" data-id=\"cf845b9\" data-widget_type=\"theme-post-title.default\">\n<div class=...\n<div class=\"elementor-element elementor-element-35ac47c e-con-full e-flex e-con e-child\" data-e-type=\"container\" data-element_type=\"container\" data-id=\"35ac47c\">\n<div class=\"elementor-element elementor-element-357dc06 e-con-full e-flex e-con e-child\" data-e-type=\"container\" data-element_type=\"container\" data-id=\"357dc06\">\n<div class=\"elementor-element elementor-element-cf845b9 elementor-widget elementor-widget-theme-post-title elementor-page-title elementor-widget-heading\" data-e-type=\"widget\" data-element_type=\"widget\" data-id=\"cf845b9\" data-widget_type=\"theme-post-title.default\">\n<div class=...",
+  "items": [
+    {
+      "title": "Circular-1-of-2026-Calendar-of-Submission",
+      "url": "https://www.seczambia.org.zm",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Public Notice – Board Appointment",
+      "url": "https://www.seczambia.org.zm",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "STEERING ZAMBIA’S FIGHT AGAINST ILLICIT GAINS AS INTER‑AGENCY FRAMEWORK CONVENES ITS STEERING COMMITTEE’S QUARTERLY MEETING",
+      "url": "https://www.seczambia.org.zm",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Public Censure against Mr. George Mtonga and Mukwa Fund Limited",
+      "url": "https://www.seczambia.org.zm",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Securities and Exchange Commission of Zambia joins Sustainable Banking and Finance Network",
+      "url": "https://www.seczambia.org.zm",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "PUBLIC ALERT : FUD-FOOTBALL",
+      "url": "https://www.seczambia.org.zm",
+      "date": "",
+      "dateText": ""
+    }
+  ],
+  "pagination": {
+    "next": {
+      "tag": "a",
+      "text": "Next",
+      "href": "https://www.seczambia.org.zm/resources/multimedia/news/?e-page-895e501=2",
+      "onclick": null,
+      "target": null,
+      "url": "https://www.seczambia.org.zm/resources/multimedia/news/?e-page-895e501=2",
+      "class": "page-numbers next"
+    },
+    "prev": null,
+    "pageNums": [],
+    "totalPages": 0
+  },
+  "dateHints": {
+    "minDate": "",
+    "maxDate": "",
+    "startDate": "",
+    "endDate": "",
+    "hasInRange": false,
+    "hasOlderThanStart": false,
+    "suggestStopPaging": false
+  },
+  "otherCandidates": []
+}

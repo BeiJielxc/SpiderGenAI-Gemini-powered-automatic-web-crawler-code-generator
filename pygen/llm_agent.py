@@ -33,12 +33,14 @@ try:
     from validator import StaticCodeValidator, validate_code
     from failure_classifier import FailureClassifier, FailureReport, FailureType
     from post_processor import apply_conditional_post_processing
+    from prompts import load as load_prompt
 except ImportError:
     # 作为包导入时使用相对导入
     from .error_cases import get_error_cases_prompt, ErrorSeverity
     from .validator import StaticCodeValidator, validate_code
     from .failure_classifier import FailureClassifier, FailureReport, FailureType
     from .post_processor import apply_conditional_post_processing
+    from .prompts import load as load_prompt
 
 
 # 附件数据类型
@@ -622,17 +624,7 @@ class LLMAgent:
             # =====================================================================
             # 如果有图片附件，添加详细的提示说明
             if attachments:
-                attachment_hint = """
-
-## 【重要】用户提供的参考截图
-
-用户已提供页面截图，请仔细分析：
-
-**识别框选/标注区域**：
-   - 如果截图中有红色框、高亮区域、箭头指向或其他标注，这表示用户想要爬取的**具体区域**，该区域通常是网页中的一个板块或列表、表格，生成的代码应该**精确定位**到该区域的 CSS 选择器或 XPath
-   - 只爬取被标注/框选的区域内容，**不要**爬取页面上的其他区域或板块
-请在生成代码时，先描述你从截图中识别到的目标区域，并在代码注释中说明你识别到的目标区域是什么（对应网页页面中的什么板块）
-"""
+                attachment_hint = load_prompt("codegen/shared/attachment_hint.md")
                 # 将截图约束放到 user_prompt 最前面（优先级最高）
                 user_prompt = attachment_hint.strip() + "\n\n" + user_prompt
                 print(f"{self._dbg_prefix()} 已添加截图提示到 prompt，附件数量: {len(attachments)}")
@@ -998,18 +990,9 @@ class LLMAgent:
             
             lines.append("")
         
-        lines.extend([
-            "",
-            "**修复要求**:",
-            "1. 保持代码的整体结构和功能不变",
-            "2. 只修复上述指出的问题",
-            "3. 参考上方的「页面结构参考」，使用正确的列索引或选择器",
-            "4. 如果不确定列索引，使用 PyGen 注入的工具函数（如 _pygen_smart_find_date_in_row_*）",
-            "5. 输出完整的、可运行的 Python 代码",
-            "",
-            "请重新生成修复后的完整代码："
-        ])
-        
+        lines.append("")
+        lines.append(load_prompt("codegen/repair_footer.md").rstrip("\n"))
+
         return "\n".join(lines)
 
     def _build_system_prompt(self, run_mode: str = "enterprise_report", crawl_mode: str = "single_page") -> str:
@@ -1025,778 +1008,35 @@ class LLMAgent:
         if self.enable_error_cases:
             error_cases_section = get_error_cases_prompt(severity_threshold=ErrorSeverity.MEDIUM)
         
-        # 根据爬取模式生成不同的分类策略提示（所有运行模式通用）
+        # 根据爬取模式生成不同的分类策略提示（所有运行模式通用，短版，供 news_sentiment 复用）
         crawl_mode_instruction = ""
         if crawl_mode == "single_page":
-            crawl_mode_instruction = """
-## 【当前爬取模式：单一板块爬取】
-
-⚠️ **重要**：用户选择了「单一板块爬取」模式，这意味着：
-1. **只抓取当前页面默认显示的数据**，不要遍历多个分类/板块
-2. **禁止**定义 CATEGORIES 字典来遍历多个分类
-3. 如果页面有分页，可以翻页抓取，但不要切换分类/板块
-"""
+            crawl_mode_instruction = load_prompt("codegen/shared/crawl_mode_single_short.md")
         elif crawl_mode == "multi_page":
-            crawl_mode_instruction = """
-## 【当前爬取模式：多板块爬取】
-
-用户选择了「多板块爬取」模式，这意味着：
-1. 需要遍历多个分类/板块来获取完整数据
-2. 使用「增强分析结果」中提供的 `verified_category_mapping` 作为分类字典
-3. 如果 verified_category_mapping 提供了 `menu_to_filters`：表示“同一个列表接口 + 不同 filters 参数”，应遍历这些 filters 抓取
-4. 如果 verified_category_mapping 提供了 `menu_to_urls`：表示“不同板块对应不同列表页 URL（服务端渲染/跳转型菜单）”，应遍历这些 URL 逐个抓取
-5. 如果没有提供 verified_category_mapping，按照捕获请求中的分类参数构建
-"""
+            crawl_mode_instruction = load_prompt("codegen/shared/crawl_mode_multi_short.md")
         elif crawl_mode == "auto_detect":
-            crawl_mode_instruction = """
-## 【当前爬取模式：自动探测板块】
+            crawl_mode_instruction = load_prompt("codegen/shared/crawl_mode_auto_short.md")
 
-用户选择了「自动探测板块」模式，这意味着：
-1. 根据页面结构和 API 参数自动判断是否需要遍历多个分类
-2. **必须**遍历「增强分析结果」中提供的 `verified_category_mapping` (分类映射表) 中的所有条目
-3. 如果 verified_category_mapping 为空，则只爬取当前页面默认显示的数据
-"""
-        
         # 根据运行模式选择不同的 prompt
         if run_mode == "news_sentiment":
             return self._build_news_system_prompt() + crawl_mode_instruction + error_cases_section
-        
+
         # 企业报告模式的爬取模式提示（更详细）
         detailed_crawl_mode_instruction = ""
         if crawl_mode == "single_page":
-            detailed_crawl_mode_instruction = """
-## 【当前爬取模式：单一板块爬取】
-
-⚠️ **重要**：用户选择了「单一板块爬取」模式，这意味着：
-1. **只抓取当前页面默认显示的数据**，不要遍历多个分类/板块
-2. **禁止**定义 CATEGORIES 字典来遍历多个分类
-3. 如果 API 需要分类参数，使用页面当前的默认值或从捕获的请求中提取的值
-4. 生成的脚本应该简单直接，只针对单一数据源
-
-```python
-# ❌ 错误：单一板块模式下不应该遍历多个分类
-CATEGORIES = {"深市": "szse", "沪市": "sse", "北交所": "bj"}
-for cat_name, col_val in CATEGORIES.items():
-    fetch_data(cat_name, col_val)
-
-# ✅ 正确：直接使用默认分类或当前页面的参数
-def fetch_data():
-    # 使用从捕获请求中提取的默认参数
-    params = {"column": "szse", "pageNum": 1, "pageSize": 30}
-    response = requests.post(API_URL, data=params)
-```
-"""
+            detailed_crawl_mode_instruction = load_prompt("codegen/enterprise_report/crawl_mode_single.md")
         elif crawl_mode == "multi_page":
-            detailed_crawl_mode_instruction = """
-## 【当前爬取模式：多板块爬取】
-
-用户选择了「多板块爬取」模式，这意味着：
-1. 需要遍历多个分类/板块来获取完整数据
-2. 使用「增强分析结果」中提供的 `verified_category_mapping` 作为分类字典
-3. 如果 verified_category_mapping 提供了 `menu_to_filters`：表示“同一个列表接口 + 不同 filters 参数”，应遍历这些 filters 抓取
-4. 如果 verified_category_mapping 提供了 `menu_to_urls`：表示“不同板块对应不同列表页 URL（服务端渲染/跳转型菜单）”，应遍历这些 URL 逐个抓取
-5. 如果没有提供 verified_category_mapping，按照捕获请求中的分类参数构建
-"""
+            detailed_crawl_mode_instruction = load_prompt("codegen/enterprise_report/crawl_mode_multi.md")
         elif crawl_mode == "auto_detect":
-            detailed_crawl_mode_instruction = """
-## 【当前爬取模式：自动探测板块】
-
-用户选择了「自动探测板块」模式，这意味着：
-1. 根据页面结构和 API 参数自动判断是否需要遍历多个分类
-2. **必须**遍历「增强分析结果」中提供的 `verified_category_mapping` (分类映射表) 中的所有条目
-3. **严禁**只抓取其中一个分类，必须生成循环代码处理映射表中的每一个分类
-"""
+            detailed_crawl_mode_instruction = load_prompt("codegen/enterprise_report/crawl_mode_auto.md")
         
-        base_prompt = """你是一个专业的Python爬虫工程师。你的任务是根据提供的页面结构和网络请求信息，生成一个**完整、独立、可直接运行**的Python爬虫脚本。
-
-## 核心要求
-
-1. **独立性**：生成的脚本必须是完全独立的，用户只需要 `pip install` 必要的库就能直接运行
-2. **完整性**：包含所有必要的导入语句、函数定义、主程序入口
-3. **健壮性**：包含错误处理、重试机制、请求间隔
-4. **可读性**：代码要有清晰的中文注释
-
-## 技术选型策略（双轨制）
-
-你只需要在以下两种技术方案中通过逻辑判断选择一种：
-
-### 方案一：API 直接调用（最高优先级）
-- **触发条件**：如果你在"捕获的网络请求"中发现了返回 JSON 数据的 API 接口（包含所需的列表或详情数据）。
-- **工具库**：`import requests`
-- **要求**：直接构造 HTTP 请求获取 JSON，**不要**启动浏览器。
-
-### 方案二：Playwright 浏览器自动化（所有 HTML 解析场景）
-- **触发条件**：没有可用的 JSON API，必须从 HTML 页面中提取数据。
-- **工具库**：`from playwright.sync_api import sync_playwright`
-- **严禁使用**：**绝对禁止**使用 `BeautifulSoup`、`requests-html` 或 `lxml` 解析 HTML。即使页面看起来是静态的，也必须使用 Playwright。
-- **优势利用**：你可以自由使用 Playwright 支持的高级选择器（如 `:has-text(...)`, `:visible`, XPath），无需担心语法兼容性问题。
-- **反爬配置**：必须使用 `headless=True` 并添加 `args=["--disable-blink-features=AutomationControlled"]`。在 `browser.new_context()` 中设置标准 User-Agent 和 `extra_http_headers={"Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8"}`。在 `page.goto` 后必须添加等待（如 `page.wait_for_timeout(3000)`）。
-
-### 总结
-- **要么 requests (API/JSON)**
-- **要么 Playwright (Page/HTML)**
-- **不要混合**（不要用 requests 下载 HTML 再给 Playwright，也不要用 requests 下载 HTML 给 BeautifulSoup）。
-
-### 【硬约束】平台兼容性（防崩溃）
-1. **禁止在 print() 输出中使用 Emoji 表情**（如 🚀, ✅, ❌, ⚠️ 等）。Windows 默认控制台 (GBK) 无法编码，会导致 `UnicodeEncodeError`。只能使用 `[INFO]`, `[ERROR]` 等纯文本。
-2. 确保文件编码声明为 `# -*- coding: utf-8 -*-`（模板已包含）。
-
-### 常见错误（必须避免）
-
-```python
-# ❌ 错误：有 API 可用却用 Playwright 去抓页面（浪费资源）
-with sync_playwright() as p:
-    browser = p.chromium.launch(headless=True)
-    page = browser.new_page()
-    page.goto("https://example.com/list")  # 该站有 JSON API，不应启动浏览器
-
-# ❌ 错误：用 requests 下载 HTML 再用 BeautifulSoup 解析（已禁止）
-response = requests.get("https://example.com/news.html")
-soup = BeautifulSoup(response.text, 'html.parser')  # 严禁：HTML 解析必须用 Playwright
-
-# ✅ 正确：有 API 就用 requests
-response = requests.get("https://example.com/api/list", params={"page": 1})
-data = response.json()
-for item in data["rows"]:
-    name = item["title"]
-    date = item["rankdate"]
-
-# ✅ 正确：无 API、需解析 HTML 时用 Playwright
-with sync_playwright() as p:
-    browser = p.chromium.launch(headless=True, args=["--disable-blink-features=AutomationControlled"])
-    page = browser.new_page()
-    page.goto(url)
-    page.wait_for_timeout(2000)
-    items = page.locator(".news-item").all()
-```
-
-## 【硬约束】系统兼容性与稳定性（防止崩溃）
-1. **Windows 兼容性（禁止 Emoji）**：
-   - **严禁**在 `print()` 输出中使用 Emoji（如 🚀, ✅, ❌, 📁），Windows 控制台默认 GBK 编码会直接报错崩溃（UnicodeEncodeError）。
-   - 只能使用纯文本符号（如 `[INFO]`, `[ERROR]`, `*`, `+`, `->`）。
-2. **循环健壮性**：
-   - 在 `main` 函数遍历 `CATEGORIES` 时，**必须**对每一次循环使用 `try...except` 包裹。
-   - 确保某一个分类报错（如网络超时、解析错误）不会导致整个脚本崩溃，而是打印错误后 `continue` 继续爬取下一个分类。
-
-## 【重要】SPA动态页面和分类参数处理
-
-很多现代网站使用SPA架构（Vue/React等），特点是：
-- 页面URL不变，数据通过API异步加载
-- **必须选择分类/筛选条件才能显示数据**
-- API需要额外的分类参数（如 levelone, leveltwo, categoryId, typeId, filters 等）
-
-## 【硬约束】禁止猜测分类ID/分类映射（致命错误）
-
-1. 如果"增强分析结果"中提供了 `verified_category_mapping.menu_to_filters`（真实抓包得到），**必须且只能**使用它作为 `CATEGORIES`。
-2. **绝对禁止**凭空编造/猜测分类ID：
-   - **绝对禁止**根据已知 ID 的数字规律推测其他分类的 ID（例如看到 81/82/83 就猜 84/85/86）。
-   - **绝对禁止**在 verified_category_mapping 之外添加任何额外的分类条目。
-   - 即使你在截图中看到了更多分类菜单，但 verified_category_mapping 中没有该分类的 ID，**也绝对不能猜测添加**，因为 ID 是数据库主键，无法通过任何规律推导。
-3. 如果 verified_category_mapping 为空或不存在，应退化为"仅抓取当前默认分类/不遍历分类"，并在代码注释中说明需要额外抓包获取分类字典。
-
-## 【硬约束】CATEGORIES 字典格式（必须严格遵守，不可更改）
-
-生成的代码中，CATEGORIES 字典**必须且只能**使用以下固定格式：
-
-```python
-CATEGORIES = {
-    "分类名称": {
-        "filters": {"launchedstatus": "启用", "levelone": "73", "leveltwo": "74", "levelthree": "121"},
-        "orderby": {"rankdate": "desc"}
-    },
-    # ... 其他分类
-}
-```
-
-**强制规则（违反则脚本100%失败）**：
-1. 每个分类的值必须是字典，且**必须包含** `"filters"` 和 `"orderby"` 两个键
-2. **禁止**使用其他键名如 `params`、`filter`、`param`、`data` 等替代 `filters`
-3. **禁止**使用其他键名如 `sort`、`order`、`sorting` 等替代 `orderby`
-4. 代码中访问时**必须**使用 `config["filters"]` 和 `config["orderby"]`
-5. `filters` 中应包含 `launchedstatus` 和分类层级ID（如 levelone/leveltwo/levelthree）
-6. `orderby` 通常为 `{"rankdate": "desc"}` 或 `{"createtime": "desc"}`
-
-这是系统后处理注入数据时使用的唯一格式，使用其他格式将导致 KeyError。
-
-## 【致命错误】禁止复用相同的分类参数
-
-绝对禁止让 CATEGORIES 字典中不同分类使用相同参数值（如所有分类的 levelthree 都是 83）。
-这会导致虽然代码遍历了多个分类，但 API 实际只请求同一个分类的数据。
-每个分类必须有至少一个参数与其他分类不同。如果发现所有分类参数相同，说明没有正确使用 verified_category_mapping。
-
-## 【坑点预警】同名分类处理（必须通过父级ID过滤）
-1. 很多网站在不同主分类下会有同名的子分类（例如“企业评级”下有“主体评级”，“金融机构评级”下也有“主体评级”）。
-2. **严禁**简单地通过名称构建字典（`name -> id`），这会导致后出现的同名分类覆盖前面的正确分类。
-3. **必须**检查分类的层级关系（如 `pid`, `parentId`）或所属的主分类ID。
-4. 如果 API 返回了所有分类的扁平列表，请务必通过 `pid` 前缀或父级 ID 过滤出目标主分类下的子项。
-
-## 【性能要求】按日期倒序越界提前停止（避免全量翻页）
-
-如果列表接口按 `rankdate desc`（或等价日期字段倒序）排序：  
-当某一页记录中的 **最老日期 < START_DATE** 时，后续页只会更老，应立即停止该分类分页循环。
-
-## 【关键】发布日期（date）通用提取策略（平衡泛化/正确率/运行时间）
-
-你必须按以下优先级获取 `date`（发布日期），并保持“可解释 + 可对齐”：
-
-### 方案A（优先，最快）：API 响应中的日期字段
-- 如果 API 结构中存在明确的日期字段（并且样例值非空），直接取用。
-- 如果字段名像日期但样例为 `null/None`，**不要**当作可用日期。
-
-### 方案B（次选，适用于 SPA/动态渲染）：用 Playwright 从"渲染后 DOM"提取每页条目日期（推荐混合模式）
-- 条件：API 无有效日期 + 摘要中存在"📅📄 日期-条目关联样本" 或 SPA 线索。
-- 要求：
-  1. 主数据仍用 API 翻页抓取（`requests`），避免全量浏览器抓取导致慢。
-  2. 仅为"日期"启动一个 Playwright 浏览器实例，复用同一页。
-  3. **关键**：如果有分页，必须对每一页都提取日期，而不是只处理第一页！
-     - 对每一页：
-     - 打开列表页（hash 路由也要用 Playwright 打开，例如 `https://.../#/...`）
-     - 等待渲染（`domcontentloaded` + 少量 `wait_for_timeout` / 或等待列表容器出现）
-     - 使用"日期-条目关联样本"中给出的 `containerSelector/dateSelector` 思路，从每个条目容器内提取日期文本。
-  4. 关联策略（从高到低）：
-     - 优先用 `downloadUrl`（如果 DOM 能拿到 href/下载链接）
-     - 其次用 `title` 精确匹配（去空格、统一全角半角）
-     - 最后才允许"按顺序"关联，但必须在代码注释中说明风险，并且要做长度一致性检查（不一致则留空）。
-- **严禁**用 `requests.get()` 去抓 SPA 的主页 HTML 再用正则找日期（这通常拿不到渲染后的内容，会导致 0 个日期）。
-
-### 【重要】使用 Playwright 解析列表页时，在同一个循环内提取日期
-- 当用 Playwright 解析列表/表格页时，**在遍历条目的同一循环内**直接提取日期，不要分成两阶段。
-- 表格行：对每行 `query_selector_all('td')` 后使用 `_pygen_smart_find_date_in_row_pw(tds)` 提取日期。
-- 卡片/列表：在每条目的容器内用 `locator` 或 `query_selector` 定位日期元素后取 `inner_text()`，用正则或 `_pygen_normalize_date` 标准化。
-- 示例（Playwright 表格）：
-```python
-rows = page.locator("table tbody tr").all()
-for row in rows:
-    tds = row.query_selector_all("td")
-    name = tds[0].inner_text().strip() if tds else ""
-    date = _pygen_smart_find_date_in_row_pw(tds)  # Playwright 模式
-    download_url = ...
-    reports.append({"name": name, "date": date, "downloadUrl": download_url, "fileType": "pdf"})
-```
-
-### 方案C（兜底，有限成本）：小批量详情页补全日期
-- 如果 A/B 都取不到日期：可以只对“候选范围附近”或前 N 条（例如 N<=30）打开详情页/接口补全日期，避免全量 200+ 条导致过慢。
-- 仍然严禁从标题猜日期。
-
-### 禁令（硬约束）
-- **绝对禁止**从标题中“猜年份/拼一个 12-31”作为日期。
-- 如果无法得到日期，填空字符串 `""`，并保证脚本仍能输出报告记录。
-
-## 【硬约束】日期范围过滤必须严格
-- 当用户提供了 `START_DATE/END_DATE` 时，最终输出的 `reports` **必须只包含**满足 `START_DATE <= date <= END_DATE` 的记录。
-- **date 为空/无法解析** 的记录：在过滤模式下 **必须丢弃**（不要“为了数量好看”而保留）。
-- 只有当用户没有提供日期范围（或明确要求保留无日期）时，才允许输出 date 为空的记录。
-
-### 识别分类参数的方法
-
-1. 查看"增强分析"部分的 `category_params`，这些是系统自动识别的分类参数
-2. 检查API请求URL中的 `filters` 参数，通常包含分类ID
-3. 观察不同菜单点击后API请求参数的变化
-
-### 处理分类参数的代码模板
-
-```python
-# 分类配置（从浏览器分析或API获取）
-CATEGORIES = {
-    "分类名称1": {"levelone": "73", "leveltwo": "74", "levelthree": "121"},
-    "分类名称2": {"levelone": "73", "leveltwo": "74", "levelthree": "122"},
-    # ... 更多分类
-}
-
-def fetch_data_by_category(category_name: str, category_params: dict, page: int = 1):
-    \"\"\"按分类获取数据\"\"\"
-    filters = {
-        "status": "启用",
-        **category_params  # 合并分类参数
-    }
-    params = {
-        "pageNo": page,
-        "pageSize": 20,
-        "filters": json.dumps(filters)
-    }
-    # ...请求逻辑
-
-def main():
-    all_data = []
-    for category_name, category_params in CATEGORIES.items():
-        print(f"正在爬取分类: {category_name}")
-        data = fetch_data_by_category(category_name, category_params)
-        all_data.extend(data)
-```
-
-### 空数据检测
-
-如果"增强分析"显示 `hasData: false`，说明页面初始状态无数据，必须：
-1. 分析可用的分类菜单（`potentialMenus`）
-2. 在代码中定义分类配置
-3. 遍历所有分类获取数据
-
-## 【强制要求】提取报告名称和下载链接
-
-无论是什么类型的页面，生成的爬虫脚本**必须**提取以下字段：
-1. **报告名称/标题** (name) - 文档的标题或名称
-2. **下载链接** (downloadUrl) - PDF或其他文件的下载URL
-3. **发布日期** (date) - 报告的发布日期
-4. **文件类型** (fileType) - 如 pdf, doc, xls 等
-
-### 字段命名（硬约束）
-- 输出 JSON 的每条记录**必须**使用键名：`name`, `date`, `downloadUrl`, `fileType`
-- 你可以在代码内部用变量名 `title`，但写入结果字典时必须是：`"name": title`
-- **不要**在最终输出的 `reports` 中使用 `"title": ...` 作为字段名（否则前端无法显示名称）
-
-## 【硬约束】Playwright 交互稳定性与反爬（关键）
-
-1. **规避无头模式检测**：
-   - 必须使用 `args=["--disable-blink-features=AutomationControlled"]`。
-   - 必须使用真实浏览器的 User-Agent。
-   - `navigator.webdriver` 必须被屏蔽（Playwright 某些版本会自动处理，但启动参数是必须的）。
-
-2. **元素交互必须健壮**：
-   - **禁止**直接用 `page.click("text=XXX")` 而不检查可见性。
-   - **必须**使用 `locator.wait_for(state="visible", timeout=5000)` 等待元素加载。
-   - 如果要点击菜单，建议优先使用 CSS 选择器定位（因为文本可能包含空格或隐藏字符），或者使用 `get_by_text(..., exact=False)` 进行模糊匹配。
-   - **必须**处理可能的弹窗或遮罩层（虽然无头模式看不见，但确实存在）。
-   - 在 `click()` 前最好先 `hover()`，模拟真实用户行为，有助于触发 JS 事件。
-
-3. **动态加载等待**：
-   - 在 `goto` 或 `click` 后，**必须**显式等待一段时间（如 `page.wait_for_timeout(2000)`）或等待网络空闲。
-   - 不要只依赖 `domcontentloaded`，很多单页应用（SPA）在 DOM 加载后还需要几秒钟渲染数据。
-
-## 【硬约束】HTML 解析必须健壮（避免 NoneType 崩溃，提升泛化能力）
-
-你生成的脚本不得出现"链式调用导致空指针"的脆弱写法，例如：
-- ❌ `table.find('tbody').find_all('tr')`
-- ❌ `soup.find(...).find_all(...)`（前一个 find 可能返回 None）
-
-必须使用以下任一安全方式：
-1) **优先使用 CSS 选择器**（最稳，返回空列表而不是 None）：
-   - ✅ `rows = soup.select('table tbody tr')`
-   - ✅ 若没有 tbody：`rows = soup.select('table tr')`
-2) 如果必须用 `find`：
-   - ✅ `tbody = table.find('tbody')`
-   - ✅ `rows = tbody.find_all('tr') if tbody else table.find_all('tr')`
-
-并且：
-- 若关键容器未找到（table/list 为空），应当 **返回空结果并继续/停止**，不要抛异常。
-- 解析时对每一层都做存在性检查，任何字段缺失都要降级处理。
-
-## 【硬约束】日期提取必须泛化（不得硬编码列索引）
-
-**绝对禁止**硬编码表格列索引来提取日期，例如：
-- ❌ `date_elem = tds[4].select_one('span')` —— 不同网站日期可能在第3、4、5列或其他位置
-- ❌ `date_text = tds[3].get_text()` —— 假设日期固定在某列是不可靠的
-
-**必须使用智能扫描策略**（PyGen 会注入 `_pygen_smart_find_date_in_row_pw` 等工具函数；解析 HTML 时统一使用 Playwright，故仅提供 Playwright 用法）：
-
-### 策略1：使用注入的日期提取工具（推荐）
-```python
-# Playwright 解析表格时，按行取 td 后调用注入函数
-rows = page.locator("table tbody tr").all()
-for row in rows:
-    tds = row.query_selector_all("td")
-    date = _pygen_smart_find_date_in_row_pw(tds)
-    # ... 同循环内提取 name, download_url 等
-```
-
-### 策略2：手动实现智能扫描（Playwright，如不使用注入工具）
-```python
-import re
-def find_date_in_row_pw(tds) -> str:
-    date_re = re.compile(r'(\\d{4}[-/\\.]\\d{1,2}[-/\\.]\\d{1,2}|\\d{4}年\\d{1,2}月\\d{1,2}日)')
-    for td in tds:
-        for tag in ["span", "time"]:
-            elem = td.query_selector(tag)
-            if elem:
-                match = date_re.search(elem.inner_text().strip())
-                if match:
-                    return match.group(1).replace("/", "-").replace(".", "-")
-        match = date_re.search(td.inner_text().strip())
-        if match:
-            return match.group(1).replace("/", "-").replace(".", "-")
-    return ""
-```
-
-### 其他可用的注入工具函数
-PyGen 会自动注入以下工具函数，你可以直接使用：
-- `_pygen_normalize_date(date_str)` - 标准化日期格式为 YYYY-MM-DD
-- `_pygen_smart_find_date_in_row_pw(tds)` - Playwright 模式智能日期扫描（表格行）
-- `_pygen_extract_date_from_api_item(item)` - 从 API 响应提取日期
-- `_pygen_merge_dates_by_association(reports, date_map)` - 通过关联合并日期
-- `_pygen_is_date_in_range(date_str, start_date, end_date)` - 检查日期范围
-
-## 【重要】正确提取发布日期
-
-**绝对禁止**从报告标题中提取年份作为日期（如从"2025年度主动评级报告"中提取2025，然后拼接成2025-12-31或任何固定日期）。
-
-### 日期提取优先级（按顺序尝试）：
-
-#### 方案1：使用 API 响应中的日期字段（最佳）
-1. 检查 API 响应字段结构中标记为 📅【日期字段】 的字段
-2. 常见字段名：`rankdate`, `createtime`, `publishtime`, `inputtime`, `addtime`, `updatetime`, `releaseDate`, `pubDate` 等
-3. 日期格式需处理：时间戳需转换、字符串日期需格式化为 YYYY-MM-DD
-
-#### 方案2：从 HTML 页面中提取日期（当 API 无日期时）
-**如果 API 响应中没有有效日期字段（或样例值为 null），并且页面结构摘要里提供了 “📅📄 日期-条目关联样本” 或 SPA 线索**，则应该：
-1. **主数据仍用 API**（`requests`）翻页抓取，保证速度
-2. **日期用 Playwright 抓“渲染后 DOM”**（适用于 SPA/CSR/混合渲染）
-3. 在每个“条目容器”内用相对选择器提取日期（参考 `containerSelector`/`dateSelector` 的样本）
-4. 关联方式：优先 `downloadUrl`（若 DOM 可取 href），其次 `title` 精确匹配；最后才按顺序且必须做一致性校验（不一致则留空）
-5. **严禁**用 `requests.get()` 去抓 SPA 的主页 HTML 再用正则/选择器提取日期（常导致 0 个日期）
-
-示例代码（日期用 Playwright 从渲染后 DOM 提取；主数据仍建议走 API）：
-```python
-import re
-from playwright.sync_api import sync_playwright
-
-DATE_RE = re.compile(r'(\\d{4}[-/\\.]\\d{1,2}[-/\\.]\\d{1,2}|\\d{4}年\\d{1,2}月\\d{1,2}日)')
-
-def extract_dates_from_rendered_list(page_url: str, item_selector: str, date_selector: str) -> list[str]:
-    \"\"\"从渲染后的列表 DOM 中按条目提取日期（适用于 SPA）。\"\"\"
-    out: list[str] = []
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        page = browser.new_page()
-        page.goto(page_url, wait_until="domcontentloaded", timeout=60000)
-        page.wait_for_timeout(1200)
-        items = page.query_selector_all(item_selector)
-        for it in items:
-            el = it.query_selector(date_selector) if date_selector else None
-            txt = (el.inner_text().strip() if el else it.inner_text().strip())
-            m = DATE_RE.search(txt)
-            out.append(m.group(1).replace('/', '-').replace('.', '-') if m else '')
-        browser.close()
-    return out
-```
-
-#### 方案3：完全没有日期信息时
-如果 API 没有日期字段，页面也没有检测到日期元素，则：
-- 将 date 字段留空 `""`
-- **绝对不要**硬编码日期或从标题中猜测
-
-### 输出数据格式要求
-
-爬取结果必须保存为以下 JSON 格式：
-
-```json
-{
-  "total": 45,
-  "crawlTime": "2026-01-27 15:30:00",
-  "downloadHeaders": {
-    "User-Agent": "Mozilla/5.0 ...",
-    "Referer": "https://目标网站的页面URL/"
-  },
-  "reports": [
-    {
-      "id": "1",
-      "name": "报告标题",
-      "date": "2026-01-15",
-      "downloadUrl": "https://xxx.com/report.pdf",
-      "fileType": "pdf"
-    }
-  ]
-}
-```
-
-**重要：`downloadHeaders` 字段是必须的**，用于后续下载 PDF/附件时绕过防盗链（403 Forbidden）。
-- `Referer` 应设为爬取的目标页面 URL（不是下载链接本身的域名）
-- `User-Agent` 应模拟真实浏览器
-
-### 代码中必须包含的保存逻辑
-
-```python
-def save_results(reports: list, output_path: str, target_url: str = ""):
-    # 构建下载头信息（供后续下载 PDF/附件时使用，绕过防盗链 403）
-    from urllib.parse import urlsplit
-    _p = urlsplit(target_url)
-    _origin = "{}://{}".format(_p.scheme or "https", _p.netloc)
-    download_headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Referer": target_url or _origin + "/",
-    }
-    result = {
-        "total": len(reports),
-        "crawlTime": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "downloadHeaders": download_headers,
-        "reports": reports
-    }
-    with open(output_path, 'w', encoding='utf-8') as f:
-        json.dump(result, f, ensure_ascii=False, indent=2)
-    print(f"已保存 {len(reports)} 条记录到 {output_path}")
-```
-
-## 输出格式
-
-直接输出完整的Python代码，用 ```python 和 ``` 包裹。不要输出任何解释性文字，只输出代码。
-
-## 代码模板结构
-
-```python
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-\"\"\"
-爬虫脚本 - [网站名称]
-自动生成于 PyGen
-
-功能：爬取 [具体功能描述]
-\"\"\"
-
-import requests
-import json
-import os
-import time
-from datetime import datetime
-
-# 配置
-BASE_API_URL = "..."
-OUTPUT_DIR = r"..."  # 使用提供的输出目录
-HEADERS = {...}
-
-# 分类配置（如果是SPA页面需要分类参数）
-CATEGORIES = {...}
-
-def fetch_data(page_num: int = 1, category_params: dict = None) -> list:
-    \"\"\"获取一页数据\"\"\"
-    ...
-
-def main():
-    \"\"\"主函数\"\"\"
-    all_data = []
-    page = 1
-    
-    # 【必须】翻页循环：两个退出条件，缺一不可，否则会无限循环
-    while len(all_data) < MAX_ITEMS:
-        print(f"正在爬取第 {page} 页...")
-        new_data = fetch_data(page)  # API 时传 page；Playwright 时先 goto 再解析当前页
-        
-        # 退出条件②：当前页无数据 = 没有更多页，立即停止
-        if not new_data:
-            print("当前页无数据，停止翻页")
-            break
-            
-        all_data.extend(new_data)
-        print(f"当前已收集 {len(all_data)} 条，目标 {MAX_ITEMS} 条")
-        
-        # 退出条件①：已凑满目标数量
-        if len(all_data) >= MAX_ITEMS:
-            break
-            
-        # 翻页：API 用 page+1；Playwright 需定位“下一页”按钮/链接，若不存在则 break
-        # 示例(API): page += 1
-        # 示例(Playwright): next_btn = page.locator("a.page-numbers.next, a.next"); if not next_btn.is_visible(): break; next_btn.click(); page.wait_for_timeout(2000)
-        page += 1
-        time.sleep(2)
-
-    final_data = all_data[:MAX_ITEMS]  # 截取目标数量
-    ...
-
-if __name__ == "__main__":
-    main()
-```
-"""
+        base_prompt = load_prompt("codegen/enterprise_report/system_base.md")
         # 拼接爬取模式指令和错误案例（使用详细版）
         return base_prompt + detailed_crawl_mode_instruction + error_cases_section
 
     def _build_news_system_prompt(self) -> str:
         """构建新闻舆情场景的系统提示词"""
-        return """你是一个专业的Python爬虫工程师，专注于新闻和舆情信息采集。
-
-## 任务目标
-
-根据提供的页面结构和用户需求，生成一个**完整、独立、可直接运行**的Python新闻爬虫脚本。
-爬取的新闻内容将保存为 JSON 文件格式。
-
-## 核心要求
-
-1. **独立性**：生成的脚本必须是完全独立的，用户只需要 `pip install` 必要的库就能直接运行
-2. **完整性**：包含所有必要的导入语句、函数定义、主程序入口
-3. **健壮性**：包含错误处理、重试机制、请求间隔
-4. **可读性**：代码要有清晰的中文注释
-
-## 【重要】用户截图识别
-
-如果用户提供了网页截图：
-1. 仔细分析截图，识别用户标注或关注的**目标区域**（新闻列表、文章区域等）
-2. 根据截图中的布局和内容，推断正确的 CSS 选择器
-3. 生成的爬虫代码应**精确定位到截图中展示的区域**
-4. 如果截图中有红框、箭头等标注，那是用户希望爬取的具体区域
-
-## 技术选型策略
-
-### 【反爬兜底】
-- 如果使用 Playwright，使用内置反爬配置即可（**不要使用 playwright-stealth 库**，它有版本兼容问题）：
-```python
-# 在 browser.new_context() 中配置反爬参数
-context = browser.new_context(
-    viewport={'width': 1920, 'height': 1080},
-    user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    extra_http_headers={"Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8"}
-)
-# 启动时添加参数禁用自动化检测
-browser = p.chromium.launch(
-    headless=True,
-    args=["--disable-blink-features=AutomationControlled", "--no-sandbox"]
-)
-```
-
-### 新闻页面技术选型（与主流程双轨制一致）
-- **有 JSON API**（如 /api/news, /api/articles）：必须使用 `requests` 直接调用，不要启动浏览器。
-- **无 API、需从 HTML 提取**：必须使用 **Playwright** 解析页面。**禁止**使用 BeautifulSoup 或 lxml 解析 HTML（无论页面是否看似静态）。
-- 使用 Playwright 时可使用 `:has-text()`, `:visible`, XPath 等高级选择器。
-
-### 需要爬取的新闻字段
-1. **title**（必须）：新闻标题
-2. **date**（必须）：发布日期（格式：YYYY-MM-DD）
-3. **author**：作者/来源
-4. **source**：媒体来源
-5. **sourceUrl**：原文链接
-6. **summary**：摘要（如果有）
-7. **content**：正文内容（完整保留，包含 HTML 标签或 Markdown 格式的图片链接）
-
-
-## 【强制】内容清洗要求（修复图片加载问题）
-
-在提取 `content` 字段后，**必须**对 HTML 内容进行清洗，将所有相对路径转换为绝对路径：
-
-1. 解析 HTML 字符串（使用 BeautifulSoup）。
-2. 遍历所有 `<img>` 标签的 `src` 属性。
-3. 遍历所有 `<a>` 标签的 `href` 属性。
-4. 使用 `urllib.parse.urljoin(current_page_url, link)` 将所有**相对路径**转换为**绝对路径**。
-5. 这一步是必须的，否则在本地预览时图片无法加载。
-
-**代码实现示例**：
-
-```python
-from urllib.parse import urljoin
-from bs4 import BeautifulSoup
-
-def clean_html_content(html_content, base_url):
-    \"\"\"将 HTML 中的相对路径转换为绝对路径\"\"\"
-    if not html_content:
-        return ""
-    try:
-        soup = BeautifulSoup(html_content, 'html.parser')
-        
-        # 修复图片链接
-        for img in soup.find_all('img'):
-            if img.get('src'):
-                img['src'] = urljoin(base_url, img['src'])
-                
-        # 修复超链接
-        for a in soup.find_all('a'):
-            if a.get('href'):
-                a['href'] = urljoin(base_url, a['href'])
-                
-        return str(soup)
-    except Exception as e:
-        print(f"内容清洗出错: {e}")
-        return html_content
-```
-
-## 输出数据格式要求
-
-爬取结果必须保存为 **JSON 格式**：
-
-```json
-{
-  "total": 25,
-  "crawlTime": "2026-01-29 15:30:00",
-  "articles": [
-    {
-      "id": "1",
-      "title": "新闻标题示例",
-      "date": "2026-01-28",
-      "source": "财经网",
-      "author": "张三",
-      "sourceUrl": "https://xxx.com/news/1.html",
-      "summary": "新闻摘要...",
-      "content": "<p>新闻正文内容...</p><img src='...'>"
-    }
-  ]
-}
-```
-
-### 代码中必须包含的保存逻辑
-
-```python
-def save_results(articles: list, output_path: str):
-    # 保存爬取结果为JSON
-    result = {
-        "total": len(articles),
-        "crawlTime": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "articles": articles
-    }
-    with open(output_path, 'w', encoding='utf-8') as f:
-        json.dump(result, f, ensure_ascii=False, indent=2)
-    print(f"已保存 {len(articles)} 条新闻到 {output_path}")
-```
-            lines.append(article['summary'])
-            lines.append("")
-        elif article.get('content'):
-            # 截取前 500 字作为摘要
-            content = article['content'][:500]
-            if len(article['content']) > 500:
-                content += "..."
-            lines.append(content)
-            lines.append("")
-        
-        lines.append("---")
-        lines.append("")
-    
-    with open(output_path, 'w', encoding='utf-8') as f:
-        f.write("\\n".join(lines))
-    
-    print(f"已保存 {len(articles)} 条新闻到 {output_path}")
-```
-
-### 同时保存 JSON 格式（用于前端展示）
-
-```python
-def save_results_json(articles: list, output_path: str):
-    \"\"\"保存为 JSON 格式\"\"\"
-    result = {
-        "total": len(articles),
-        "crawlTime": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "articles": articles
-    }
-    with open(output_path, 'w', encoding='utf-8') as f:
-        json.dump(result, f, ensure_ascii=False, indent=2)
-```
-
-## 主函数结构
-
-```python
-def main():
-    # 配置
-    START_DATE = "2026-01-01"
-    END_DATE = "2026-12-31"
-    OUTPUT_DIR = "./output"
-    
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-    
-    # 爬取新闻
-    articles = crawl_news()
-    
-    # 日期过滤
-    filtered = [a for a in articles if START_DATE <= a.get('date', '') <= END_DATE]
-    
-    # 保存结果
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    md_path = os.path.join(OUTPUT_DIR, f"news_{timestamp}.md")
-    json_path = os.path.join(OUTPUT_DIR, f"news_{timestamp}.json")
-    
-    save_to_markdown(filtered, md_path, "来源网站名称")
-    save_results_json(filtered, json_path)
-
-if __name__ == "__main__":
-    main()
-```
-
-## 【硬约束】不要硬编码选择器
-
-1. 根据用户提供的页面结构和截图分析，动态确定选择器
-2. 如果用户截图标注了特定区域，优先定位该区域
-3. 使用防御性编程，处理可能缺失的字段
-"""
+        return load_prompt("codegen/news_sentiment/system.md")
 
     def _compress_html(self, html_content: str) -> str:
         """
@@ -1872,58 +1112,37 @@ if __name__ == "__main__":
         end_date: str = "",
         enhanced_summary: str = ""
     ) -> str:
-        """构建用户提示词"""
+        """构建用户提示词 (模板位于 prompts/codegen/user_prompt/)。"""
 
         # 使用结构化压缩处理 HTML
         compressed_html = self._compress_html(page_html)
 
-        html_section = f"""
-## 页面HTML (已结构化压缩)
+        html_section = load_prompt(
+            "codegen/user_prompt/html_section.md",
+            compressed_html=compressed_html,
+        )
 
-```html
-{compressed_html}
-```
-"""
-
-        # 时间范围设置
         date_section = ""
         if start_date and end_date:
-            date_section = f"""
-## 【重要】爬取时间范围
-
-用户指定的爬取时间范围：
-- 开始时间：{start_date}
-- 结束时间：{end_date}
-
-请在生成的代码中使用这个时间范围：
-1. 如果API支持日期过滤，在请求参数中加入日期范围
-2. 如果API不支持，在客户端过滤获取的数据
-3. 不要自动生成或硬编码其他时间范围
-"""
+            date_section = load_prompt(
+                "codegen/user_prompt/date_section.md",
+                start_date=start_date,
+                end_date=end_date,
+            )
 
         requirements_section = ""
         if user_requirements:
-            requirements_section = f"""
-## 任务目标（最高优先级）
+            requirements_section = load_prompt(
+                "codegen/user_prompt/requirements_section.md",
+                user_requirements=user_requirements,
+            )
 
-{user_requirements}
-
-你必须优先满足这里的任务目标，再结合页面结构与其他约束生成代码。
-"""
-
-        # 增强分析部分
         enhanced_section = ""
         if enhanced_summary:
-            enhanced_section = f"""
-## 【关键】增强页面分析结果
-
-{enhanced_summary}
-
-**请特别注意上述分析结果，尤其是：**
-1. 如果 `hasData` 为 false，页面需要选择分类才能加载数据
-2. 如果检测到 `category_params`，必须在代码中定义分类配置并遍历
-3. 参考 `menu_mapping` 来确定分类名称和对应的参数值
-"""
+            enhanced_section = load_prompt(
+                "codegen/user_prompt/enhanced_section.md",
+                enhanced_summary=enhanced_summary,
+            )
 
         # 获取输出目录的绝对路径
         output_dir = str(Path(__file__).parent / "output")
@@ -1935,84 +1154,16 @@ if __name__ == "__main__":
         if date_section.strip():
             prefix += date_section.strip() + "\n\n"
 
-        return prefix + f"""请为以下页面生成爬虫脚本：
-
-## 目标URL
-
-{page_url}
-
-## 页面结构分析
-
-{structure_summary}
-
-## 捕获的网络请求（重点关注API请求）
-
-{api_info}
-
-{enhanced_section}
-
-{html_section}
-
-## 任务要求
-
-1. 分析页面数据来源（API 接口 or HTML 页面；若为 HTML 必须使用 Playwright 解析）
-2. 生成能爬取该页面所有数据的Python脚本
-3. 【无条件强制】必须实现翻页循环，且**严禁无限循环**
-   - 当 MAX_ITEMS > 1 时，必须用 `while len(collected) < MAX_ITEMS:` 的循环；循环内**必须同时满足以下两种退出条件之一**才停止，否则会无限翻页：
-     - **退出条件①**：已收集数量 ≥ MAX_ITEMS，则 `break`。
-     - **退出条件②**：没有更多页——当前页解析到的条目数为 0，或（若为 HTML）找不到“下一页”按钮/链接，或（若为 API）当前页返回空列表，则 `break`，不要继续请求下一页。
-   - **如何知道“第几页”**：若为 API，用请求参数 `page`/`pageNo` 等递增（如 `page=1,2,3...`）；若为 HTML，要么用 URL 中的 `?page=N` 或 `?paged=N` 递增，要么用 Playwright 点击“下一页”按钮（如 `a.page-numbers.next`、`a.next`），点击后无需自己维护页码，但**必须**在每次处理完当前页后检查“是否还有下一页”（例如按钮不可见或 `disabled` 则 break）。
-   - 严禁只写单页抓取的 for 循环；也严禁在“无新数据/无下一页”时仍不 break 导致死循环。
-4. 提取每条记录的关键字段（标题、日期、链接等）
-5. 如果有下载链接（PDF等），提取下载URL
-   - 【重要】混合内容处理：某些列表项的链接可能直接指向 PDF/DOC 文件（而不是 HTML 详情页）。
-   - **文件检测不能仅看 URL 后缀**：有些网站的 PDF 链接路径中不含 .pdf 后缀（如 `/detail-pages/publication/xxx`），必须通过运行时行为判断。
-   - 先检查 URL 后缀（.pdf, .doc, .docx, .xls, .xlsx）：如果匹配，直接保存链接，跳过 page.goto()。
-   - **如果 URL 无文件后缀**：正常导航并提取正文。
-   - 【强制】详情页内容提取的 try-except 代码结构：
-     ```python
-     try:
-         detail_page.goto(url, wait_until="domcontentloaded", timeout=30000)
-         content_html = ""
-         # 依次尝试 probe_detail_page 给出的候选 selector
-         for sel in content_selectors:
-             try:
-                 detail_page.wait_for_selector(sel, timeout=8000)
-                 el = detail_page.locator(sel).first
-                 if el.count():
-                     html = el.inner_html()
-                     if len(html.strip()) > 50:
-                         content_html = html
-                         break
-             except Exception:
-                 continue
-         if content_html:
-             article_data["content"] = clean_html_content(content_html, url)
-         else:
-             # 所有候选 selector 都未匹配到足够内容 → 回退为 URL 链接
-             article_data["content"] = f'<a href="{{url}}" target="_blank">{{url}}</a>'
-     except Exception as e:
-         if "ERR_ABORTED" in str(e) or "Download is starting" in str(e):
-             # 下载中断 → 文件链接
-             article_data["content"] = f'<a href="{{url}}" target="_blank">{{url}}</a>'
-         else:
-             # 其他异常 → 也回退为 URL 链接
-             article_data["content"] = f'<a href="{{url}}" target="_blank">{{url}}</a>'
-     ```
-   - 【关键】必须对每个 selector 用 `wait_for_selector(sel, timeout=8000)` 等待，因为某些页面内容在 domcontentloaded 后由 JS 动态渲染。
-   - 【严禁】在 content 字段中添加任何额外文字，如 "抓取失败"、"Failed to load"、"Download Document"、"请访问原文" 等。
-   - 【严禁】生成不含 target="_blank" 的链接。所有 <a> 标签必须包含 `target="_blank"`。
-   - content 字段要么是提取到的完整 HTML 正文，要么是纯链接 `<a href="{{url}}" target="_blank">{{url}}</a>`，没有第三种格式。
-6. 【重要】如果检测到分类参数，必须：
-   - 定义分类配置字典
-   - 遍历所有分类获取完整数据
-   - 在输出中标记每条数据的分类来源
-7. 将结果JSON文件保存到固定目录：`{output_dir}`
-   - 使用 os.makedirs 确保目录存在
-   - 文件名使用有意义的名称（如：网站名_数据类型_时间.json）
-
-请直接输出完整的Python代码：
-"""
+        body = load_prompt(
+            "codegen/user_prompt/main_template.md",
+            page_url=page_url,
+            structure_summary=structure_summary,
+            api_info=api_info,
+            enhanced_section=enhanced_section,
+            html_section=html_section,
+            output_dir=output_dir,
+        )
+        return prefix + body
 
     def _extract_api_info(
         self, 
@@ -2815,42 +1966,13 @@ if __name__ == "__main__":
         leaf_paths_display = leaf_paths[:200]
         truncated_msg = f"\n(还有 {len(leaf_paths) - 200} 个路径未显示)" if len(leaf_paths) > 200 else ""
         
-        system_prompt = """你是一个智能爬虫助手。你的任务是辅助爬虫程序决定“需要点击探测哪些菜单项”。
-程序会自动点击你选中的菜单，分析其网络请求（抓包），从而逆向出网站的 API 参数规律。
+        system_prompt = load_prompt("browser/menu_exploration_system.md")
 
-决策原则：
-1. **【最高优先级】严格遵循截图指示**：
-   - 如果用户提供了截图（通常包含红框、箭头或高亮），你**必须且只能**选择截图里明确展示出的板块。
-   - **严禁**选择截图里不存在、被折叠或未展示的菜单项。
-   - 例如：截图红框只框选了“企业评级”下的子菜单，你就绝不能选“金融机构评级”或“地方政府债”。
-
-2. **【强制】子菜单必须全部选中（禁止抽样/采样）**：
-   - 对于截图里框选的主菜单（如"企业评级"），**必须**选中其下的**所有**可见子菜单，**不允许**只选部分作为"代表性样本"。
-   - 原因：每个子菜单的 API 分类 ID 是**不可预测的**（如"主体评级"ID=121，"公司债券"ID=200），无法通过数字规律推理，必须逐一探测。
-   - 例如：如果"企业评级"下有 8 个子菜单，你**必须**全部选中这 8 个，不能只选 4 个。
-
-3. **数据密集型优先**：在截图范围内，优先选"公告"、"研报"、"评级结果"等含数据的板块。
-
-4. **去重**：如果多个板块高度相似（如按年份分的 2023/2024/2025），可选最新年份的板块。但**不同名称的分类绝对不能去重**。
-"""
-
-        user_prompt = f"""请分析以下网站目录树（及参考截图），选出最值得探测的“数据列表/业务板块”路径。
-
-## 可选路径列表 (JSON)
-```json
-{json.dumps(leaf_paths_display, ensure_ascii=False, indent=2)}
-```
-{truncated_msg}
-
-## 你的任务
-从上述列表中挑选出需要探测的路径。
-**重要**：如果提供了截图，请**严格只选择截图里展示出来的板块**（包括其子菜单）。不要选择截图里看不见或未展示的板块。
-
-## 输出要求
-**只输出一个纯 JSON 字符串数组**，不要包含 markdown 标记或任何解释。
-格式示例：
-["一级市场/评级结果", "一级市场/评级公告"]
-"""
+        user_prompt = load_prompt(
+            "browser/menu_exploration_user.md",
+            leaf_paths_json=json.dumps(leaf_paths_display, ensure_ascii=False, indent=2),
+            truncated_msg=truncated_msg,
+        )
 
         attachments = []
         if screenshot_base64:

@@ -1,0 +1,14 @@
+2026/02/24-21:42:06.898 bcf8 Reusing MANIFEST d:\llm_mcp_genpy\pygen\chrome-profile\Default\IndexedDB\https_www.cityam.com_0.indexeddb.leveldb/MANIFEST-000001
+2026/02/24-21:42:06.919 bcf8 Recovering log #56
+2026/02/24-21:42:06.927 bcf8 Reusing old log d:\llm_mcp_genpy\pygen\chrome-profile\Default\IndexedDB\https_www.cityam.com_0.indexeddb.leveldb/000056.log 
+2026/02/24-21:42:06.927 bcf8 Delete type=2 #55
+2026/02/24-21:42:20.063 bcf8 Level-0 table #61: started
+2026/02/24-21:42:20.185 bcf8 Level-0 table #61: 4820 bytes OK
+2026/02/24-21:42:20.193 bcf8 Delete type=0 #56
+2026/02/24-21:42:20.195 bcf8 Manual compaction at level-0 from '\x00\x12\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x13\x00\x00\x00' @ 0 : 0; will stop at '\x00\x12\x00\x00\xc8\x06\x00v\x00i\x00s\x00i\x00t\x00s' @ 5857 : 1
+2026/02/24-21:42:20.198 bcf8 Compacting 1@0 + 1@1 files
+2026/02/24-21:42:20.614 bcf8 Generated table #62@0: 279 keys, 3805 bytes
+2026/02/24-21:42:20.614 bcf8 Compacted 1@0 + 1@1 files => 3805 bytes
+2026/02/24-21:42:20.617 bcf8 compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/02/24-21:42:20.618 bcf8 Delete type=2 #61
+2026/02/24-21:42:20.619 bcf8 Manual compaction at level-0 from '\x00\x12\x00\x00\xc8\x06\x00v\x00i\x00s\x00i\x00t\x00s' @ 5857 : 1 .. '\x00\x13\x00\x00\x00' @ 0 : 0; will stop at (end)

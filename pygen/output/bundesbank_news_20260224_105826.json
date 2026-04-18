@@ -1,0 +1,56 @@
+{
+  "total": 5,
+  "crawlTime": "2026-02-24 10:58:26",
+  "articles": [
+    {
+      "id": "1",
+      "title": "无标题新闻",
+      "date": "2026-02-24",
+      "source": "Bundesbank Social Media",
+      "author": "Bundesbank",
+      "sourceUrl": "https://bsky.app/profile/bundesbank.bsky.social",
+      "summary": "",
+      "content": "<p></p><img src=\"https://cdn.stage.bio/foyer/07669bcb-cd39-4dfc-bcc7-c18ffce63fe4.jpg\"/>"
+    },
+    {
+      "id": "2",
+      "title": "无标题新闻",
+      "date": "2026-02-24",
+      "source": "Bundesbank Social Media",
+      "author": "Bundesbank",
+      "sourceUrl": "https://linkedin.com/company/20884",
+      "summary": "",
+      "content": "<p></p><img src=\"https://cdn.stage.bio/foyer/07669bcb-cd39-4dfc-bcc7-c18ffce63fe4.jpg\"/>"
+    },
+    {
+      "id": "3",
+      "title": "无标题新闻",
+      "date": "2026-02-24",
+      "source": "Bundesbank Social Media",
+      "author": "Bundesbank",
+      "sourceUrl": "https://facebook.com/deutsche.bundesbank/",
+      "summary": "",
+      "content": "<p></p><img src=\"https://cdn.stage.bio/foyer/07669bcb-cd39-4dfc-bcc7-c18ffce63fe4.jpg\"/>"
+    },
+    {
+      "id": "4",
+      "title": "无标题新闻",
+      "date": "2026-02-24",
+      "source": "Bundesbank Social Media",
+      "author": "Bundesbank",
+      "sourceUrl": "https://instagram.com/deutsche.bundesbank/",
+      "summary": "",
+      "content": "<p></p><img src=\"https://cdn.stage.bio/foyer/07669bcb-cd39-4dfc-bcc7-c18ffce63fe4.jpg\"/>"
+    },
+    {
+      "id": "5",
+      "title": "无标题新闻",
+      "date": "2026-02-24",
+      "source": "Bundesbank Social Media",
+      "author": "Bundesbank",
+      "sourceUrl": "https://bsky.app/profile/bundesbank.bsky.social",
+      "summary": "",
+      "content": "<p></p><img src=\"https://cdn.stage.bio/foyer/07669bcb-cd39-4dfc-bcc7-c18ffce63fe4.jpg\"/>"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "total": 2,
+  "crawlTime": "2026-02-09 12:02:14",
+  "dateRange": "2026-01-01 ~ 2026-12-31",
+  "reports": [
+    {
+      "name": "unknown",
+      "date": "",
+      "downloadUrl": "",
+      "fileType": "pdf"
+    },
+    {
+      "name": "unknown",
+      "date": "",
+      "downloadUrl": "",
+      "fileType": "pdf"
+    }
+  ]
+}

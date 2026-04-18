@@ -1,0 +1,2233 @@
+<!doctype html>
+<html class="no-js" lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type="text/css" data-type="vc_custom-css">.ticker-wrapper-h{
+    display: flex;  
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #ff0000 !important;
+    background-color: #ff0000 !important;
+    box-shadow: 0 6px 6px rgb(0 0 0 / 32%); 
+    padding:  10px;
+}
+
+.news-ticker-h{
+    display: flex;
+    margin:0;
+    padding: 0;
+    padding-left: 90%;
+    
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+    animation-name: tic-h;
+    animation-duration: 20s;
+    
+}
+.news-ticker-h:hover { 
+    color: #00a0e3;
+}
+
+.news-ticker-h li{
+    display: flex;
+    width: 100%;
+    align-items: center;
+    white-space: nowrap;
+    padding-left: 20px;
+}
+
+.news-ticker-h li a{
+    color: #fff;
+    font-weight: bold;
+    font-size: 14px;
+}
+.news-ticker-h li a:hover{
+    color: #A93226;
+    font-weight: bold;
+}
+
+@keyframes tic-h {
+    0% {
+        -webkit-transform: translate3d(0, 0, 0);
+        transform: translate3d(0, 0, 0);
+        visibility: visible;
+    }
+    100% {
+        -webkit-transform: translate3d(-100%, 0, 0);
+        transform: translate3d(-100%, 0, 0);
+    }
+}</style>
+	<!-- This site is optimized with the Yoast SEO plugin v15.9.2 - https://yoast.com/wordpress/plugins/seo/ -->
+	<title>Business Magazine | Investir, Finance, Eco, Techno, Immobilier</title>
+	<meta name="description" content="Votre plateforme business : actus et infos sur le monde des affaires - économie, finance, construction, technologie, bourse - Maurice, Mayotte, Réunion, Mada" />
+	<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+	<link rel="canonical" href="https://www.business-magazine.mu/" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content="Business Magazine | Investir, Finance, Eco, Techno, Immobilier" />
+	<meta property="og:description" content="Votre plateforme business : actus et infos sur le monde des affaires - économie, finance, construction, technologie, bourse - Maurice, Mayotte, Réunion, Mada" />
+	<meta property="og:url" content="https://www.business-magazine.mu/" />
+	<meta property="og:site_name" content="Business Magazine" />
+	<meta property="article:modified_time" content="2026-01-08T09:55:12+00:00" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:label1" content="Est. reading time">
+	<meta name="twitter:data1" content="1 minute">
+	<script type="application/ld+json" class="yoast-schema-graph">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://www.business-magazine.mu/#website","url":"https://www.business-magazine.mu/","name":"Business Magazine","description":"Investir, Finance, Eco, Techno, Immobilier","potentialAction":[{"@type":"SearchAction","target":"https://www.business-magazine.mu/?s={search_term_string}","query-input":"required name=search_term_string"}],"inLanguage":"en-US"},{"@type":"ImageObject","@id":"https://www.business-magazine.mu/#primaryimage","inLanguage":"en-US","url":"https://www.business-magazine.mu/wp-content/uploads/2020/12/featured-image-default.jpg","width":820,"height":394},{"@type":"WebPage","@id":"https://www.business-magazine.mu/#webpage","url":"https://www.business-magazine.mu/","name":"Business Magazine | Investir, Finance, Eco, Techno, Immobilier","isPartOf":{"@id":"https://www.business-magazine.mu/#website"},"primaryImageOfPage":{"@id":"https://www.business-magazine.mu/#primaryimage"},"datePublished":"2017-02-18T08:27:14+00:00","dateModified":"2026-01-08T09:55:12+00:00","description":"Votre plateforme business : actus et infos sur le monde des affaires - \u00e9conomie, finance, construction, technologie, bourse - Maurice, Mayotte, R\u00e9union, Mada","breadcrumb":{"@id":"https://www.business-magazine.mu/#breadcrumb"},"inLanguage":"en-US","potentialAction":[{"@type":"ReadAction","target":["https://www.business-magazine.mu/"]}]},{"@type":"BreadcrumbList","@id":"https://www.business-magazine.mu/#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"item":{"@type":"WebPage","@id":"https://www.business-magazine.mu/","url":"https://www.business-magazine.mu/","name":"Home"}}]}]}</script>
+	<!-- / Yoast SEO plugin. -->
+
+
+<link rel='dns-prefetch' href='//www.google.com' />
+<link rel='dns-prefetch' href='//fonts.googleapis.com' />
+<link rel='dns-prefetch' href='//s.w.org' />
+<link rel="alternate" type="application/rss+xml" title="Business Magazine &raquo; Feed" href="https://www.business-magazine.mu/feed/" />
+<link rel="alternate" type="application/rss+xml" title="Business Magazine &raquo; Comments Feed" href="https://www.business-magazine.mu/comments/feed/" />
+		<script type="text/javascript">
+			window._wpemojiSettings = {"baseUrl":"https:\/\/s.w.org\/images\/core\/emoji\/13.0.0\/72x72\/","ext":".png","svgUrl":"https:\/\/s.w.org\/images\/core\/emoji\/13.0.0\/svg\/","svgExt":".svg","source":{"concatemoji":"https:\/\/www.business-magazine.mu\/wp-includes\/js\/wp-emoji-release.min.js?ver=5.5.17"}};
+			!function(e,a,t){var n,r,o,i=a.createElement("canvas"),p=i.getContext&&i.getContext("2d");function s(e,t){var a=String.fromCharCode;p.clearRect(0,0,i.width,i.height),p.fillText(a.apply(this,e),0,0);e=i.toDataURL();return p.clearRect(0,0,i.width,i.height),p.fillText(a.apply(this,t),0,0),e===i.toDataURL()}function c(e){var t=a.createElement("script");t.src=e,t.defer=t.type="text/javascript",a.getElementsByTagName("head")[0].appendChild(t)}for(o=Array("flag","emoji"),t.supports={everything:!0,everythingExceptFlag:!0},r=0;r<o.length;r++)t.supports[o[r]]=function(e){if(!p||!p.fillText)return!1;switch(p.textBaseline="top",p.font="600 32px Arial",e){case"flag":return s([127987,65039,8205,9895,65039],[127987,65039,8203,9895,65039])?!1:!s([55356,56826,55356,56819],[55356,56826,8203,55356,56819])&&!s([55356,57332,56128,56423,56128,56418,56128,56421,56128,56430,56128,56423,56128,56447],[55356,57332,8203,56128,56423,8203,56128,56418,8203,56128,56421,8203,56128,56430,8203,56128,56423,8203,56128,56447]);case"emoji":return!s([55357,56424,8205,55356,57212],[55357,56424,8203,55356,57212])}return!1}(o[r]),t.supports.everything=t.supports.everything&&t.supports[o[r]],"flag"!==o[r]&&(t.supports.everythingExceptFlag=t.supports.everythingExceptFlag&&t.supports[o[r]]);t.supports.everythingExceptFlag=t.supports.everythingExceptFlag&&!t.supports.flag,t.DOMReady=!1,t.readyCallback=function(){t.DOMReady=!0},t.supports.everything||(n=function(){t.readyCallback()},a.addEventListener?(a.addEventListener("DOMContentLoaded",n,!1),e.addEventListener("load",n,!1)):(e.attachEvent("onload",n),a.attachEvent("onreadystatechange",function(){"complete"===a.readyState&&t.readyCallback()})),(n=t.source||{}).concatemoji?c(n.concatemoji):n.wpemoji&&n.twemoji&&(c(n.twemoji),c(n.wpemoji)))}(window,document,window._wpemojiSettings);
+		</script>
+		<style type="text/css">
+img.wp-smiley,
+img.emoji {
+	display: inline !important;
+	border: none !important;
+	box-shadow: none !important;
+	height: 1em !important;
+	width: 1em !important;
+	margin: 0 .07em !important;
+	vertical-align: -0.1em !important;
+	background: none !important;
+	padding: 0 !important;
+}
+</style>
+	<link rel="stylesheet" href="https://www.business-magazine.mu/wp-content/cache/minify/61354.css" media="all" />
+
+
+
+
+
+
+
+
+<style id='magplus-main-style-inline-css' type='text/css'>
+.tt-header-type-5 .logo, .tt-header .logo {max-width:340px;height:114px;line-height:114px;}.tt-mslide-author,.tt-mblock-label > span {display:none !important;}.coment-item {display:none;}body.archive .tt-post-views {display:none !important;}@media (max-width:767px) {.tt-iframe.smallVid {display:block !important;}}.custom-color-properties-1000:after {background:#ff0000 !important;}.custom-color-properties-1000 .tt-title-text {color:#ffffff !important;background:#ff0000 !important;}.custom-color-properties-1000 {border-color:#ff0000 !important;}.custom-color-properties-1001:after {background:#ff0000 !important;}.custom-color-properties-1001 .tt-title-text {color:#ffffff !important;background:#ff0000 !important;}.custom-color-properties-1001 {border-color:#ff0000 !important;}.custom-color-properties-1002:after {background:#ff0000 !important;}.custom-color-properties-1002 .tt-title-text {color:#ffffff !important;background:#ff0000 !important;}.custom-color-properties-1002 {border-color:#ff0000 !important;}.custom-color-properties-1003:after {background:#ff0000 !important;}.custom-color-properties-1003 .tt-title-text {color:#ffffff !important;background:#ff0000 !important;}.custom-color-properties-1003 {border-color:#ff0000 !important;}.custom-color-properties-1004 .tt-nav-tab-item.active {background:#b5b5b5 !important;color:#ffffff !important;}.custom-color-properties-1005:after {background:#ff5a20 !important;}.custom-color-properties-1005 .tt-title-text {color:#ffffff !important;background:#ff5a20 !important;}.custom-color-properties-1005 {border-color:#ff5a20 !important;}.custom-color-properties-1006:after {background:#0f8124 !important;}.custom-color-properties-1006 .tt-title-text {color:#ffffff !important;background:#0f8124 !important;}.custom-color-properties-1006 {border-color:#0f8124 !important;}@font-face {font-family:;src:;font-weight: normal;font-style: normal;}
+</style>
+<link rel="stylesheet" href="https://www.business-magazine.mu/wp-content/cache/minify/fedc2.css" media="all" />
+
+
+<link crossorigin="anonymous" rel='stylesheet' id='magplus-fonts-css'  href='https://fonts.googleapis.com/css?family=Roboto%3A400%2C500%2C700&#038;subset=latin%2Clatin-ext&#038;ver=6.2' type='text/css' media='all' />
+<link crossorigin="anonymous" rel='stylesheet' id='magplus-material-icon-css'  href='https://fonts.googleapis.com/icon?family=Material+Icons&#038;ver=6.2' type='text/css' media='all' />
+<link rel="stylesheet" href="https://www.business-magazine.mu/wp-content/cache/minify/f41b8.css" media="all" />
+
+
+
+
+<!--[if lt IE 9]>
+<link rel='stylesheet' id='vc_lte_ie9-css'  href='https://www.business-magazine.mu/wp-content/plugins/js_composer/assets/css/vc_lte_ie9.min.css?ver=6.0.5' type='text/css' media='screen' />
+<![endif]-->
+<script type='text/javascript' id='jquery-core-js-extra'>
+/* <![CDATA[ */
+var slide_in = {"demo_dir":"https:\/\/www.business-magazine.mu\/wp-content\/plugins\/convertplug\/modules\/slide_in\/assets\/demos"};
+/* ]]> */
+</script>
+<script src="https://www.business-magazine.mu/wp-content/cache/minify/c7035.js"></script>
+
+<script type='text/javascript' id='cookie-notice-front-js-extra'>
+/* <![CDATA[ */
+var cnArgs = {"ajaxUrl":"https:\/\/www.business-magazine.mu\/wp-admin\/admin-ajax.php","nonce":"2fd3184a66","hideEffect":"fade","position":"bottom","onScroll":"0","onScrollOffset":"100","onClick":"0","cookieName":"cookie_notice_accepted","cookieTime":"2592000","cookieTimeRejected":"2592000","cookiePath":"\/","cookieDomain":"","redirection":"0","cache":"1","refuse":"0","revokeCookies":"0","revokeCookiesOpt":"automatic","secure":"1"};
+/* ]]> */
+</script>
+<script src="https://www.business-magazine.mu/wp-content/cache/minify/545b0.js"></script>
+
+<link rel="https://api.w.org/" href="https://www.business-magazine.mu/wp-json/" /><link rel="alternate" type="application/json" href="https://www.business-magazine.mu/wp-json/wp/v2/pages/36" /><link rel="EditURI" type="application/rsd+xml" title="RSD" href="https://www.business-magazine.mu/xmlrpc.php?rsd" />
+<link rel="wlwmanifest" type="application/wlwmanifest+xml" href="https://www.business-magazine.mu/wp-includes/wlwmanifest.xml" /> 
+<meta name="generator" content="WordPress 5.5.17" />
+<link rel='shortlink' href='https://www.business-magazine.mu/' />
+<link rel="alternate" type="application/json+oembed" href="https://www.business-magazine.mu/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fwww.business-magazine.mu%2F" />
+<link rel="alternate" type="text/xml+oembed" href="https://www.business-magazine.mu/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fwww.business-magazine.mu%2F&#038;format=xml" />
+
+<script async src="https://securepubads.g.doubleclick.net/tag/js/gpt.js"></script>
+<script>// <![CDATA[
+var googletag = googletag || {};
+  googletag.cmd = googletag.cmd || [];
+// ]]></script>
+
+<script>
+  googletag.cmd.push(function() {
+
+    var homepageTopboardMapping = googletag.sizeMapping().
+      addSize([1250, 0], [1250, 250]). // Desktop
+      addSize([1000, 0], [290, 160]). // Big Tablet
+      addSize([768, 0], [290, 160]). // Small Tablet
+      addSize([0, 0], [290, 160]). // Catchall
+      build();
+
+    var homepageMiddleboardMapping = googletag.sizeMapping().
+      addSize([1250, 0], [728, 90]). // Desktop
+      addSize([1000, 0], [728, 90]). // Big Tablet
+      addSize([728, 0], [728, 90]). // Small Tablet
+      addSize([0, 0], [290, 160]). // Catchall
+      build();
+
+    var homepageSidebillboard1Mapping = googletag.sizeMapping().
+      addSize([1250, 0], [390, 780]). // Desktop
+      addSize([1000, 0], [390, 780]). // Big Tablet
+      addSize([728, 0], [390, 780]). // Small Tablet
+      addSize([0, 0], [288, 576]). // Catchall
+      build();
+
+    var category_top_leaderboardMapping = googletag.sizeMapping().
+      addSize([1250, 0], [1250, 250]). // Desktop
+      addSize([1000, 0], [290, 160]). // Big Tablet
+      addSize([728, 0], [290, 160]). // Small Tablet
+      addSize([0, 0], [290, 160]). // Catchall
+      build();
+
+
+    googletag.defineSlot('/22247954447/BM_homepage_top_billboard_leaderboard', [[1250, 250], [290, 160]], 'div-gpt-ad-1611039559167-0').defineSizeMapping(homepageTopboardMapping).addService(googletag.pubads());
+    googletag.defineSlot('/22247954447/BM_homepage_middle_leaderboard', [[290, 160], [728, 90]], 'div-gpt-ad-1687941634047-0').defineSizeMapping(homepageMiddleboardMapping).addService(googletag.pubads());
+    googletag.defineSlot('/22247954447/BM_homepage_large_leaderboard', [[728, 278], [290, 160]], 'div-gpt-ad-1610967766855-0').addService(googletag.pubads());
+    googletag.defineSlot('/22247954447/BM_homepage_side_billboard1_leaderboard', [[390, 780], [288, 576]], 'div-gpt-ad-1610970760151-0').defineSizeMapping(homepageSidebillboard1Mapping).addService(googletag.pubads());
+    googletag.defineSlot('/22247954447/BM_homepage_side_billboard2_leaderboard', [[288, 576], [390, 780]], 'div-gpt-ad-1611039431019-0').defineSizeMapping(homepageSidebillboard1Mapping).addService(googletag.pubads());
+    googletag.defineSlot('/22247954447/BM_actualities_top_leaderboard', [[290, 160], [1250, 250]], 'div-gpt-ad-1610949343284-0').defineSizeMapping(category_top_leaderboardMapping).addService(googletag.pubads());
+    googletag.defineSlot('/22247954447/BM_en_couverture_top_leaderboard', [[290, 160], [1250, 250]], 'div-gpt-ad-1610966204718-0').defineSizeMapping(category_top_leaderboardMapping).addService(googletag.pubads());
+    googletag.defineSlot('/22247954447/BM_edito_top_leaderboard', [[290, 160], [1250, 250]], 'div-gpt-ad-1610965404582-0').defineSizeMapping(category_top_leaderboardMapping).addService(googletag.pubads());
+    googletag.defineSlot('/22247954447/BM_rencontre_top_leaderboard', [[1250, 250], [290, 160]], 'div-gpt-ad-1611040650823-0').defineSizeMapping(category_top_leaderboardMapping).addService(googletag.pubads());
+    googletag.defineSlot('/22247954447/BM_entreprendre_top_leaderboard', [[290, 160], [1250, 250]], 'div-gpt-ad-1610967255913-0').defineSizeMapping(category_top_leaderboardMapping).addService(googletag.pubads());
+    googletag.defineSlot('/22247954447/BM_immobilier_construction_top_leaderboard', [[1250, 250], [290, 160]], 'div-gpt-ad-1611039726378-0').defineSizeMapping(category_top_leaderboardMapping).addService(googletag.pubads());
+    googletag.defineSlot('/22247954447/BM_education_career_top_leaderboard', [[290, 160], [1250, 250]], 'div-gpt-ad-1610965613477-0').defineSizeMapping(category_top_leaderboardMapping).addService(googletag.pubads());
+    googletag.defineSlot('/22247954447/BM_lifestyle_top_leaderboard', [[290, 160], [1250, 250]], 'div-gpt-ad-1611040292297-0').defineSizeMapping(category_top_leaderboardMapping).addService(googletag.pubads());
+    googletag.defineSlot('/22247954447/BM_automoto_top_leaderboard', [[1250, 250], [290, 160]], 'div-gpt-ad-1611040944525-0').defineSizeMapping(category_top_leaderboardMapping).addService(googletag.pubads());
+    googletag.defineSlot('/22247954447/BM_indicateurs_economiques_top_leaderboard', [[290, 160], [1250, 250]], 'div-gpt-ad-1611039939110-0').defineSizeMapping(category_top_leaderboardMapping).addService(googletag.pubads());
+    googletag.defineSlot('/22247954447/BM_verbatim_top_leaderboard', [[290, 160], [1250, 250]], 'div-gpt-ad-1611040837692-0').defineSizeMapping(category_top_leaderboardMapping).addService(googletag.pubads());
+    googletag.defineSlot('/22247954447/BM_enjeu_top_leaderboard', [[1250, 250], [290, 160]], 'div-gpt-ad-1610966530136-0').defineSizeMapping(category_top_leaderboardMapping).addService(googletag.pubads());
+    googletag.defineSlot('/22247954447/BM_portrait_top_leaderboard', [[290, 160], [1250, 250]], 'div-gpt-ad-1611040520414-0').defineSizeMapping(category_top_leaderboardMapping).addService(googletag.pubads());
+    googletag.defineSlot('/22247954447/BM_interview_top_leaderboard', [[1250, 250], [290, 160]], 'div-gpt-ad-1611040184649-0').defineSizeMapping(category_top_leaderboardMapping).addService(googletag.pubads());
+    googletag.defineSlot('/22247954447/BM_business_files_top_leaderboard', [[290, 160], [1250, 250]], 'div-gpt-ad-1610964382687-0').defineSizeMapping(category_top_leaderboardMapping).addService(googletag.pubads());
+    googletag.defineSlot('/22247954447/BM_innovation_top_leaderboard', [[290, 160], [1250, 250]], 'div-gpt-ad-1611040057684-0').defineSizeMapping(category_top_leaderboardMapping).addService(googletag.pubads());
+    googletag.defineSlot('/22247954447/BM_csr_top_leaderboard', [[1250, 250], [290, 160]], 'div-gpt-ad-1610964864010-0').defineSizeMapping(category_top_leaderboardMapping).addService(googletag.pubads());
+    googletag.defineSlot('/22247954447/BM_immobilier_top_leaderboard', [[290, 160], [1250, 250]], 'div-gpt-ad-1611039836336-0').defineSizeMapping(category_top_leaderboardMapping).addService(googletag.pubads());
+    googletag.defineSlot('/22247954447/BM_construction_top_leaderboard', [[1250, 250], [290, 160]], 'div-gpt-ad-1610964696630-0').defineSizeMapping(category_top_leaderboardMapping).addService(googletag.pubads());
+    googletag.defineSlot('/22247954447/BM_education_top_leaderboard', [[290, 160], [1250, 250]], 'div-gpt-ad-1610965891158-0').defineSizeMapping(category_top_leaderboardMapping).addService(googletag.pubads());
+    googletag.defineSlot('/22247954447/BM_career_top_leaderboard', [[1250, 250], [290, 160]], 'div-gpt-ad-1610964514016-0').defineSizeMapping(category_top_leaderboardMapping).addService(googletag.pubads());
+    googletag.defineSlot('/22247954447/BM_bons_plans_top_leaderboard', [[290, 160], [1250, 250]], 'div-gpt-ad-1610964149164-0').defineSizeMapping(category_top_leaderboardMapping).addService(googletag.pubads());
+    googletag.defineSlot('/22247954447/BM_mode_et_beaute_top_leaderboard', [[1250, 250], [290, 160]], 'div-gpt-ad-1611040425555-0').defineSizeMapping(category_top_leaderboardMapping).addService(googletag.pubads());
+    googletag.defineSlot('/22247954447/BM_saveurs_top_leaderboard', [[290, 160], [1250, 250]], 'div-gpt-ad-1611040730793-0').defineSizeMapping(category_top_leaderboardMapping).addService(googletag.pubads());
+    googletag.defineSlot('/22247954447/BM_deco_top_leaderboard', [[290, 160], [1250, 250]], 'div-gpt-ad-1610965040915-0').defineSizeMapping(category_top_leaderboardMapping).addService(googletag.pubads());
+    googletag.defineSlot('/22247954447/BM_actualite_automobile_top_leaderboard', [[290, 160], [1250, 250]], 'div-gpt-ad-1615233234075-0').defineSizeMapping(category_top_leaderboardMapping).addService(googletag.pubads());
+    googletag.defineSlot('/22247954447/BM_essais_top_leaderboard', [[290, 160], [1250, 250]], 'div-gpt-ad-1610967593033-0').defineSizeMapping(category_top_leaderboardMapping).addService(googletag.pubads());
+    googletag.defineSlot('/22247954447/BM_autofiles_top_leaderboard', [[1250, 250], [290, 160]], 'div-gpt-ad-1610950791426-0').defineSizeMapping(category_top_leaderboardMapping).addService(googletag.pubads());
+    
+    googletag.pubads().enableSingleRequest();
+    googletag.pubads().collapseEmptyDivs();
+    googletag.enableServices();
+  });
+</script>
+    <meta property="og:image" content="https://www.business-magazine.mu/wp-content/uploads/2020/12/featured-image-default-394x218.jpg"/>
+    <meta name="twitter:image:src" content="https://www.business-magazine.mu/wp-content/uploads/2020/12/featured-image-default-394x218.jpg">
+  <style type="text/css">
+	span.oe_textdirection { unicode-bidi: bidi-override; direction: rtl; }
+	span.oe_displaynone { display: none; }
+</style>
+<meta name="generator" content="Powered by WPBakery Page Builder - drag and drop page builder for WordPress."/>
+<!-- There is no amphtml version available for this URL. --><link rel="icon" href="https://www.business-magazine.mu/wp-content/uploads/2020/12/cropped-favicon-1-32x32.png" sizes="32x32" />
+<link rel="icon" href="https://www.business-magazine.mu/wp-content/uploads/2020/12/cropped-favicon-1-192x192.png" sizes="192x192" />
+<link rel="apple-touch-icon" href="https://www.business-magazine.mu/wp-content/uploads/2020/12/cropped-favicon-1-180x180.png" />
+<meta name="msapplication-TileImage" content="https://www.business-magazine.mu/wp-content/uploads/2020/12/cropped-favicon-1-270x270.png" />
+<noscript><style> .wpb_animate_when_almost_visible { opacity: 1; }</style></noscript>
+    <!-- Google Tag Manager -->
+	<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+	new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+	j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+	'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+	})(window,document,'script','dataLayer','GTM-TZHJB8Z');</script>
+	<!-- End Google Tag Manager -->
+
+<script data-ad-client="ca-pub-8506233496443543" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+  
+	
+	<link rel="icon" href="/wp-content/uploads/2020/11/Favicon-16x16-1.png" type="image/x-icon" />
+	<link rel="shortcut icon" href="/wp-content/uploads/2020/11/Favicon-16x16-1.png" type="image/x-icon" />
+  <script src="https://kit.fontawesome.com/07cecc0cf1.js" crossorigin="anonymous"></script>
+
+  <script id="mcjs">!function(c,h,i,m,p){m=c.createElement(h),p=c.getElementsByTagName(h)[0],m.async=1,m.src=i,p.parentNode.insertBefore(m,p)}(document,"script","https://chimpstatic.com/mcjs-connected/js/users/d4ac9c530d24a6f24fed89018/01436568a650806b828f7326d.js");</script>
+
+<!-- SITE LINK -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "WebSite",
+  "name": "Business Magazine",
+  "url": "https://www.business-magazine.mu/",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://www.business-magazine.mu/?s={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+
+<!-- ORGANISATION -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Business Magazine",
+  "alternateName": "Business Mag",
+  "url": "https://www.business-magazine.mu/",
+  "logo": "https://www.business-magazine.mu/wp-content/uploads/2020/11/Business_logo_340x81.jpg",
+  "sameAs": "https://www.facebook.com/businessmag.mu"
+}
+</script>
+
+<!-- BREADCRUMB -->
+<script type="application/ld+json">
+
+{
+  "@context": "https://schema.org/",
+  "@type": "BreadcrumbList",
+  "itemListElement": [{
+    "@type": "ListItem",
+    "position": 1,
+    "name": "Actualités",
+    "item": "https://www.business-magazine.mu/rubrique/actualites/" 
+  },{
+    "@type": "ListItem",
+    "position": 2,
+    "name": "Immobilier & Construction",
+    "item": "https://www.business-magazine.mu/rubrique/immobilier-construction/" 
+  },{
+    "@type": "ListItem",
+    "position": 3,
+    "name": "Entreprendre",
+    "item": "https://www.business-magazine.mu/rubrique/entreprendre/" 
+  },{
+    "@type": "ListItem",
+    "position": 4,
+    "name": "Lifestyle",
+    "item": "https://www.business-magazine.mu/rubrique/lifestyle/" 
+  },{
+    "@type": "ListItem",
+    "position": 5,
+    "name": "Rencontre",
+    "item": "https://www.business-magazine.mu/rubrique/rencontre/" 
+  }]
+}
+</script>
+
+	
+  </head>
+  <body class="home page-template-default page page-id-36 wp-embed-responsive  full-page tt-top-header-disable tt-header-sticky cookies-not-set wpb-js-composer js-comp-ver-6.0.5 vc_responsive">
+
+  	<!-- Google Tag Manager (noscript) -->
+	<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TZHJB8Z"
+	height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+	<!-- End Google Tag Manager (noscript) -->
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-603618582">
+</script>
+
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'AW-603618582');
+</script>
+
+  <div id="wrapper">
+
+        <div class="tt-mobile-block">
+        <div class="tt-mobile-close"></div>
+                <nav class="tt-mobile-nav">
+          <ul id="side-header-nav" class="side-menu"><li id="menu-item-21816" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-home current-menu-item page_item page-item-36 current_page_item menu-item-21816"><a href="https://www.business-magazine.mu/" aria-current="page">Home</a></li>
+<li id="menu-item-21817" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-21817"><a href="https://www.business-magazine.mu/rubrique/actualites/">Actualités</a>
+<ul class="sub-menu">
+	<li id="menu-item-56799" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-56799"><a href="https://www.business-magazine.mu/rubrique/actualites/budget/">Budget</a>
+	<ul class="sub-menu">
+		<li id="menu-item-56800" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-56800"><a href="https://www.business-magazine.mu/rubrique/actualites/budget/2022-2023/">2022- 2023</a></li>
+	</ul>
+</li>
+	<li id="menu-item-21818" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-21818"><a href="https://www.business-magazine.mu/rubrique/actualites/indicateurs-economiques/">Indicateurs économiques</a></li>
+	<li id="menu-item-21819" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-21819"><a href="https://www.business-magazine.mu/rubrique/actualites/enjeu/">Enjeu</a></li>
+	<li id="menu-item-21820" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-21820"><a href="https://www.business-magazine.mu/rubrique/actualites/verbatim/">Verbatim</a></li>
+	<li id="menu-item-39502" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-39502"><a href="https://www.business-magazine.mu/rubrique/actualites/autres/">Autres</a></li>
+</ul>
+</li>
+<li id="menu-item-21821" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-21821"><a href="https://www.business-magazine.mu/rubrique/en-couverture/">En couverture</a></li>
+<li id="menu-item-21822" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-21822"><a href="https://www.business-magazine.mu/rubrique/edito/">Édito</a></li>
+<li id="menu-item-21823" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-21823"><a href="https://www.business-magazine.mu/rubrique/rencontre/">Rencontre</a>
+<ul class="sub-menu">
+	<li id="menu-item-21824" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-21824"><a href="https://www.business-magazine.mu/rubrique/rencontre/portrait/">Portrait</a></li>
+	<li id="menu-item-21825" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-21825"><a href="https://www.business-magazine.mu/rubrique/rencontre/interview/">Interview</a></li>
+	<li id="menu-item-39503" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-39503"><a href="https://www.business-magazine.mu/rubrique/rencontre/parole-dexperts-rencontre/">Parole d&#8217;experts</a></li>
+</ul>
+</li>
+<li id="menu-item-21826" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-21826"><a href="https://www.business-magazine.mu/rubrique/entreprendre/">Entreprendre</a>
+<ul class="sub-menu">
+	<li id="menu-item-21827" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-21827"><a href="https://www.business-magazine.mu/rubrique/entreprendre/business-files/">Business files</a></li>
+	<li id="menu-item-21828" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-21828"><a href="https://www.business-magazine.mu/rubrique/entreprendre/innovation/">Innovation</a></li>
+	<li id="menu-item-21829" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-21829"><a href="https://www.business-magazine.mu/rubrique/entreprendre/csr/">CSR</a></li>
+	<li id="menu-item-39505" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-39505"><a href="https://www.business-magazine.mu/rubrique/entreprendre/autres-entreprendre/">Autres</a></li>
+</ul>
+</li>
+<li id="menu-item-39804" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-39804"><a href="https://www.business-magazine.mu/rubrique/immobilier-construction/">Immobilier &amp; Construction</a>
+<ul class="sub-menu">
+	<li id="menu-item-39805" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-39805"><a href="https://www.business-magazine.mu/rubrique/immobilier-construction/construction/">Construction</a></li>
+	<li id="menu-item-39806" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-39806"><a href="https://www.business-magazine.mu/rubrique/immobilier-construction/immobilier/">Immobilier</a></li>
+</ul>
+</li>
+<li id="menu-item-21833" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-21833"><a href="https://www.business-magazine.mu/rubrique/education-careeer/">Education &amp; Career</a>
+<ul class="sub-menu">
+	<li id="menu-item-21834" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-21834"><a href="https://www.business-magazine.mu/rubrique/education-careeer/education/">Education</a></li>
+	<li id="menu-item-21835" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-21835"><a href="https://www.business-magazine.mu/rubrique/education-careeer/career/">Career</a></li>
+</ul>
+</li>
+<li id="menu-item-21836" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-21836"><a href="https://www.business-magazine.mu/rubrique/lifestyle/">Lifestyle</a>
+<ul class="sub-menu">
+	<li id="menu-item-21837" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-21837"><a href="https://www.business-magazine.mu/rubrique/lifestyle/bons-plans/">Bons plans</a></li>
+	<li id="menu-item-21838" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-21838"><a href="https://www.business-magazine.mu/rubrique/lifestyle/mode-et-beaute/">Mode et beauté</a></li>
+	<li id="menu-item-21839" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-21839"><a href="https://www.business-magazine.mu/rubrique/lifestyle/saveurs/">Saveurs</a></li>
+	<li id="menu-item-21840" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-21840"><a href="https://www.business-magazine.mu/rubrique/lifestyle/deco/">Déco</a></li>
+	<li id="menu-item-39807" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-39807"><a href="https://www.business-magazine.mu/rubrique/lifestyle/autres-lifestyle/">Autres</a></li>
+</ul>
+</li>
+<li id="menu-item-21841" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-21841"><a href="https://www.business-magazine.mu/rubrique/automoto/">Automoto</a>
+<ul class="sub-menu">
+	<li id="menu-item-21842" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-21842"><a href="https://www.business-magazine.mu/rubrique/automoto/actualite-automobile/">Actualité automobile</a></li>
+	<li id="menu-item-21843" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-21843"><a href="https://www.business-magazine.mu/rubrique/automoto/essais/">Essais</a></li>
+	<li id="menu-item-21844" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-21844"><a href="https://www.business-magazine.mu/rubrique/automoto/autofiles/">Autofiles</a></li>
+</ul>
+</li>
+<li id="menu-item-57740" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-57740"><a href="https://www.business-magazine.mu/rubrique/industrie-locale/">Industrie locale</a></li>
+<li id="menu-item-58648" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-58648"><a href="https://www.business-magazine.mu/rubrique/archives/">Archives</a>
+<ul class="sub-menu">
+	<li id="menu-item-58649" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-58649"><a href="https://www.business-magazine.mu/rubrique/archives/finance/">Finance</a></li>
+</ul>
+</li>
+<li id="menu-item-21845" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-21845"><a href="https://www.business-magazine.mu/nous-contacter/">Nous contacter</a></li>
+<li id="menu-item-21846" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-21846"><a href="#">Charte d’independance et de deotologie</a></li>
+<li id="menu-item-21847" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-21847"><a href="https://www.business-magazine.mu/conditions-generales-d-utilisation/">CGU</a></li>
+<li id="menu-item-21848" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-21848"><a href="https://www.business-magazine.mu/politique-de-confidentialite/">Politique de confidentialité</a></li>
+<li id="menu-item-21849" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-21849"><a href="https://www.business-magazine.mu/a-propos/">À propos</a></li>
+</ul>        </nav>
+    </div>
+    <div class="tt-mobile-overlay"></div>
+        <div class="tt-s-popup">
+      <div class="tt-s-popup-overlay"></div>
+      <div class="tt-s-popup-content">
+        <div class="tt-s-popup-layer"></div>
+        <div class="tt-s-popup-container">
+          <form action="https://www.business-magazine.mu/" method="get" class="tt-s-popup-form">
+            <div class="tt-s-popup-field">
+              <input type="text" id="s" name="s" value="" placeholder="Type to search" class="input" required>
+              <div class="tt-s-popup-devider"></div>
+              <h3 class="tt-s-popup-title">Type to search</h3>     
+            </div>
+            <a href="#" class="tt-s-popup-close"></a>
+          </form> 
+        </div>
+      </div>
+    </div>
+        <div class="tt-video-popup">
+      <div class="tt-video-popup-overlay"></div>
+      <div class="tt-video-popup-content">
+        <div class="tt-video-popup-layer"></div>
+        <div class="tt-video-popup-container">
+          <div class="tt-video-popup-align">
+            <div class="embed-responsive embed-responsive-16by9">
+              <iframe class="embed-responsive-item" src="about:blank"></iframe>
+            </div>
+          </div>
+          <div class="tt-video-popup-close"></div>
+        </div>
+      </div>
+    </div> 
+
+    <div class="tt-thumb-popup">
+      <div class="tt-thumb-popup-overlay"></div>
+      <div class="tt-thumb-popup-content">
+        <div class="tt-thumb-popup-layer"></div>
+        <div class="tt-thumb-popup-container">
+          <div class="tt-thumb-popup-align">
+            <img class="tt-thumb-popup-img img-responsive" src="about:blank" alt="">
+          </div>
+          <div class="tt-thumb-popup-close"></div>
+        </div>
+      </div>
+    </div>  
+  
+  <div id="content-wrapper">
+  
+<!-- HEADER -->
+<header class="tt-header header-style1 tt-header-style-link full-page">
+  <div class="tt-header-wrapper">
+    <div class="top-inner clearfix">
+      <div class="container">
+        
+    <a href="https://www.business-magazine.mu/" class="logo tt-logo-1x"><img src="https://www.business-magazine.mu/wp-content/uploads/2020/11/Business_logo_340x81.jpg" alt="Business Magazine" width="340"  height="114"></a>
+            
+    <a href="https://www.business-magazine.mu/" class="logo tt-logo-2x"><img src="https://www.business-magazine.mu/wp-content/uploads/2020/11/Business_logo_340x81.jpg" alt="Business Magazine" width="340"  height="114" style="max-height:114px; height:auto;"></a>
+                    <div class="cmn-toggle-switch"><span></span></div>
+        <div class="cmn-mobile-switch"><span></span></div>
+        <a class="tt-s-popup-btn"><i class="fa fa-search" aria-hidden="true"></i></a>
+      </div>
+    </div>
+
+
+    <div class="toggle-block">
+      <div class="toggle-block-container">
+        <nav class="main-nav clearfix">
+          <ul id="nav" class="menu"><li id="menu-item-2058" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-2058 parent"><a href="https://www.business-magazine.mu/rubrique/actualites/">Actualités<i class="menu-toggle fa fa-angle-down"></i></a>
+<ul class="drop-menu ">
+	<li id="menu-item-67401" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-67401"><a href="https://www.business-magazine.mu/rubrique/election/">Election</a>
+	<ul class="">
+		<li id="menu-item-67402" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-67402"><a href="https://www.business-magazine.mu/rubrique/election/election-2024/">Election 2024 (Article)</a></li>		<li id="menu-item-67417" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-67417"><a href="https://www.business-magazine.mu/legislatives-2024/">Legislatives 2024</a></li></ul></li>	<li id="menu-item-56797" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-56797"><a href="https://www.business-magazine.mu/rubrique/actualites/budget/">Budget</a>
+	<ul class="">
+		<li id="menu-item-56798" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-56798"><a href="https://www.business-magazine.mu/rubrique/actualites/budget/2022-2023/">2022- 2023</a></li>		<li id="menu-item-62747" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-62747"><a href="https://www.business-magazine.mu/rubrique/actualites/budget/2023-2024/">2023-2024</a></li>		<li id="menu-item-66258" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-66258"><a href="https://www.business-magazine.mu/rubrique/actualites/budget/2024-2025/">2024-2025</a></li>		<li id="menu-item-68979" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-68979"><a href="https://www.business-magazine.mu/rubrique/actualites/budget/2025-2026/">2025-2026</a></li></ul></li>	<li id="menu-item-2166" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2166"><a href="https://www.business-magazine.mu/rubrique/actualites/indicateurs-economiques/">Indicateurs économiques</a></li>	<li id="menu-item-2165" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2165"><a href="https://www.business-magazine.mu/rubrique/actualites/enjeu/">Enjeu</a></li>	<li id="menu-item-2167" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2167"><a href="https://www.business-magazine.mu/rubrique/actualites/verbatim/">Verbatim</a></li>	<li id="menu-item-39507" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-39507"><a href="https://www.business-magazine.mu/rubrique/actualites/autres/">Autres</a></li></ul></li><li id="menu-item-2060" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2060"><a href="https://www.business-magazine.mu/rubrique/edito/">Édito</a></li><li id="menu-item-2065" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-2065 parent"><a href="https://www.business-magazine.mu/rubrique/rencontre/">Rencontre<i class="menu-toggle fa fa-angle-down"></i></a>
+<ul class="drop-menu ">
+	<li id="menu-item-2169" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2169"><a href="https://www.business-magazine.mu/rubrique/rencontre/portrait/">Portrait</a></li>	<li id="menu-item-2168" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2168"><a href="https://www.business-magazine.mu/rubrique/rencontre/interview/">Interview</a></li>	<li id="menu-item-39509" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-39509"><a href="https://www.business-magazine.mu/rubrique/rencontre/parole-dexperts-rencontre/">Parole d&#8217;experts</a></li></ul></li><li id="menu-item-2062" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-2062 parent"><a href="https://www.business-magazine.mu/rubrique/entreprendre/">Entreprendre<i class="menu-toggle fa fa-angle-down"></i></a>
+<ul class="drop-menu ">
+	<li id="menu-item-2170" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2170"><a href="https://www.business-magazine.mu/rubrique/entreprendre/business-files/">Business files</a></li>	<li id="menu-item-2172" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2172"><a href="https://www.business-magazine.mu/rubrique/entreprendre/innovation/">Innovation</a></li>	<li id="menu-item-2171" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2171"><a href="https://www.business-magazine.mu/rubrique/entreprendre/csr/">CSR</a></li>	<li id="menu-item-39508" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-39508"><a href="https://www.business-magazine.mu/rubrique/entreprendre/autres-entreprendre/">Autres</a></li></ul></li><li id="menu-item-39801" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-39801 parent"><a href="https://www.business-magazine.mu/rubrique/immobilier-construction/">Immobilier &amp; Construction<i class="menu-toggle fa fa-angle-down"></i></a>
+<ul class="drop-menu ">
+	<li id="menu-item-39802" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-39802"><a href="https://www.business-magazine.mu/rubrique/immobilier-construction/construction/">Construction</a></li>	<li id="menu-item-39803" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-39803"><a href="https://www.business-magazine.mu/rubrique/immobilier-construction/immobilier/">Immobilier</a></li></ul></li><li id="menu-item-57741" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-57741"><a href="https://www.business-magazine.mu/rubrique/industrie-locale/">Industrie locale</a></li><li id="menu-item-2061" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-2061 parent"><a href="https://www.business-magazine.mu/rubrique/education-careeer/">Education &amp; Career<i class="menu-toggle fa fa-angle-down"></i></a>
+<ul class="drop-menu ">
+	<li id="menu-item-2176" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2176"><a href="https://www.business-magazine.mu/rubrique/education-careeer/education/">Education</a></li>	<li id="menu-item-2175" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2175"><a href="https://www.business-magazine.mu/rubrique/education-careeer/career/">Career</a></li></ul></li><li id="menu-item-2064" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-2064 parent"><a href="https://www.business-magazine.mu/rubrique/lifestyle/">Lifestyle<i class="menu-toggle fa fa-angle-down"></i></a>
+<ul class="drop-menu ">
+	<li id="menu-item-2177" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2177"><a href="https://www.business-magazine.mu/rubrique/lifestyle/bons-plans/">Bons plans</a></li>	<li id="menu-item-2179" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2179"><a href="https://www.business-magazine.mu/rubrique/lifestyle/mode-et-beaute/">Mode et beauté</a></li>	<li id="menu-item-2180" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2180"><a href="https://www.business-magazine.mu/rubrique/lifestyle/saveurs/">Saveurs</a></li>	<li id="menu-item-2178" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2178"><a href="https://www.business-magazine.mu/rubrique/lifestyle/deco/">Déco</a></li>	<li id="menu-item-39808" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-39808"><a href="https://www.business-magazine.mu/rubrique/lifestyle/autres-lifestyle/">Autres</a></li></ul></li><li id="menu-item-2066" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-2066 parent"><a href="https://www.business-magazine.mu/rubrique/automoto/">Automoto<i class="menu-toggle fa fa-angle-down"></i></a>
+<ul class="drop-menu ">
+	<li id="menu-item-2181" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2181"><a href="https://www.business-magazine.mu/rubrique/automoto/actualite-automobile/">Actualité automobile</a></li>	<li id="menu-item-2183" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2183"><a href="https://www.business-magazine.mu/rubrique/automoto/essais/">Essais</a></li>	<li id="menu-item-2182" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2182"><a href="https://www.business-magazine.mu/rubrique/automoto/autofiles/">Autofiles</a></li></ul></li></ul>        </nav>
+
+
+        <div class="nav-more">
+          <div class="tt-sponsor clearfix">
+<a class="tt-sponsor-img">
+<img src="https://www.business-magazine.mu/wp-content/uploads/2017/02/Screenshot-2026-01-07-083138.jpg" height="89" width="62" alt="">
+</a>
+<div class="tt-sponsor-info">
+<a class="tt-sponsor-title c-h6" href="https://www.business-magazine.mu/nous-contacter/">Business Magazine</a>
+<div class="simple-text size-2">
+<p>Issue 1728</p>
+</div>
+<a  style="font-size:14px;" class="c-btn type-1" href="https://www.business-magazine.mu/nous-contacter/"><span>Get Now</span></a>
+</div>
+</div>        </div>
+        
+        <!--<div class="nav-more nav-more-left">
+                    <div class="tt-sponsor clearfix">
+            <a class="">
+              <img src="https://www.business-magazine.mu/wp-content/uploads/2024/10/Untitled-1.jpg" height="89" width="62" alt="">
+            </a>
+            <div class="tt-sponsor-info">
+              <a class="c-btn type-1" href="https://url.za.m.mimecastprotect.com/s/GT2WC1jqpXCAQJ8upimFVdPnq/"><span>Supplements et Directories Gratuits</span></a>
+            </div>
+          </div> 
+        </div>-->
+
+
+        
+
+      </div>
+    </div>
+  </div>
+</header>
+<div class="tt-header-height tt-header-margin"></div>  
+
+
+  
+
+
+
+<div class="container">
+	<!-- Modify by mediatiz -->
+  <!-- /22247954447/BM_homepage_top_billboard_leaderboard -->
+  <div id='div-gpt-ad-1611039559167-0'>
+    <script>
+      googletag.cmd.push(function() { googletag.display('div-gpt-ad-1611039559167-0'); });
+    </script>
+  </div>
+
+  <div class="arrow-closest tt-mag-slider tt-slider-custom-marg pt-10 mobile-show-pagination slider-style13" style="padding-top:10px;">
+    <div class="swiper-container tt-slider-type-5" data-mode="horizontal" data-effect="slide" data-slides-per-view="responsive" data-add-slides="4" data-lg-slides="4" data-md-slides="4" data-sm-slides="1" data-xs-slides="1" data-autoplay="100" data-loop="0" data-speed="500">
+      <div class="swiper-wrapper swipe-disabled">
+
+              <div class="swiper-slide wh-25">
+          <div class="tt-item-post-block tt-wh-25-custom type-2 tt-item-post-border custom-hover-image">
+            <div class="bg" style="background-image:url(https://www.business-magazine.mu/wp-content/uploads/2026/02/Les-CEO-quinquagenaires-Une-generation-doree-qui-valorise-leffort-.jpg?v=1770795474)">
+              <a class="tt-mslide-link" href="https://www.business-magazine.mu/en-couverture/les-ceo-quinquagenaires-une-generation-doree-qui-valorise-leffort/"></a>
+              <div class="tt-mslide-gradient" ></div>
+            </div>
+            <div class="tt-item-post-title">
+                                  <a class="c-btn type-3 color-2 tt-mslide-cat" href="https://www.business-magazine.mu/rubrique/en-couverture/">En couverture</a>
+                               <h4 class="tt-h4-title"><a href="https://www.business-magazine.mu/en-couverture/les-ceo-quinquagenaires-une-generation-doree-qui-valorise-leffort/" class="tt-post-title">Les CEO quinquagénaires :  Une génération dorée qui valorise l’effort</a></h4>
+            </div>
+          
+          </div>
+        </div>
+                <div class="swiper-slide wh-25">
+          <div class="tt-item-post-block tt-wh-25-custom type-2 tt-item-post-border custom-hover-image">
+            <div class="bg" style="background-image:url(https://www.business-magazine.mu/wp-content/uploads/2026/02/Vinaye-Ancharaz-Lamelioration-de-la-productivite-passera-par-une-refonte-de-la-politique-industrielle.jpg?v=1770180881)">
+              <a class="tt-mslide-link" href="https://www.business-magazine.mu/en-couverture/vinaye-ancharaz-lamelioration-de-la-productivite-passera-par-une-refonte-de-la-politique-industrielle/"></a>
+              <div class="tt-mslide-gradient" ></div>
+            </div>
+            <div class="tt-item-post-title">
+                                  <a class="c-btn type-3 color-2 tt-mslide-cat" href="https://www.business-magazine.mu/rubrique/en-couverture/">En couverture</a>
+                               <h4 class="tt-h4-title"><a href="https://www.business-magazine.mu/en-couverture/vinaye-ancharaz-lamelioration-de-la-productivite-passera-par-une-refonte-de-la-politique-industrielle/" class="tt-post-title">Vinaye Ancharaz :  «L’amélioration de la productivité passera par une refonte de la politique industrielle»</a></h4>
+            </div>
+          
+          </div>
+        </div>
+                <div class="swiper-slide wh-25">
+          <div class="tt-item-post-block tt-wh-25-custom type-2 tt-item-post-border custom-hover-image">
+            <div class="bg" style="background-image:url(https://www.business-magazine.mu/wp-content/uploads/2026/01/Patrick-Dumoulin-Les-dirigeants-mauriciens-croient-dans-la-confiance-et-lautonomie.jpg?v=1769576437)">
+              <a class="tt-mslide-link" href="https://www.business-magazine.mu/en-couverture/patrick-dumoulin-les-dirigeants-mauriciens-croient-dans-la-confiance-et-lautonomie/"></a>
+              <div class="tt-mslide-gradient" ></div>
+            </div>
+            <div class="tt-item-post-title">
+                                  <a class="c-btn type-3 color-2 tt-mslide-cat" href="https://www.business-magazine.mu/rubrique/en-couverture/">En couverture</a>
+                               <h4 class="tt-h4-title"><a href="https://www.business-magazine.mu/en-couverture/patrick-dumoulin-les-dirigeants-mauriciens-croient-dans-la-confiance-et-lautonomie/" class="tt-post-title">Patrick Dumoulin : «Les dirigeants mauriciens croient dans la confiance et l’autonomie»</a></h4>
+            </div>
+          
+          </div>
+        </div>
+                <div class="swiper-slide wh-25">
+          <div class="tt-item-post-block tt-wh-25-custom type-2 tt-item-post-border custom-hover-image">
+            <div class="bg" style="background-image:url(https://www.business-magazine.mu/wp-content/uploads/2026/01/Vincent-Desvaux-de-Marigny-Mon-ambition-est-de-faire-dAttitude-une-reference-regionale-et-africaine-1.jpg?v=1768973726)">
+              <a class="tt-mslide-link" href="https://www.business-magazine.mu/en-couverture/vincent-desvaux-de-marigny-mon-ambition-est-de-faire-dattitude-une-reference-regionale-et-africaine/"></a>
+              <div class="tt-mslide-gradient" ></div>
+            </div>
+            <div class="tt-item-post-title">
+                                  <a class="c-btn type-3 color-2 tt-mslide-cat" href="https://www.business-magazine.mu/rubrique/en-couverture/">En couverture</a>
+                               <h4 class="tt-h4-title"><a href="https://www.business-magazine.mu/en-couverture/vincent-desvaux-de-marigny-mon-ambition-est-de-faire-dattitude-une-reference-regionale-et-africaine/" class="tt-post-title">Vincent Desvaux de Marigny : «Mon ambition est de faire d’Attitude une référence régionale et africaine»</a></h4>
+            </div>
+          
+          </div>
+        </div>
+                <div class="swiper-slide wh-25">
+          <div class="tt-item-post-block tt-wh-25-custom type-2 tt-item-post-border custom-hover-image">
+            <div class="bg" style="background-image:url(https://www.business-magazine.mu/wp-content/uploads/2026/01/Aadil-Ameer-Meea-LIndustry-Policy-va-redefinir-loffre-exportatrice-du-pays.jpg?v=1768366230)">
+              <a class="tt-mslide-link" href="https://www.business-magazine.mu/en-couverture/aadil-ameer-meea-lindustry-policy-va-redefinir-loffre-exportatrice-du-pays/"></a>
+              <div class="tt-mslide-gradient" ></div>
+            </div>
+            <div class="tt-item-post-title">
+                                  <a class="c-btn type-3 color-2 tt-mslide-cat" href="https://www.business-magazine.mu/rubrique/en-couverture/">En couverture</a>
+                               <h4 class="tt-h4-title"><a href="https://www.business-magazine.mu/en-couverture/aadil-ameer-meea-lindustry-policy-va-redefinir-loffre-exportatrice-du-pays/" class="tt-post-title">Aadil Ameer Meea : « L’Industry Policy va redéfinir l’offre exportatrice du pays »</a></h4>
+            </div>
+          
+          </div>
+        </div>
+                <div class="swiper-slide wh-25">
+          <div class="tt-item-post-block tt-wh-25-custom type-2 tt-item-post-border custom-hover-image">
+            <div class="bg" style="background-image:url(https://www.business-magazine.mu/wp-content/uploads/2026/01/2026-Une-annee-sous-le-signe-de-leconomie-.jpg?v=1767768744)">
+              <a class="tt-mslide-link" href="https://www.business-magazine.mu/en-couverture/2026-une-annee-sous-le-signe-de-leconomie/"></a>
+              <div class="tt-mslide-gradient" ></div>
+            </div>
+            <div class="tt-item-post-title">
+                                  <a class="c-btn type-3 color-2 tt-mslide-cat" href="https://www.business-magazine.mu/rubrique/en-couverture/">En couverture</a>
+                               <h4 class="tt-h4-title"><a href="https://www.business-magazine.mu/en-couverture/2026-une-annee-sous-le-signe-de-leconomie/" class="tt-post-title">2026 : Une année sous le signe de l&#8217;économie</a></h4>
+            </div>
+          
+          </div>
+        </div>
+                <div class="swiper-slide wh-25">
+          <div class="tt-item-post-block tt-wh-25-custom type-2 tt-item-post-border custom-hover-image">
+            <div class="bg" style="background-image:url(https://www.business-magazine.mu/wp-content/uploads/2025/12/Jean-Noël-Wong-Wan-Khin-CEO-de-Ciel-Properties.jpg?v=1766727410)">
+              <a class="tt-mslide-link" href="https://www.business-magazine.mu/en-couverture/bilan-ces-entreprises-qui-se-sont-distinguees-en-2025/"></a>
+              <div class="tt-mslide-gradient" ></div>
+            </div>
+            <div class="tt-item-post-title">
+                                  <a class="c-btn type-3 color-2 tt-mslide-cat" href="https://www.business-magazine.mu/rubrique/en-couverture/">En couverture</a>
+                               <h4 class="tt-h4-title"><a href="https://www.business-magazine.mu/en-couverture/bilan-ces-entreprises-qui-se-sont-distinguees-en-2025/" class="tt-post-title">Bilan : Ces entreprises qui se sont distinguées en 2025</a></h4>
+            </div>
+          
+          </div>
+        </div>
+                <div class="swiper-slide wh-25">
+          <div class="tt-item-post-block tt-wh-25-custom type-2 tt-item-post-border custom-hover-image">
+            <div class="bg" style="background-image:url(https://www.business-magazine.mu/wp-content/uploads/2025/12/Jean-Noel-Wong-Wan-Khin-CEO-de-Ciel-Properties.jpg?v=1765948685)">
+              <a class="tt-mslide-link" href="https://www.business-magazine.mu/en-couverture/jean-noel-wong-wan-khin-nous-croyons-fortement-dans-le-developpement-de-lecotourisme/"></a>
+              <div class="tt-mslide-gradient" ></div>
+            </div>
+            <div class="tt-item-post-title">
+                                  <a class="c-btn type-3 color-2 tt-mslide-cat" href="https://www.business-magazine.mu/rubrique/en-couverture/">En couverture</a>
+                               <h4 class="tt-h4-title"><a href="https://www.business-magazine.mu/en-couverture/jean-noel-wong-wan-khin-nous-croyons-fortement-dans-le-developpement-de-lecotourisme/" class="tt-post-title">Jean-Noël Wong Wan Khin : «Nous croyons fortement dans le développement de l&#8217;écotourisme»</a></h4>
+            </div>
+          
+          </div>
+        </div>
+              </div>
+      <div class="pagination pagination-hidden c-pagination color-2"></div>
+      <div class="swiper-arrow-left hidden-lg tt-swiper-arrow-2"><i class="fa fa-chevron-left" aria-hidden="true"></i></div>
+      <div class="swiper-arrow-right hidden-lg tt-swiper-arrow-2"><i class="fa fa-chevron-right" aria-hidden="true"></i></div>
+    </div>
+  </div>
+</div>
+<div id="page-wrapper" class="content top-bottom">
+  <div class="empty-space tt-page-margin-top marg-lg-b55 marg-sm-b30"></div>
+  <div class="container">
+        <div class=" tt-content tt-column-content">
+    <div class="row">
+    <div class="col-md-8">
+
+ <!-- dual sidebar-->
+<div class="vc_row wpb_row vc_row-fluid"><div class="wpb_column vc_column_container vc_col-sm-12"><div class="vc_column-inner"><div class="wpb_wrapper"><div class="text-block" ><div class="simple-text size-2"><h1 style="font-size: 12px; text-align: left; font-style: italic;">Toute l&#8217;actualité économique de l&#8217;ile Maurice</h1>
+</div></div><div  class="tt-title-block custom-color-properties-1000 style4"><h3 class="tt-title-text">Actualités</h3></div><div class="empty-space  marg-lg-b25"></div><div  class="tt-post-img tt-slider-content swiper-container" data-autoplay="0" data-loop="1" data-speed="500" data-center="0" data-slides-per-view="1" data-sm-slides="1" data-md-slides="1" data-xs-slides="1"><div class="swiper-wrapper"><div class="swiper-slide">      <div class="row">
+
+        <div class="tt-post-grid-series tt-classic-grid-series tt-post-grid-series-style3">
+
+      
+          <div class="col-md-7">
+
+                        <div class="tt-post type-2 post-70455 post type-post status-publish format-standard has-post-thumbnail hentry category-actualites category-autres tag-hospitality-industry-report tag-intesh-seebaluck tag-navnit-seeburrun tag-rapport-axys tag-sanjay-goolab tag-tourisme">
+                      <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/actualites/rapport-daxys-le-tourisme-mauricien-stagne-dans-le-segment-milieu-de-gamme/">
+      <img width="394" height="218" src="https://www.business-magazine.mu/wp-content/uploads/2026/02/Photo-1-1-394x218.jpeg?v=1770796082" class="img-responsive wp-post-image" alt="L&#039;équipe ayant travaillé sur le rapport &quot;Hospitaliity Industry Report&quot; chez AXYS" loading="lazy" />    </a>
+                <div class="tt-post-info">
+                    <div class="tt-post-cat"><a href="https://www.business-magazine.mu/rubrique/actualites/" rel="category tag">Actualités</a>, <a href="https://www.business-magazine.mu/rubrique/actualites/autres/" rel="category tag">Autres</a></div>
+                      <a class="tt-post-title c-h4" href="https://www.business-magazine.mu/actualites/rapport-daxys-le-tourisme-mauricien-stagne-dans-le-segment-milieu-de-gamme/"><small>Rapport d’AXYS : Le tourisme mauricien stagne dans le segment milieu de gamme</small></a>
+                      <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/eve-fidele/">Eve Fidele</a></span>
+                    <span class="tt-post-date">February 11, 2026</span>
+          </div>
+                      <div class="simple-text">
+      <p>Rapport d’AXYS Le tourisme mauricien stagne dans le segment milieu de gamme &nbsp; &nbsp; Rapport ...</p>
+    </div>
+                          <div class="tt-post-bottom">
+              <span class="tt-post-comment"><i class="material-icons">chat_bubble</i>0 Comment</span>
+                    <span class="tt-post-views"><i class="material-icons">visibility</i>13 Views</span>
+                </div>
+                </div>
+            </div>
+
+                        
+
+            <div class="empty-space marg-lg-b30 marg-sm-b30"></div>                       
+          </div>
+
+                    <div class="col-md-5">
+
+            
+            <ul class="tt-post-list type-3">
+                            <li>
+                <div class="tt-post type-7 clearfix post-70450 post type-post status-publish format-standard has-post-thumbnail hentry category-actualites category-autres tag-axys tag-beachcomber tag-horizon-ep10 tag-new-mauritius-hotel-nmh tag-tourisme">
+                          <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/actualites/autres/horizon-ep10-tout-ce-quil-faut-savoir-cette-semaine-sur-leconomie-et-les-entreprises/">
+      <img width="80" height="80" src="https://www.business-magazine.mu/wp-content/uploads/2026/02/Horizon-ep10-80x80.jpg?v=1770614610" class="img-responsive wp-post-image" alt="Horizon ep10" loading="lazy" />    </a>
+                    <div class="tt-post-info">
+                        <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/actualites/autres/horizon-ep10-tout-ce-quil-faut-savoir-cette-semaine-sur-leconomie-et-les-entreprises/"><small>Horizon ep10 : Tout ce qu’il faut savoir cette semaine sur l’économie et les entreprises !</small></a>
+                          <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/nirvan-armoogum/">Nirvan Armoogum</a></span>
+                    <span class="tt-post-date">February 9, 2026</span>
+          </div>
+                    </div>
+                </div>                                    
+              </li>
+                            <li>
+                <div class="tt-post type-7 clearfix post-70416 post type-post status-publish format-standard has-post-thumbnail hentry category-actualites category-autres tag-andersen tag-fiscalite tag-qualified-domestic-minimum-top-up-tax-qdmtt tag-zaynab-hisaund">
+                          <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/actualites/maurice-se-met-au-diapason-des-reformes-dans-la-fiscalite-internationale/">
+      <img width="80" height="80" src="https://www.business-magazine.mu/wp-content/uploads/2022/06/Fiscalite╠u-2-80x80.jpg?v=1655101830" class="img-responsive wp-post-image" alt="Fiscalité" loading="lazy" />    </a>
+                    <div class="tt-post-info">
+                        <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/actualites/maurice-se-met-au-diapason-des-reformes-dans-la-fiscalite-internationale/"><small>Maurice se met au diapason des réformes dans la fiscalité internationale.</small></a>
+                          <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/eve-fidele/">Eve Fidele</a></span>
+                    <span class="tt-post-date">February 4, 2026</span>
+          </div>
+                    </div>
+                </div>                                    
+              </li>
+                            <li>
+                <div class="tt-post type-7 clearfix post-70409 post type-post status-publish format-standard has-post-thumbnail hentry category-actualites category-autres tag-banque-de-maurice tag-beachcomber tag-grit tag-horizon tag-horizon-ep9 tag-lux">
+                          <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/actualites/autres/horizon-ep9-tout-ce-quil-faut-savoir-cette-semaine-sur-leconomie-et-les-entreprises/">
+      <img width="80" height="80" src="https://www.business-magazine.mu/wp-content/uploads/2026/02/Horizon-ep9-Tout-ce-quil-faut-savoir-cette-semaine-sur-leconomie-et-les-entreprises--80x80.jpg?v=1770012542" class="img-responsive wp-post-image" alt="Horizon ep9 - Tout ce qu’il faut savoir cette semaine sur l’économie et les entreprises !" loading="lazy" />    </a>
+                    <div class="tt-post-info">
+                        <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/actualites/autres/horizon-ep9-tout-ce-quil-faut-savoir-cette-semaine-sur-leconomie-et-les-entreprises/"><small>Horizon ep9 : Tout ce qu’il faut savoir cette semaine sur l’économie et les entreprises !</small></a>
+                          <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/nirvan-armoogum/">Nirvan Armoogum</a></span>
+                    <span class="tt-post-date">February 2, 2026</span>
+          </div>
+                    </div>
+                </div>                                    
+              </li>
+                            <li>
+                <div class="tt-post type-7 clearfix post-70408 post type-post status-publish format-standard has-post-thumbnail hentry category-actualites category-autres tag-fmi tag-histoire">
+                          <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/actualites/fonds-monetaire-international-darchitecte-monetaire-a-arbitre-des-desequilibres/">
+      <img width="80" height="80" src="https://www.business-magazine.mu/wp-content/uploads/2025/12/le-fonds-monetaire-international-plus-pessimiste-pour-la-croissance-francaise-et-allemande-en-2024-et-2025-80x80.jpg?v=1765440441" class="img-responsive wp-post-image" alt="Fonds Monétaire International (FMI)" loading="lazy" />    </a>
+                    <div class="tt-post-info">
+                        <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/actualites/fonds-monetaire-international-darchitecte-monetaire-a-arbitre-des-desequilibres/"><small>Fonds monétaire international : D’architecte monétaire à arbitre des déséquilibres</small></a>
+                          <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/e-caphane/">Eric Caphane</a></span>
+                    <span class="tt-post-date">January 30, 2026</span>
+          </div>
+                    </div>
+                </div>                                    
+              </li>
+               
+            </ul>                        
+          
+          </div>
+                    
+          
+        </div>
+
+      </div>
+      </div></div><div class="pagination c-pagination hidden-lg"></div><div class="swiper-arrow-left-content c-arrow left hidden-xs hidden-sm"><i class="fa fa-angle-left" aria-hidden="true"></i></div><div class="swiper-arrow-right-content c-arrow right hidden-xs hidden-sm"><i class="fa fa-angle-right" aria-hidden="true"></i></div></div><div  class="empty-space  marg-lg-b50"></div></div></div></div></div><div class="vc_row wpb_row vc_row-fluid"><div class="wpb_column vc_column_container vc_col-sm-12"><div class="vc_column-inner"><div class="wpb_wrapper">
+	<div class="wpb_raw_code wpb_content_element wpb_raw_html" >
+		<div class="wpb_wrapper">
+			<!-- /22247954447/BM_homepage_middle_leaderboard -->
+<div id='div-gpt-ad-1687941634047-0'>
+  <script>
+    googletag.cmd.push(function() { googletag.display('div-gpt-ad-1687941634047-0'); });
+  </script>
+</div>
+		</div>
+	</div>
+<div  class="empty-space  marg-lg-b50"></div></div></div></div></div><div class="vc_row wpb_row vc_row-fluid"><div class="wpb_column vc_column_container vc_col-sm-12"><div class="vc_column-inner"><div class="wpb_wrapper">
+	<div class="wpb_raw_code wpb_content_element wpb_raw_html" >
+		<div class="wpb_wrapper">
+			<div class="tt-title-block custom-color-properties-1001 style4" style="border-color: blue !important;">
+	<h3 class="tt-title-text" style="background-color: blue !important;">
+		Nos partenaires<span><a href="https://business-magazine.mu/a-propos-du-financement-de-contenu/" target="_self"> <i class="fas fa-exclamation-circle"></i></a></span>
+	</h3>
+</div>
+		</div>
+	</div>
+      <div class="row">
+        <div class="post-grid-view">
+                      <div class="col-xs-6 col-sm-4 col-lg-3 post-handy-picked post-70315 post type-post status-publish format-standard has-post-thumbnail hentry category-nos-partenaires tag-kalexius tag-legal tag-notre-partenaire">
+      <div class="tt-post type-3">
+                <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/nos-partenaires/kalexius-lexternalisation-juridique-a-lechelle-mondiale/">
+      <img width="183" height="96" src="https://www.business-magazine.mu/wp-content/uploads/2026/01/Les-equipes-de-Kalexius-183x96.jpg?v=1768883676" class="img-responsive wp-post-image" alt="Les équipes de Kalexius" loading="lazy" />    </a>
+            <div class="tt-post-info">
+                <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/nos-partenaires/kalexius-lexternalisation-juridique-a-lechelle-mondiale/">Kalexius : L’externalisation juridique à l’échelle mondiale</a>
+                  <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/administrator/">Business Magazine</a></span>
+                    <span class="tt-post-date">January 20, 2026</span>
+          </div>
+            </div>
+      </div> 
+      <div class="empty-space marg-lg-b25"></div>                 
+    </div>
+                        <div class="col-xs-6 col-sm-4 col-lg-3 post-handy-picked post-69896 post type-post status-publish format-standard has-post-thumbnail hentry category-nos-partenaires tag-alexandre-faydherbe tag-er-aviation tag-maurice tag-partenariat-strategique tag-rogers-aviation tag-soorya-oogarah">
+      <div class="tt-post type-3">
+                <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/nos-partenaires/80-ans-de-collaboration-entre-air-france-et-er-aviation-le-plus-ancient-du-reseau-mondial-dair-france/">
+      <img width="183" height="96" src="https://www.business-magazine.mu/wp-content/uploads/2025/10/Untitled-565-x-379-px-183x96.jpg?v=1761551932" class="img-responsive wp-post-image" alt="" loading="lazy" />    </a>
+            <div class="tt-post-info">
+                <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/nos-partenaires/80-ans-de-collaboration-entre-air-france-et-er-aviation-le-plus-ancient-du-reseau-mondial-dair-france/">80 ans de collaboration entre Air France et ER aviation : le plus ancient du réseau mondial d’Air France.</a>
+                  <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/administrator/">Business Magazine</a></span>
+                    <span class="tt-post-date">October 24, 2025</span>
+          </div>
+            </div>
+      </div> 
+      <div class="empty-space marg-lg-b25"></div>                 
+    </div>
+                        <div class="col-xs-6 col-sm-4 col-lg-3 post-handy-picked post-68916 post type-post status-publish format-standard has-post-thumbnail hentry category-nos-partenaires tag-construction tag-drymix tag-jonas-robert tag-maurice tag-primefix tag-primefix-plus-c1e">
+      <div class="tt-post type-3">
+                <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/nos-partenaires/primefix-plus-c1e-primaire-daccroche-et-colle-a-carrelage/">
+      <img width="183" height="96" src="https://www.business-magazine.mu/wp-content/uploads/2025/05/Untitled-design-2025-05-08T155445.919-183x96.jpg?v=1746705484" class="img-responsive wp-post-image" alt="" loading="lazy" />    </a>
+            <div class="tt-post-info">
+                <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/nos-partenaires/primefix-plus-c1e-primaire-daccroche-et-colle-a-carrelage/">Primefix Plus C1E, Primaire D&#8217;accroche Et Colle A Carrelage</a>
+                  <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/administrator/">Business Magazine</a></span>
+                    <span class="tt-post-date">May 8, 2025</span>
+          </div>
+            </div>
+      </div> 
+      <div class="empty-space marg-lg-b25"></div>                 
+    </div>
+                        <div class="col-xs-6 col-sm-4 col-lg-3 post-handy-picked post-68851 post type-post status-publish format-standard has-post-thumbnail hentry category-nos-partenaires tag-elevage tag-meaders-feeds tag-nos-partenaires">
+      <div class="tt-post type-3">
+                <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/nos-partenaires/meaders-feeds-des-solutions-completes-pour-lelevage-local-via-les-meadshops/">
+      <img width="183" height="96" src="https://www.business-magazine.mu/wp-content/uploads/2025/05/picture-1-article-01-183x96.jpg?v=1746172451" class="img-responsive wp-post-image" alt="Meaders Feeds Ltd" loading="lazy" />    </a>
+            <div class="tt-post-info">
+                <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/nos-partenaires/meaders-feeds-des-solutions-completes-pour-lelevage-local-via-les-meadshops/">Meaders Feeds : des solutions complètes pour l’élevage local via les Meadshops</a>
+                  <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/administrator/">Business Magazine</a></span>
+                    <span class="tt-post-date">May 2, 2025</span>
+          </div>
+            </div>
+      </div> 
+      <div class="empty-space marg-lg-b25"></div>                 
+    </div>
+                  </div>
+      </div>
+      
+  <div  class="empty-space  marg-lg-b50"></div></div></div></div></div><div class="vc_row wpb_row vc_row-fluid"><div class="wpb_column vc_column_container vc_col-sm-6"><div class="vc_column-inner"><div class="wpb_wrapper"><div  class="tt-title-block custom-color-properties-1001 style4"><h3 class="tt-title-text">Rencontres</h3></div><div class="empty-space  marg-lg-b25"></div>
+      <div class="tt-classic-grid-series">
+
+
+                <div class="tt-post type-3 post-70308 post type-post status-publish format-standard has-post-thumbnail hentry category-interview category-rencontre tag-assurance-habitation tag-eagle-insurance tag-rishi-imrit">
+                  <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/rencontre/interview/rishi-imrit-notre-objectif-est-doffrir-une-protection-a-360/">
+      <img width="394" height="218" src="https://www.business-magazine.mu/wp-content/uploads/2024/09/Rishi-Imrit-Head-of-Business-Development-dΓCOEagle-Insurance-scaled-e1752838172763-394x218.jpg?v=1727033578" class="img-responsive wp-post-image" alt="Rishi Imrit, Head of Business Development dΓÇÖEagle Insurance" loading="lazy" />    </a>
+            <div class="tt-post-info">
+            <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/rencontre/interview/rishi-imrit-notre-objectif-est-doffrir-une-protection-a-360/">Rishi Imrit : «Notre objectif est d’offrir une protection à 360°»</a>
+                <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/guillaume-gouges/">Guillaume Gouges</a></span>
+                    <span class="tt-post-date">January 14, 2026</span>
+          </div>
+            </div>
+        </div>
+                
+        <div class="empty-space marg-lg-b30 marg-sm-b30"></div>
+
+        
+        <ul class="tt-post-list type-3">
+                    <li>
+            <div class="tt-post type-7 clearfix post-70304 post type-post status-publish format-standard has-post-thumbnail hentry category-interview category-rencontre tag-assurance-habitation tag-guillaume-bouic tag-swan">
+                      <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/rencontre/interview/guillaume-bouic-le-marche-de-lassurance-habitation-a-maurice-connait-une-evolution-notable/">
+      <img width="80" height="80" src="https://www.business-magazine.mu/wp-content/uploads/2026/01/Guillaume-Bouic-e1768367807272-80x80.png?v=1768367769" class="img-responsive wp-post-image" alt="Guillaume Bouic (Senior Manager - Business Development Swan General" loading="lazy" />    </a>
+                <div class="tt-post-info">
+                    <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/rencontre/interview/guillaume-bouic-le-marche-de-lassurance-habitation-a-maurice-connait-une-evolution-notable/"><small>Guillaume Bouic : «Le marché de l’assurance habitation à Maurice connaît une évolution notable»</small></a>
+                      <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/guillaume-gouges/">Guillaume Gouges</a></span>
+                    <span class="tt-post-date">January 14, 2026</span>
+          </div>
+                </div>
+            </div>                                    
+          </li>
+                    <li>
+            <div class="tt-post type-7 clearfix post-70292 post type-post status-publish format-standard has-post-thumbnail hentry category-interview category-rencontre tag-aquagym tag-isabelle-begue tag-maurice tag-sante">
+                      <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/rencontre/isabelle-begue-chaque-seance-daquagym-ou-daquabike-est-une-therapie-pour-le-corps-et-le-moral/">
+      <img width="80" height="80" src="https://www.business-magazine.mu/wp-content/uploads/2026/01/Untitled-design-2026-01-07T110951.480-80x80.jpg?v=1767770020" class="img-responsive wp-post-image" alt="" loading="lazy" />    </a>
+                <div class="tt-post-info">
+                    <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/rencontre/isabelle-begue-chaque-seance-daquagym-ou-daquabike-est-une-therapie-pour-le-corps-et-le-moral/"><small>Isabelle Bégué : «Chaque séance d’aquagym ou d’aquabike  est une thérapie pour le corps et le moral»</small></a>
+                      <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/s-rousseau/">Sandra Rousseau</a></span>
+                    <span class="tt-post-date">January 7, 2026</span>
+          </div>
+                </div>
+            </div>                                    
+          </li>
+           
+        </ul>
+              </div>
+
+      <div  class="empty-space  marg-lg-b50"></div></div></div></div><div class="wpb_column vc_column_container vc_col-sm-6"><div class="vc_column-inner"><div class="wpb_wrapper"><div  class="tt-title-block custom-color-properties-1002 style4"><h3 class="tt-title-text">Business Files</h3></div><div class="empty-space  marg-lg-b25"></div>
+      <div class="tt-classic-grid-series">
+
+
+                <div class="tt-post type-3 post-70478 post type-post status-publish format-standard has-post-thumbnail hentry category-business-files category-entreprendre tag-authentic-bloom tag-business-files tag-saint-valentin tag-shireen-etoola">
+                  <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/entreprendre/business-files/authentic-bloom-dites-le-avec-des-fleurs/">
+      <img width="394" height="218" src="https://www.business-magazine.mu/wp-content/uploads/2026/02/Authentic-Bloom-394x218.jpg?v=1770804257" class="img-responsive wp-post-image" alt="Authentic Bloom" loading="lazy" />    </a>
+            <div class="tt-post-info">
+            <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/entreprendre/business-files/authentic-bloom-dites-le-avec-des-fleurs/">Authentic Bloom : Dites-le avec des fleurs</a>
+                <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/kedvee_goinden/">kedvee goinden</a></span>
+                    <span class="tt-post-date">February 11, 2026</span>
+          </div>
+            </div>
+        </div>
+                
+        <div class="empty-space marg-lg-b30 marg-sm-b30"></div>
+
+        
+        <ul class="tt-post-list type-3">
+                    <li>
+            <div class="tt-post type-7 clearfix post-70476 post type-post status-publish format-standard has-post-thumbnail hentry category-business-files category-entreprendre tag-business-files tag-eva-naidu tag-legend-hill tag-saint-valentin">
+                      <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/entreprendre/business-files/legend-hill-une-escapade-romantique-face-au-lagon/">
+      <img width="80" height="80" src="https://www.business-magazine.mu/wp-content/uploads/2026/02/Luxury-Room-Legend-Hill-80x80.jpg?v=1770804017" class="img-responsive wp-post-image" alt="Luxury Room - Legend Hill" loading="lazy" />    </a>
+                <div class="tt-post-info">
+                    <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/entreprendre/business-files/legend-hill-une-escapade-romantique-face-au-lagon/"><small>Legend Hill : Une escapade romantique face au lagon</small></a>
+                      <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/kedvee_goinden/">kedvee goinden</a></span>
+                    <span class="tt-post-date">February 11, 2026</span>
+          </div>
+                </div>
+            </div>                                    
+          </li>
+                    <li>
+            <div class="tt-post type-7 clearfix post-70474 post type-post status-publish format-standard has-post-thumbnail hentry category-business-files category-entreprendre tag-business-files tag-radisson-resorts-mauritius tag-saint-valentin">
+                      <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/entreprendre/business-files/radisson-resorts-mauritius-trois-experiences-idylliques/">
+      <img width="80" height="80" src="https://www.business-magazine.mu/wp-content/uploads/2026/02/RBPL-Lifestyle-Aperitif-on-the-beach-80x80.jpg?v=1770803334" class="img-responsive wp-post-image" alt="Radisson Blu" loading="lazy" />    </a>
+                <div class="tt-post-info">
+                    <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/entreprendre/business-files/radisson-resorts-mauritius-trois-experiences-idylliques/"><small>Radisson Resorts Mauritius : Trois expériences idylliques</small></a>
+                      <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/kedvee_goinden/">kedvee goinden</a></span>
+                    <span class="tt-post-date">February 11, 2026</span>
+          </div>
+                </div>
+            </div>                                    
+          </li>
+           
+        </ul>
+              </div>
+
+      </div></div></div></div><div class="vc_row wpb_row vc_row-fluid"><div class="wpb_column vc_column_container vc_col-sm-12"><div class="vc_column-inner"><div class="wpb_wrapper"><div  class="tt-title-block custom-color-properties-1003 style4"><h3 class="tt-title-text">Entreprendre</h3></div><div class="empty-space  marg-lg-b25"></div><div  class="tt-tab-wrapper custom-color-properties-1004 tt-blog-tab "><div class="tt-tab-nav-wrapper"><div class="tt-nav-tab mbottom50"><div class="empty-space marg-lg-b25"><div class="tt-nav-tab-item active "><span class="tt-analitics-text">All</span></div><div class="tt-nav-tab-item"><span class="tt-analitics-text">Business files</span></div><div class="tt-nav-tab-item"><span class="tt-analitics-text">Innovation</span></div><div class="tt-nav-tab-item"><span class="tt-analitics-text">CSR</span></div></div></div><div class="tt-tabs-content clearfix"><div class="tt-tab-info active ">      <div class="row">
+        <div class="post-grid-view">
+                  <div class="col-sm-6 post-70478 post type-post status-publish format-standard has-post-thumbnail hentry category-business-files category-entreprendre tag-authentic-bloom tag-business-files tag-saint-valentin tag-shireen-etoola">
+
+            <div class="tt-post type-2">
+                      <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/entreprendre/business-files/authentic-bloom-dites-le-avec-des-fleurs/">
+      <img width="537" height="307" src="https://www.business-magazine.mu/wp-content/uploads/2026/02/Authentic-Bloom-537x307.jpg?v=1770804257" class="img-responsive wp-post-image" alt="Authentic Bloom" loading="lazy" />    </a>
+                <div class="tt-post-info">
+                    <div class="tt-post-cat"><a href="https://www.business-magazine.mu/rubrique/entreprendre/business-files/" rel="category tag">Business files</a>, <a href="https://www.business-magazine.mu/rubrique/entreprendre/" rel="category tag">Entreprendre</a></div>
+                      <a class="tt-post-title c-h4" href="https://www.business-magazine.mu/entreprendre/business-files/authentic-bloom-dites-le-avec-des-fleurs/"><small>Authentic Bloom : Dites-le avec des fleurs</small></a>
+                      <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/kedvee_goinden/">kedvee goinden</a></span>
+                    <span class="tt-post-date">February 11, 2026</span>
+          </div>
+                      <div class="simple-text">
+      <p>Authentic Bloom Dites-le avec des fleurs &nbsp; Authentic Bloom est une boutique florale située à Nouvelle Usine, à Floréal. Fondée ...</p>
+    </div>
+                          <div class="tt-post-bottom">
+              <span class="tt-post-comment"><i class="material-icons">chat_bubble</i>0 Comment</span>
+                    <span class="tt-post-views"><i class="material-icons">visibility</i>7 Views</span>
+                </div>
+                </div>
+            </div>
+            <div class="empty-space marg-xs-b30"></div> 
+          </div>
+            <div class="col-xs-6 col-sm-4 col-lg-3 post-handy-picked post-70476 post type-post status-publish format-standard has-post-thumbnail hentry category-business-files category-entreprendre tag-business-files tag-eva-naidu tag-legend-hill tag-saint-valentin">
+      <div class="tt-post type-3">
+                <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/entreprendre/business-files/legend-hill-une-escapade-romantique-face-au-lagon/">
+      <img width="183" height="96" src="https://www.business-magazine.mu/wp-content/uploads/2026/02/Luxury-Room-Legend-Hill-183x96.jpg?v=1770804017" class="img-responsive wp-post-image" alt="Luxury Room - Legend Hill" loading="lazy" />    </a>
+            <div class="tt-post-info">
+                <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/entreprendre/business-files/legend-hill-une-escapade-romantique-face-au-lagon/">Legend Hill : Une escapade romantique face au lagon</a>
+                  <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/kedvee_goinden/">kedvee goinden</a></span>
+                    <span class="tt-post-date">February 11, 2026</span>
+          </div>
+            </div>
+      </div> 
+      <div class="empty-space marg-lg-b25"></div>                 
+    </div>
+      <div class="col-xs-6 col-sm-4 col-lg-3 post-handy-picked post-70474 post type-post status-publish format-standard has-post-thumbnail hentry category-business-files category-entreprendre tag-business-files tag-radisson-resorts-mauritius tag-saint-valentin">
+      <div class="tt-post type-3">
+                <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/entreprendre/business-files/radisson-resorts-mauritius-trois-experiences-idylliques/">
+      <img width="183" height="96" src="https://www.business-magazine.mu/wp-content/uploads/2026/02/RBPL-Lifestyle-Aperitif-on-the-beach-183x96.jpg?v=1770803334" class="img-responsive wp-post-image" alt="Radisson Blu" loading="lazy" />    </a>
+            <div class="tt-post-info">
+                <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/entreprendre/business-files/radisson-resorts-mauritius-trois-experiences-idylliques/">Radisson Resorts Mauritius : Trois expériences idylliques</a>
+                  <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/kedvee_goinden/">kedvee goinden</a></span>
+                    <span class="tt-post-date">February 11, 2026</span>
+          </div>
+            </div>
+      </div> 
+      <div class="empty-space marg-lg-b25"></div>                 
+    </div>
+      <div class="col-xs-6 col-sm-4 col-lg-3 post-handy-picked post-70472 post type-post status-publish format-standard has-post-thumbnail hentry category-business-files category-entreprendre tag-business-files tag-citadel-clothing tag-saint-valentin tag-tamak-group tag-yan-hip">
+      <div class="tt-post type-3">
+                <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/entreprendre/business-files/citadel-clothing-la-mode-au-service-de-lamour/">
+      <img width="183" height="96" src="https://www.business-magazine.mu/wp-content/uploads/2026/02/Yan-Hip-Chief-Operating-Officer-at-Tamak-Group-scaled-e1770802636985-183x96.jpeg?v=1770802609" class="img-responsive wp-post-image" alt="Yan Hip, Chief Operating Officer at Tamak Group" loading="lazy" />    </a>
+            <div class="tt-post-info">
+                <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/entreprendre/business-files/citadel-clothing-la-mode-au-service-de-lamour/">Citadel Clothing : La mode au service de l’amour</a>
+                  <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/kedvee_goinden/">kedvee goinden</a></span>
+                    <span class="tt-post-date">February 11, 2026</span>
+          </div>
+            </div>
+      </div> 
+      <div class="empty-space marg-lg-b25"></div>                 
+    </div>
+      <div class="col-xs-6 col-sm-4 col-lg-3 post-handy-picked post-70470 post type-post status-publish format-standard has-post-thumbnail hentry category-business-files category-entreprendre tag-baudelaire-by-sailors tag-business-files tag-saint-valentin">
+      <div class="tt-post type-3">
+                <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/entreprendre/business-files/baudelaire-by-sailors-quand-lamour-sinvite-a-table/">
+      <img width="183" height="96" src="https://www.business-magazine.mu/wp-content/uploads/2026/02/Baudelaire-by-Sailors-2-183x96.jpg?v=1770802360" class="img-responsive wp-post-image" alt="Baudelaire by Sailors Restaurant" loading="lazy" />    </a>
+            <div class="tt-post-info">
+                <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/entreprendre/business-files/baudelaire-by-sailors-quand-lamour-sinvite-a-table/">Baudelaire by Sailors : Quand l’amour s’invite à table</a>
+                  <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/kedvee_goinden/">kedvee goinden</a></span>
+                    <span class="tt-post-date">February 11, 2026</span>
+          </div>
+            </div>
+      </div> 
+      <div class="empty-space marg-lg-b25"></div>                 
+    </div>
+          </div>
+      </div>
+      
+  </div><div class="tt-tab-info">      <div class="row">
+        <div class="post-grid-view">
+                  <div class="col-sm-6 post-55849 post type-post status-publish format-standard has-post-thumbnail hentry category-business-files category-entreprendre tag-25-ans-dactivites tag-fashion-heights tag-zippy">
+
+            <div class="tt-post type-2">
+                      <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/entreprendre/business-files/zippy-les-enfants-a-la-mode-portugaise/">
+      <img width="537" height="307" src="https://www.business-magazine.mu/wp-content/uploads/2022/02/Zippy-537x307.jpg" class="img-responsive wp-post-image" alt="BF1530 ZIPPY" loading="lazy" />    </a>
+                <div class="tt-post-info">
+                    <div class="tt-post-cat"><a href="https://www.business-magazine.mu/rubrique/entreprendre/business-files/" rel="category tag">Business files</a>, <a href="https://www.business-magazine.mu/rubrique/entreprendre/" rel="category tag">Entreprendre</a></div>
+                      <a class="tt-post-title c-h4" href="https://www.business-magazine.mu/entreprendre/business-files/zippy-les-enfants-a-la-mode-portugaise/"><small>Zippy : Les enfants à la mode portugaise</small></a>
+                      <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/joanna-seenayen/">Joanna Seenayen</a></span>
+                    <span class="tt-post-date">February 23, 2022</span>
+          </div>
+                      <div class="simple-text">
+      <p>ELLE est la petite dernière à avoir rejoint le portefeuille de la famille Fashion Heights. Zippy, marque portugaise, fait la ...</p>
+    </div>
+                          <div class="tt-post-bottom">
+              <span class="tt-post-comment"><i class="material-icons">chat_bubble</i>0 Comment</span>
+                    <span class="tt-post-views"><i class="material-icons">visibility</i>3502 Views</span>
+                </div>
+                </div>
+            </div>
+            <div class="empty-space marg-xs-b30"></div> 
+          </div>
+            <div class="col-xs-6 col-sm-4 col-lg-3 post-handy-picked post-68842 post type-post status-publish format-standard has-post-thumbnail hentry category-business-files category-entreprendre tag-business-files tag-industrie-nautique tag-prestataire tag-zh-fishing-equipment-ltd">
+      <div class="tt-post type-3">
+                <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/entreprendre/business-files/zh-fishing-equipment-ltd-un-one-stop-shop-pour-les-equipements-de-peche/">
+      <img width="183" height="96" src="https://www.business-magazine.mu/wp-content/uploads/2025/05/Zaahir-Hurjook-directeur-de-ZH-fishing-Equipment-e1746165693598-183x96.jpeg?v=1746165680" class="img-responsive wp-post-image" alt="Zaahir Hurjook, directeur de ZH fishing Equipment" loading="lazy" />    </a>
+            <div class="tt-post-info">
+                <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/entreprendre/business-files/zh-fishing-equipment-ltd-un-one-stop-shop-pour-les-equipements-de-peche/">ZH Fishing Equipment Ltd : Un one-stop shop pour les équipements de pêche</a>
+                  <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/y-bourquin/">yarrick bourquin</a></span>
+                    <span class="tt-post-date">May 2, 2025</span>
+          </div>
+            </div>
+      </div> 
+      <div class="empty-space marg-lg-b25"></div>                 
+    </div>
+      <div class="col-xs-6 col-sm-4 col-lg-3 post-handy-picked post-68304 post type-post status-publish format-standard has-post-thumbnail hentry category-business-files category-entreprendre tag-coworking tag-espacedetravail tag-maurice tag-zendo">
+      <div class="tt-post type-3">
+                <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/entreprendre/zendo-simplifier-la-vie-professionnelle-grace-a-des-espaces-optimises/">
+      <img width="183" height="96" src="https://www.business-magazine.mu/wp-content/uploads/2025/02/Untitled-design-2025-02-05T135712.205-183x96.jpg?v=1738749397" class="img-responsive wp-post-image" alt="" loading="lazy" />    </a>
+            <div class="tt-post-info">
+                <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/entreprendre/zendo-simplifier-la-vie-professionnelle-grace-a-des-espaces-optimises/">Zendō : Simplifier la vie professionnelle grâce à des espaces optimisés</a>
+                  <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/a-ladouceur/">Audrey Ladouceur</a></span>
+                    <span class="tt-post-date">February 5, 2025</span>
+          </div>
+            </div>
+      </div> 
+      <div class="empty-space marg-lg-b25"></div>                 
+    </div>
+      <div class="col-xs-6 col-sm-4 col-lg-3 post-handy-picked post-61857 post type-post status-publish format-standard has-post-thumbnail hentry category-business-files category-entreprendre tag-hotel tag-kasila tag-maurice tag-mauritius tag-meuble tag-yuni">
+      <div class="tt-post type-3">
+                <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/entreprendre/business-files/yuni-promouvoir-la-marque-kasila-by-yuni/">
+      <img width="183" height="96" src="https://www.business-magazine.mu/wp-content/uploads/2023/03/Bryce-Bauwens-Yuni-183x96.jpg" class="img-responsive wp-post-image" alt="" loading="lazy" />    </a>
+            <div class="tt-post-info">
+                <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/entreprendre/business-files/yuni-promouvoir-la-marque-kasila-by-yuni/">Yuni : Promouvoir la marque Kasila by Yuni</a>
+                  <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/administrator/">Business Magazine</a></span>
+                    <span class="tt-post-date">March 2, 2023</span>
+          </div>
+            </div>
+      </div> 
+      <div class="empty-space marg-lg-b25"></div>                 
+    </div>
+      <div class="col-xs-6 col-sm-4 col-lg-3 post-handy-picked post-69606 post type-post status-publish format-standard has-post-thumbnail hentry category-business-files category-entreprendre tag-business-files tag-decoration tag-pascal-bauwens tag-yuni">
+      <div class="tt-post type-3">
+                <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/entreprendre/business-files/yuni-lart-de-sublimer-chaque-interieur-et-exterieur/">
+      <img width="183" height="96" src="https://www.business-magazine.mu/wp-content/uploads/2025/09/Yuni-1-183x96.jpg?v=1756960519" class="img-responsive wp-post-image" alt="Photo de Yuni et de ses décorations d&#039;intérieurs" loading="lazy" />    </a>
+            <div class="tt-post-info">
+                <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/entreprendre/business-files/yuni-lart-de-sublimer-chaque-interieur-et-exterieur/">Yuni : L’art de sublimer chaque intérieur et extérieur</a>
+                  <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/kedvee_goinden/">kedvee goinden</a></span>
+                    <span class="tt-post-date">September 4, 2025</span>
+          </div>
+            </div>
+      </div> 
+      <div class="empty-space marg-lg-b25"></div>                 
+    </div>
+          </div>
+      </div>
+      
+  </div><div class="tt-tab-info">      <div class="row">
+        <div class="post-grid-view">
+                  <div class="col-sm-6 post-35940 post type-post status-publish format-standard has-post-thumbnail hentry category-entreprendre category-innovation">
+
+            <div class="tt-post type-2">
+                      <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/entreprendre/innovation/zango-createur-dapplications-metiers-sur-mesure-1/">
+      <img width="537" height="307" src="https://www.business-magazine.mu/wp-content/uploads/2020/11/eric-coquelin-zango-537x307.jpg?v=1606742744" class="img-responsive wp-post-image" alt="Zango : Créateur d’applications métiers sur mesure | business-magazine.mu" loading="lazy" />    </a>
+                <div class="tt-post-info">
+                    <div class="tt-post-cat"><a href="https://www.business-magazine.mu/rubrique/entreprendre/" rel="category tag">Entreprendre</a>, <a href="https://www.business-magazine.mu/rubrique/entreprendre/innovation/" rel="category tag">Innovation</a></div>
+                      <a class="tt-post-title c-h4" href="https://www.business-magazine.mu/entreprendre/innovation/zango-createur-dapplications-metiers-sur-mesure-1/"><small>Zango : Créateur d’applications métiers sur mesure</small></a>
+                      <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/administrator/">Business Magazine</a></span>
+                    <span class="tt-post-date">September 23, 2015</span>
+          </div>
+                      <div class="simple-text">
+      <p>Les grandes sociétés ont besoin de solutions informatiques qui peuvent générer des analyses rapidement et réduire leurs coûts. Dans cette ...</p>
+    </div>
+                          <div class="tt-post-bottom">
+              <span class="tt-post-comment"><i class="material-icons">chat_bubble</i>0 Comment</span>
+                    <span class="tt-post-views"><i class="material-icons">visibility</i>213 Views</span>
+                </div>
+                </div>
+            </div>
+            <div class="empty-space marg-xs-b30"></div> 
+          </div>
+            <div class="col-xs-6 col-sm-4 col-lg-3 post-handy-picked post-47293 post type-post status-publish format-standard has-post-thumbnail hentry category-entreprendre category-innovation tag-business-mag-1054-2012-10-30-2012-11-05">
+      <div class="tt-post type-3">
+                <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/entreprendre/innovation/windows-8-reimaginer-lutilisation-du-pc/">
+      <img width="183" height="96" src="https://www.business-magazine.mu/wp-content/uploads/2020/12/58a-2-183x96.png?v=1607111687" class="img-responsive wp-post-image" alt="Windows 8 Réimaginer l’utilisation du PC | business-magazine.mu" loading="lazy" />    </a>
+            <div class="tt-post-info">
+                <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/entreprendre/innovation/windows-8-reimaginer-lutilisation-du-pc/">Windows 8 Réimaginer l’utilisation du PC</a>
+                  <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/administrator/">Business Magazine</a></span>
+                    <span class="tt-post-date">October 31, 2012</span>
+          </div>
+            </div>
+      </div> 
+      <div class="empty-space marg-lg-b25"></div>                 
+    </div>
+      <div class="col-xs-6 col-sm-4 col-lg-3 post-handy-picked post-47207 post type-post status-publish format-standard has-post-thumbnail hentry category-entreprendre category-innovation tag-business-mag-1055-2012-11-06-2012-11-12">
+      <div class="tt-post type-3">
+                <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/entreprendre/innovation/windows-8-decortique-lopen-door-de-microsoft/">
+      <img width="183" height="96" src="https://www.business-magazine.mu/wp-content/uploads/2020/12/60b-0-183x96.png?v=1607110517" class="img-responsive wp-post-image" alt="Windows 8 décortiqué à l’Open Door de Microsoft | business-magazine.mu" loading="lazy" />    </a>
+            <div class="tt-post-info">
+                <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/entreprendre/innovation/windows-8-decortique-lopen-door-de-microsoft/">Windows 8 décortiqué à l’Open Door de Microsoft</a>
+                  <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/administrator/">Business Magazine</a></span>
+                    <span class="tt-post-date">November 7, 2012</span>
+          </div>
+            </div>
+      </div> 
+      <div class="empty-space marg-lg-b25"></div>                 
+    </div>
+      <div class="col-xs-6 col-sm-4 col-lg-3 post-handy-picked post-36412 post type-post status-publish format-standard has-post-thumbnail hentry category-entreprendre category-innovation tag-sarah-jane-lebrasse">
+      <div class="tt-post type-3">
+                <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/entreprendre/innovation/windows-10-concentre-dinnovations/">
+      <img width="183" height="96" src="https://www.business-magazine.mu/wp-content/uploads/2020/12/windows-10-183x96.jpg?v=1606803531" class="img-responsive wp-post-image" alt="Windows 10 : Concentré d’innovations | business-magazine.mu" loading="lazy" />    </a>
+            <div class="tt-post-info">
+                <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/entreprendre/innovation/windows-10-concentre-dinnovations/">Windows 10 : Concentré d’innovations</a>
+                  <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/administrator/">Business Magazine</a></span>
+                    <span class="tt-post-date">August 12, 2015</span>
+          </div>
+            </div>
+      </div> 
+      <div class="empty-space marg-lg-b25"></div>                 
+    </div>
+      <div class="col-xs-6 col-sm-4 col-lg-3 post-handy-picked post-42601 post type-post status-publish format-standard has-post-thumbnail hentry category-entreprendre category-innovation tag-business-mag-2012-11-07-2012-11-07">
+      <div class="tt-post type-3">
+                <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/entreprendre/innovation/webcup-2014-24-heures-pour-creer-un-site-web/">
+      <img width="183" height="96" src="https://www.business-magazine.mu/wp-content/uploads/2020/12/webcup-2014-183x96.jpg?v=1607013347" class="img-responsive wp-post-image" alt="Webcup 2014 : 24 heures pour créer un site web | business-magazine.mu" loading="lazy" />    </a>
+            <div class="tt-post-info">
+                <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/entreprendre/innovation/webcup-2014-24-heures-pour-creer-un-site-web/">Webcup 2014 : 24 heures pour créer un site web</a>
+                  <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/administrator/">Business Magazine</a></span>
+                    <span class="tt-post-date">May 6, 2014</span>
+          </div>
+            </div>
+      </div> 
+      <div class="empty-space marg-lg-b25"></div>                 
+    </div>
+          </div>
+      </div>
+      
+  </div><div class="tt-tab-info">      <div class="row">
+        <div class="post-grid-view">
+                  <div class="col-sm-6 post-56562 post type-post status-publish format-standard has-post-thumbnail hentry category-actualites category-csr tag-red-bull tag-wings-for-life-world-run-2022">
+
+            <div class="tt-post type-2">
+                      <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/actualites/wings-for-life-world-run-2022-attire-160-000-participants-et-rs-215-millions-de-dons-mondialement/">
+      <img width="537" height="307" src="https://www.business-magazine.mu/wp-content/uploads/2022/05/WFLWR22_Croatia-537x307.jpg" class="img-responsive wp-post-image" alt="" loading="lazy" />    </a>
+                <div class="tt-post-info">
+                    <div class="tt-post-cat"><a href="https://www.business-magazine.mu/rubrique/actualites/" rel="category tag">Actualités</a>, <a href="https://www.business-magazine.mu/rubrique/entreprendre/csr/" rel="category tag">CSR</a></div>
+                      <a class="tt-post-title c-h4" href="https://www.business-magazine.mu/actualites/wings-for-life-world-run-2022-attire-160-000-participants-et-rs-215-millions-de-dons-mondialement/"><small>Wings for Life World Run 2022 attire 160 000 participants et Rs 215 millions de dons mondialement</small></a>
+                      <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/nirvan-armoogum/">Nirvan Armoogum</a></span>
+                    <span class="tt-post-date">May 16, 2022</span>
+          </div>
+                      <div class="simple-text">
+      <p>Plus de 160 000 personnes ont fait marcher leurs jambes et leur coeur le dimanche 8 mai dans des dizaines ...</p>
+    </div>
+                          <div class="tt-post-bottom">
+              <span class="tt-post-comment"><i class="material-icons">chat_bubble</i>0 Comment</span>
+                    <span class="tt-post-views"><i class="material-icons">visibility</i>191 Views</span>
+                </div>
+                </div>
+            </div>
+            <div class="empty-space marg-xs-b30"></div> 
+          </div>
+            <div class="col-xs-6 col-sm-4 col-lg-3 post-handy-picked post-53512 post type-post status-publish format-standard has-post-thumbnail hentry category-actualites category-autres category-csr tag-groupe-abc tag-hungarian-open-2021 tag-marc-ah-chuen tag-sir-jean-etienne-moilin-ah-chuen-foundation tag-wako-senior-master-world-cup-championship tag-warren-robertson">
+      <div class="tt-post type-3">
+                <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/actualites/autres/warren-robertson-beneficie-du-parrainage-du-groupe-abc/">
+      <img width="183" height="96" src="https://www.business-magazine.mu/wp-content/uploads/2021/08/Groupe-ABC-183x96.jpg" class="img-responsive wp-post-image" alt="Groupe ABC" loading="lazy" />    </a>
+            <div class="tt-post-info">
+                <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/actualites/autres/warren-robertson-beneficie-du-parrainage-du-groupe-abc/">Warren Robertson bénéficie du parrainage du Groupe ABC</a>
+                  <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/eve-fidele/">Eve Fidele</a></span>
+                    <span class="tt-post-date">August 31, 2021</span>
+          </div>
+            </div>
+      </div> 
+      <div class="empty-space marg-lg-b25"></div>                 
+    </div>
+      <div class="col-xs-6 col-sm-4 col-lg-3 post-handy-picked post-54986 post type-post status-publish format-standard has-post-thumbnail hentry category-actualites category-autres category-csr tag-700-personnes tag-duke-of-edinburgh-award-dofe tag-la-fondation-espoir-developpement-beachcomber-fed tag-la-global-rainbow-foundation-grf tag-le-projet-employabilite-jeunes-pej tag-vulnerable-lives-matter">
+      <div class="tt-post type-3">
+                <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/entreprendre/csr/vulnerable-lives-matter-accompagner-700-personnes-en-situation-de-precarite/">
+      <img width="183" height="96" src="https://www.business-magazine.mu/wp-content/uploads/2021/12/Vulnerable-Lives-Matter-Photo-1-1-183x96.jpg" class="img-responsive wp-post-image" alt="De g à d : Karine Curé (Chairperson de la FED), Gilbert Espitaliernoël (CEO de Beachcomber Resorts &amp; Hotels), Vincent Degert (Ambassadeur de l’UE à Maurice) et Viren Vythelingum (CSR Manager du Groupe Beachcomber)" loading="lazy" />    </a>
+            <div class="tt-post-info">
+                <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/entreprendre/csr/vulnerable-lives-matter-accompagner-700-personnes-en-situation-de-precarite/">Vulnerable Lives Matter accompagner 700 personnes en situation de précarité</a>
+                  <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/joanna-seenayen/">Joanna Seenayen</a></span>
+                    <span class="tt-post-date">December 1, 2021</span>
+          </div>
+            </div>
+      </div> 
+      <div class="empty-space marg-lg-b25"></div>                 
+    </div>
+      <div class="col-xs-6 col-sm-4 col-lg-3 post-handy-picked post-66722 post type-post status-publish format-standard has-post-thumbnail hentry category-csr category-entreprendre tag-bpl tag-business-publications tag-maurice tag-meenatcheehome tag-sociale">
+      <div class="tt-post type-3">
+                <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/entreprendre/csr/volontariat-meenatchee-home-accueille-business-publications-ltd/">
+      <img width="183" height="96" src="https://www.business-magazine.mu/wp-content/uploads/2024/08/ISY00891-183x96.jpg?v=1722514603" class="img-responsive wp-post-image" alt="Meenatchee Home accueille Business Publications Ltd" loading="lazy" />    </a>
+            <div class="tt-post-info">
+                <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/entreprendre/csr/volontariat-meenatchee-home-accueille-business-publications-ltd/">Volontariat : Meenatchee Home accueille Business Publications Ltd</a>
+                  <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/administrator/">Business Magazine</a></span>
+                    <span class="tt-post-date">August 1, 2024</span>
+          </div>
+            </div>
+      </div> 
+      <div class="empty-space marg-lg-b25"></div>                 
+    </div>
+      <div class="col-xs-6 col-sm-4 col-lg-3 post-handy-picked post-41723 post type-post status-publish format-standard has-post-thumbnail hentry category-csr category-entreprendre tag-business-mag-1141-2014-07-15-2014-07-21">
+      <div class="tt-post type-3">
+                <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/entreprendre/csr/vivo-energy-mene-campagne-sur-la-securite-routiere/">
+      <img width="183" height="96" src="https://www.business-magazine.mu/wp-content/uploads/2020/12/64a-2-183x96.jpg?v=1607007035" class="img-responsive wp-post-image" alt="Vivo Energy mène campagne sur la sécurité routière | business-magazine.mu" loading="lazy" />    </a>
+            <div class="tt-post-info">
+                <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/entreprendre/csr/vivo-energy-mene-campagne-sur-la-securite-routiere/">Vivo Energy mène campagne sur la sécurité routière</a>
+                  <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/administrator/">Business Magazine</a></span>
+                    <span class="tt-post-date">July 16, 2014</span>
+          </div>
+            </div>
+      </div> 
+      <div class="empty-space marg-lg-b25"></div>                 
+    </div>
+          </div>
+      </div>
+      
+  </div></div></div></div><div  class="empty-space  marg-lg-b50"></div></div></div></div></div><div class="vc_row wpb_row vc_row-fluid"><div class="wpb_column vc_column_container vc_col-sm-12"><div class="vc_column-inner"><div class="wpb_wrapper"><div  class="tt-title-block custom-color-properties-1005 style4"><h3 class="tt-title-text">Education &amp; Career</h3></div><div class="empty-space  marg-lg-b25"></div>      <div class="row">
+
+        <div class="tt-post-grid-series tt-classic-grid-series tt-post-grid-series-style3">
+
+      
+          <div class="col-md-7">
+
+                        <div class="tt-post type-2 post-69740 post type-post status-publish format-standard has-post-thumbnail hentry category-education category-education-careeer tag-bourse-de-maurice tag-education tag-sem-young-investor-award-semyia">
+                      <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/education-careeer/education/sem-young-investor-award-semyia-trading-game-600-etudiants-issus-de-13-colleges-mobilises/">
+      <img width="394" height="218" src="https://www.business-magazine.mu/wp-content/uploads/2025/09/sem-young-investor-award-trading-game-394x218.jpg?v=1758866204" class="img-responsive wp-post-image" alt="Photo du SEM Young Investor Award Trading Game" loading="lazy" />    </a>
+                <div class="tt-post-info">
+                    <div class="tt-post-cat"><a href="https://www.business-magazine.mu/rubrique/education-careeer/education/" rel="category tag">Education</a>, <a href="https://www.business-magazine.mu/rubrique/education-careeer/" rel="category tag">Education &amp; Career</a></div>
+                      <a class="tt-post-title c-h4" href="https://www.business-magazine.mu/education-careeer/education/sem-young-investor-award-semyia-trading-game-600-etudiants-issus-de-13-colleges-mobilises/"><small>SEM Young Investor Award (SEMYIA) Trading Game: 600 étudiants issus de 13 collèges mobilisés</small></a>
+                      <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/joanna-seenayen/">Joanna Seenayen</a></span>
+                    <span class="tt-post-date">September 26, 2025</span>
+          </div>
+                      <div class="simple-text">
+      <p>SEM Young Investor Award (SEMYIA) Trading Game: 600 étudiants issus de 13 collèges mobilisés &nbsp; ...</p>
+    </div>
+                          <div class="tt-post-bottom">
+              <span class="tt-post-comment"><i class="material-icons">chat_bubble</i>0 Comment</span>
+                    <span class="tt-post-views"><i class="material-icons">visibility</i>30 Views</span>
+                </div>
+                </div>
+            </div>
+
+                        
+
+            <div class="empty-space marg-lg-b30 marg-sm-b30"></div>                       
+          </div>
+
+                    <div class="col-md-5">
+
+            
+            <ul class="tt-post-list type-3">
+                            <li>
+                <div class="tt-post type-7 clearfix post-69692 post type-post status-publish format-standard has-post-thumbnail hentry category-education category-education-careeer tag-coaching tag-daniel-de-marasse-enouf tag-gen-z tag-jenny-korten tag-nazia-hajee-abdoula tag-raissa-evangelista tag-ressources-humaines tag-vashist-gokhool">
+                          <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/education-careeer/education/ecarts-intergenerationnels-des-strategies-pour-une-culture-dentreprise-harmonisee/">
+      <img width="80" height="80" src="https://www.business-magazine.mu/wp-content/uploads/2025/09/Untitled-design-51-80x80.jpg?v=1758523543" class="img-responsive wp-post-image" alt="cinquième session du programme GoodMorning HR" loading="lazy" />    </a>
+                    <div class="tt-post-info">
+                        <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/education-careeer/education/ecarts-intergenerationnels-des-strategies-pour-une-culture-dentreprise-harmonisee/"><small>Ecarts intergénérationnels :  Des stratégies pour une culture d’entreprise harmonisée</small></a>
+                          <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/s-rousseau/">Sandra Rousseau</a></span>
+                    <span class="tt-post-date">September 22, 2025</span>
+          </div>
+                    </div>
+                </div>                                    
+              </li>
+                            <li>
+                <div class="tt-post type-7 clearfix post-69690 post type-post status-publish format-standard has-post-thumbnail hentry category-career category-education-careeer tag-explik-ou-travay tag-group-attitude tag-juliette-deloustal tag-metier">
+                          <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/education-careeer/career/decouvrez-le-metier-de-juliette-deloustal-head-of-sustainability-dattitude/">
+      <img width="80" height="80" src="https://www.business-magazine.mu/wp-content/uploads/2025/09/Juliette-Deloustal-Head-of-Sustainability-at-Groupe-Attitude-80x80.png?v=1758108692" class="img-responsive wp-post-image" alt="Juliette Deloustal (Head of Sustainability at Groupe Attitude)" loading="lazy" />    </a>
+                    <div class="tt-post-info">
+                        <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/education-careeer/career/decouvrez-le-metier-de-juliette-deloustal-head-of-sustainability-dattitude/"><small>Découvrez le métier de Juliette Deloustal (Head of Sustainability d&#8217;Attitude)</small></a>
+                          <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/e-caphane/">Eric Caphane</a></span>
+                    <span class="tt-post-date">September 17, 2025</span>
+          </div>
+                    </div>
+                </div>                                    
+              </li>
+                            <li>
+                <div class="tt-post type-7 clearfix post-69639 post type-post status-publish format-standard has-post-thumbnail hentry category-education category-education-careeer tag-axelle-mazery tag-coaching tag-communication tag-dan-goodwin tag-emotionalwellbeing tag-hr tag-jennakorten tag-langage-corporel tag-manil-jheelan tag-manish-bundhun tag-poonam-gya">
+                          <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/education-careeer/education/goodmorning-hr-programme-le-rh-reinvente-pour-plus-de-jugement-strategique/">
+      <img width="80" height="80" src="https://www.business-magazine.mu/wp-content/uploads/2025/09/Untitled-design-91-80x80.jpg?v=1757574171" class="img-responsive wp-post-image" alt="" loading="lazy" />    </a>
+                    <div class="tt-post-info">
+                        <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/education-careeer/education/goodmorning-hr-programme-le-rh-reinvente-pour-plus-de-jugement-strategique/"><small>Goodmorning HR programme : Le RH réinventé pour plus de jugement stratégique</small></a>
+                          <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/s-rousseau/">Sandra Rousseau</a></span>
+                    <span class="tt-post-date">September 11, 2025</span>
+          </div>
+                    </div>
+                </div>                                    
+              </li>
+                            <li>
+                <div class="tt-post type-7 clearfix post-69627 post type-post status-publish format-standard has-post-thumbnail hentry category-career category-education-careeer tag-business-development-programme-specialist tag-la-turbine tag-swarna-gujadhur">
+                          <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/education-careeer/career/swarna-gujadhur-guider-les-idees-vers-le-succes/">
+      <img width="80" height="80" src="https://www.business-magazine.mu/wp-content/uploads/2025/09/Swarna-Gujadhur-2-1-scaled-e1757573132625-80x80.jpg?v=1757487588" class="img-responsive wp-post-image" alt="Swarna Gujadhur" loading="lazy" />    </a>
+                    <div class="tt-post-info">
+                        <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/education-careeer/career/swarna-gujadhur-guider-les-idees-vers-le-succes/"><small>Swarna Gujadhur : Guider les idées vers le succés</small></a>
+                          <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/l-lallmamode/">Lloyd Lallmamode</a></span>
+                    <span class="tt-post-date">September 10, 2025</span>
+          </div>
+                    </div>
+                </div>                                    
+              </li>
+               
+            </ul>                        
+          
+          </div>
+                    
+          
+        </div>
+
+      </div>
+      <div  class="empty-space  marg-lg-b20"></div></div></div></div></div><div class="vc_row wpb_row vc_row-fluid"><div class="wpb_column vc_column_container vc_col-sm-12"><div class="vc_column-inner"><div class="wpb_wrapper"><div  class="tt-newsletter-wrap tt-banner"  style="background-color:#eaeaea;"><img class="tt-banner-img" src="https://www.business-magazine.mu/wp-content/uploads/2017/02/Screenshot-2026-01-07-083138.jpg" height="149" width="105" alt=""><div class="tt-banner-info"><h4 class="tt-banner-title tt-newsletter-heading c-h4"><small>La Newsletter des décideurs.</small></h4><div class="simple-text tt-newsletter-sub-heading"><p>Toute l’actualité économique de l’île maurice et de la région</p></div><form method="post" action="https://www.business-magazine.mu/?na=s" onsubmit="return newsletter_check(this)"><div class="tt-banner-bottom clearfix"><div class="tt-banner-bottom-left"><input class="c-input size-3" type="text" name="ne" required="" placeholder="Email"></div><div class="tt-banner-bottom-right"><div class="c-btn type-1 style-2 color-7 size-4 full"><input type="submit" class="newsletter-submit" value="INSCRIVEZ-VOUS"></div></div></div></form></div></div><div  class="empty-space  marg-lg-b50"></div></div></div></div></div><div class="vc_row wpb_row vc_row-fluid"><div class="wpb_column vc_column_container vc_col-sm-12"><div class="vc_column-inner"><div class="wpb_wrapper"><div  class="tt-title-block custom-color-properties-1006 style4"><h3 class="tt-title-text">Immobilier &amp; Construction</h3></div><div class="empty-space  marg-lg-b25"></div><div  class="tt-post-img tt-slider-content swiper-container" data-autoplay="0" data-loop="1" data-speed="500" data-center="0" data-slides-per-view="1" data-sm-slides="1" data-md-slides="1" data-xs-slides="1"><div class="swiper-wrapper"><div class="swiper-slide">
+      <div  class="row ">
+                        <div class="col-sm-8 post-70167 post type-post status-publish format-standard has-post-thumbnail hentry category-immobilier category-immobilier-construction tag-immobilier tag-naheeda-suddoo tag-one-t-heaven tag-one-t-properties tag-tayelamay">
+
+          <div class="tt-post type-2">
+                    <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/immobilier-construction/immobilier/one-t-heaven-140-appartements-de-haut-standing-a-sodnac/">
+      <img width="537" height="307" src="https://www.business-magazine.mu/wp-content/uploads/2025/12/afdfsd-537x307.jpg?v=1764825438" class="img-responsive wp-post-image" alt="One T Heaven  - 140 appartements de haut standing à Sodnac" loading="lazy" srcset="https://www.business-magazine.mu/wp-content/uploads/2025/12/afdfsd-537x307.jpg?v=1764825438 537w, https://www.business-magazine.mu/wp-content/uploads/2025/12/afdfsd-150x85.jpg?v=1764825438 150w, https://www.business-magazine.mu/wp-content/uploads/2025/12/afdfsd-608x348.jpg?v=1764825438 608w" sizes="(max-width: 537px) 100vw, 537px" />    </a>
+              <div class="tt-post-info">
+                  <div class="tt-post-cat"><a href="https://www.business-magazine.mu/rubrique/immobilier-construction/immobilier/" rel="category tag">Immobilier</a>, <a href="https://www.business-magazine.mu/rubrique/immobilier-construction/" rel="category tag">Immobilier &amp; Construction</a></div>
+                    <a class="tt-post-title c-h4" href="https://www.business-magazine.mu/immobilier-construction/immobilier/one-t-heaven-140-appartements-de-haut-standing-a-sodnac/"><small>One T Heaven : 140 appartements de haut standing à Sodnac</small></a>
+                    <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/guillaume-gouges/">Guillaume Gouges</a></span>
+                    <span class="tt-post-date">December 4, 2025</span>
+          </div>
+                    <div class="simple-text">
+      <p>One T Heaven  140 appartements de haut standing à Sodnac &nbsp; One T Properties a inauguré la semaine dernière One ...</p>
+    </div>
+                        <div class="tt-post-bottom">
+              <span class="tt-post-comment"><i class="material-icons">chat_bubble</i>0 Comment</span>
+                    <span class="tt-post-views"><i class="material-icons">visibility</i>22 Views</span>
+                </div>
+              </div>
+          </div>
+          <div class="empty-space marg-xs-b30"></div>
+        </div>
+                        
+        <div class="col-sm-4 post-70133 post type-post status-publish format-standard has-post-thumbnail hentry category-construction category-immobilier-construction tag-ciment tag-construction tag-dossier tag-immobilier">
+          <div class="tt-post type-4">
+                    <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/immobilier-construction/construction/ciment-derives-et-outillages-entre-transition-durable-et-pression-economique/">
+      <img width="394" height="218" src="https://www.business-magazine.mu/wp-content/uploads/2020/12/web-ciment-kolos-0-394x218.jpg?v=1606996645" class="img-responsive wp-post-image" alt="" loading="lazy" />    </a>
+              <div class="tt-post-info">
+                  <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/immobilier-construction/construction/ciment-derives-et-outillages-entre-transition-durable-et-pression-economique/">Ciment, dérivés et outillages : Entre transition durable et  pression économique</a>
+                    <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/e-caphane/">Eric Caphane</a></span>
+                    <span class="tt-post-date">December 1, 2025</span>
+          </div>
+              </div>
+          </div>
+          <div class="empty-space marg-lg-b25"></div>        </div>
+                        
+        <div class="col-sm-4 post-70132 post type-post status-publish format-standard has-post-thumbnail hentry category-immobilier category-immobilier-construction tag-barnes-maurice tag-francois-colin tag-groupe-aptis tag-oscar-mamet">
+          <div class="tt-post type-4">
+                    <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/immobilier-construction/immobilier/barnes-maurice-lagence-immobiliere-de-luxe-celebre-ses-dix-ans/">
+      <img width="394" height="218" src="https://www.business-magazine.mu/wp-content/uploads/2025/07/Francois-Colin-General-Manager-BARNES-Maurice-scaled-e1752042776902-394x218.jpg?v=1752042719" class="img-responsive wp-post-image" alt="François Colin, General Manager, BARNES Maurice" loading="lazy" />    </a>
+              <div class="tt-post-info">
+                  <a class="tt-post-title c-h5" href="https://www.business-magazine.mu/immobilier-construction/immobilier/barnes-maurice-lagence-immobiliere-de-luxe-celebre-ses-dix-ans/">Barnes Maurice : L’agence immobilière de luxe célèbre  ses dix ans</a>
+                    <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/administrator/">Business Magazine</a></span>
+                    <span class="tt-post-date">December 1, 2025</span>
+          </div>
+              </div>
+          </div>
+                  </div>
+                      </div>
+      </div></div><div class="pagination c-pagination hidden-lg"></div><div class="swiper-arrow-left-content c-arrow left hidden-xs hidden-sm"><i class="fa fa-angle-left" aria-hidden="true"></i></div><div class="swiper-arrow-right-content c-arrow right hidden-xs hidden-sm"><i class="fa fa-angle-right" aria-hidden="true"></i></div></div></div></div></div></div><div class="vc_row wpb_row vc_row-fluid"><div class="wpb_column vc_column_container vc_col-sm-12"><div class="vc_column-inner"><div class="wpb_wrapper"><div  class="empty-space  marg-lg-b50"></div></div></div></div></div>
+<span class="cp-load-after-post"></span>  </div>
+  <div class="col-md-4">
+  <div class="sidebar pleft75 sidebar-heading-style4 right-sidebar">
+    <div class="empty-space marg-sm-b60"></div>
+          <div id="custom_html-3" class="widget_text sidebar-item widget widget_custom_html"><div class="textwidget custom-html-widget"><style>
+	#content-afrasia {
+	    display: flex;
+	    flex-wrap: wrap;
+	}
+
+	#sidebar-bm-afrasia {
+	   width: 50%;
+	   flex-basis: 50%;
+	}
+
+	.sidebar-bm-logo {
+	   width: 30%;
+	   height: auto;
+	   flex-basis: 30%;
+	}
+</style>
+
+<div style="border: 1px solid #E0DEDE !important; border-bottom: 1px solid #ffffff !important; padding: 20px 20px 0px 20px;">
+	<div class="tt-title-block custom-color-properties-1000 style4" style="border-bottom: 3px solid red !important;">
+		<h3 class="tt-title-text" style="background: red !important;">Indicateurs &eacute;conomiques</h3>
+	</div>
+	<br />
+	<div>
+		<div id="content-afrasia">
+		<p id="sidebar-bm-afrasia"><b><span style="color: red">TAUX</span> DE CHANGE</b></p>
+		<p style="flex-basis: 20%"></p>
+		<a class="sidebar-bm-logo" href=""><img src="/wp-content/uploads/2021/03/Artboard-1-1.jpg" alt=""></a>
+		
+	</div>
+	</div>
+</div></div></div><div class="empty-space marg-lg-b30"></div><div style="padding: 20px 20px 0px 20px; border-left: 1px solid #E0DEDE !important; border-right: 1px solid #E0DEDE !important;"> 
+    <table class = "table table-bordered" >  
+      <thead>
+        <tr>
+          <th style="border-top: white solid 1px; border-left: white solid 1px;"></th>
+          <th>Achat &agrave; l'unit&eacute;</th>
+          <th>Vente &agrave; l'unit&eacute;</th>
+        </tr>
+      </thead>
+      
+      <tbody>
+              <tr>
+                <td>CNY</td>
+                <td> Rs 6,58</td>
+                <td> Rs 7,14</td>
+              </tr>
+            
+              <tr>
+                <td>EUR</td>
+                <td> Rs 53,64</td>
+                <td> Rs 55,24</td>
+              </tr>
+            
+              <tr>
+                <td>INR</td>
+                <td> Rs 0,50</td>
+                <td> Rs 0,54</td>
+              </tr>
+            
+              <tr>
+                <td>ZAR</td>
+                <td> Rs 2,86</td>
+                <td> Rs 3,05</td>
+              </tr>
+            
+              <tr>
+                <td>GBP</td>
+                <td> Rs 61,62</td>
+                <td> Rs 63,46</td>
+              </tr>
+            
+              <tr>
+                <td>USD</td>
+                <td> Rs 45,45</td>
+                <td> Rs 46,35</td>
+              </tr>
+            </tbody>
+    </table>
+  </div><div id="custom_html-4" class="widget_text sidebar-item widget widget_custom_html"><div class="textwidget custom-html-widget"></div></div><div class="empty-space marg-lg-b30"></div><div id="custom_html-16" class="widget_text sidebar-item widget widget_custom_html"><div class="tt-title-block"><h5 class="c-h5 widget-title tt-title-text">VERBATIM</h5></div><div class="empty-space marg-lg-b20"></div><div class="textwidget custom-html-widget"><style type="text/css">
+	#content {
+	    display: flex;
+	    flex-wrap: wrap;
+	}
+
+	#sidebar-verbatim-photo {
+	   width: 30%;
+	   flex-basis: 30%;
+		height:auto;
+	}
+
+	#sidebar-edito-text {
+	   flex-basis: 60%;
+	}
+
+	.sidebar-edito-emptyspace {
+	   flex-basis: 10%;
+	}
+</style>
+<div style="border-left: 1px solid #E0DEDE !important; border-right: 1px solid #E0DEDE !important; border-top: 1px solid #ffffff !important; padding: 20px 20px; margin-top: -20px;">
+<div>
+<p style="color: red"><b>VERBATIM</b></p>
+<hr>
+</div>
+<div id="content">
+
+<img id="sidebar-verbatim-photo" src="https://www.business-magazine.mu/wp-content/uploads/2026/01/Juhi-Desai-headshot-BG.jpg" alt="">
+<span class="sidebar-edito-emptyspace"></span>
+<span id="sidebar-edito-text">
+
+<p style="font-size: 12px; line-height: 1.5;">“«Le paiement du boni de fin d’année
+doit être effectué au moins à 75 %,
+cinq jours avant le 25 décembre»”</p>
+
+<p style="font-size: 12px"><b>Juhi Desai </b></p>
+
+<p style="font-size: 12px">(Senior Adviser,
+ministère du Travail
+et des Relations industrielles)</p>
+<br>
+</span>
+<br>
+
+<div style="background-color: #E0DEDE; padding: 10px 10px; text-align: center; margin-top: 20px;">
+<p style="font-size: 20px; font-weight: 600;padding-bottom:8px;">C’est le montant du dividende qu’Emtel versera par action ordinaire pour l’exercice financier se
+terminant le 31 décembre2025. ce dividende spécial sera versé ver le 27 janvier 2026..
+</p>
+<p style="font-size: 14px; font-style: italic; line-height: 1.5;"> </p>
+<br>
+</div>
+</div>
+</div></div></div><div class="empty-space marg-lg-b30"></div><div id="custom_html-5" class="widget_text sidebar-item widget widget_custom_html"><div class="textwidget custom-html-widget"><style>
+	.pt-cv-wrapper [class*=pt-cv-] a {
+		color: black;
+	}
+
+	.pt-cv-wrapper [class*=pt-cv-] a:hover{
+		color: #41b7d8;
+	}
+</style>
+<div style="border: 1px solid #E0DEDE !important; border-top: 1px solid #ffffff !important; padding: 20px 20px; margin-top: -40px;">
+	<div>
+		<p style="color: red;"><b>ENJEUX</b></p>
+		<hr>
+	</div>
+	<br />
+	<div>
+		<div class="pt-cv-wrapper"><div class="pt-cv-view pt-cv-grid pt-cv-colsys" id="pt-cv-view-9e8f9a30lt"><div data-id="pt-cv-page-1" class="pt-cv-page" data-cvc="2"><div class="col-md-6 col-sm-6 col-xs-12 pt-cv-content-item pt-cv-1-col" ><div class='pt-cv-ifield'><a href="https://www.business-magazine.mu/actualites/enjeu/privatisation-une-alliance-strategique-air-mauritius-qatar-airways-se-profile-a-lhorizon/" class="_self pt-cv-href-thumbnail pt-cv-thumb-default" target="_self" rel="noopener noreferrer"><img width="290" height="162" src="https://www.business-magazine.mu/wp-content/uploads/2022/11/Air-Mauritius-290x162.jpg" class="pt-cv-thumbnail" alt="Avion d&#039;Air Mauritius" loading="lazy" /></a>
+<p class="pt-cv-title"><a href="https://www.business-magazine.mu/actualites/enjeu/privatisation-une-alliance-strategique-air-mauritius-qatar-airways-se-profile-a-lhorizon/" class="_self" target="_self" rel="noopener noreferrer">Privatisation : Une alliance stratégique Air Mauritius &#8211; Qatar Airways se profile à l’horizon</a></p>
+<div class="pt-cv-meta-fields"><span class="entry-date"> <time datetime="2025-08-20T04:53:36+00:00">August 20, 2025</time></span> / <span class="author"> <a href="https://www.business-magazine.mu/author/reecha-ramoo/" rel="author">Reecha Ramoo</a></span></div></div></div>
+<div class="col-md-6 col-sm-6 col-xs-12 pt-cv-content-item pt-cv-1-col" ><div class='pt-cv-ifield'><a href="https://www.business-magazine.mu/actualites/enjeu/aquaculture-immersion-au-coeur-de-deux-fermes/" class="_self pt-cv-href-thumbnail pt-cv-thumb-default" target="_self" rel="noopener noreferrer"><img width="290" height="162" src="https://www.business-magazine.mu/wp-content/uploads/2025/04/photo-dillustration-page-26-collecteurs-huitres--e1744368428978-290x162.jpg?v=1744368415" class="pt-cv-thumbnail" alt="" loading="lazy" /></a>
+<p class="pt-cv-title"><a href="https://www.business-magazine.mu/actualites/enjeu/aquaculture-immersion-au-coeur-de-deux-fermes/" class="_self" target="_self" rel="noopener noreferrer">Aquaculture : Immersion au cœur de deux fermes</a></p>
+<div class="pt-cv-meta-fields"><span class="entry-date"> <time datetime="2025-04-11T10:40:37+00:00">April 11, 2025</time></span> / <span class="author"> <a href="https://www.business-magazine.mu/author/a-ladouceur/" rel="author">Audrey Ladouceur</a></span></div></div></div></div></div></div>
+	</div>
+</div></div></div><div class="empty-space marg-lg-b30"></div><div id="custom_html-6" class="widget_text sidebar-item widget widget_custom_html"><div class="textwidget custom-html-widget"><!-- /21795836428/BM_homepage_side_billboard1_leaderboard -->
+<div id='div-gpt-ad-1606111836988-0'>
+  <script>
+    googletag.cmd.push(function() { googletag.display('div-gpt-ad-1606111836988-0'); });
+  </script>
+</div></div></div><div class="empty-space marg-lg-b30"></div><div id="custom_html-15" class="widget_text sidebar-item widget widget_custom_html"><div class="tt-title-block"><h5 class="c-h5 widget-title tt-title-text">INDICATEUR ECONOMIQUE SECTION</h5></div><div class="empty-space marg-lg-b20"></div><div class="textwidget custom-html-widget"><div style="border-right: 1px solid #E0DEDE !important; border-left: 1px solid #E0DEDE !important; padding: 20px 20px; margin-top: -40px;">
+	<div style="text-align: justify;">
+		<div>
+			<p style="color: red;"><b>MARCHÉ DE LA DETTE : La Banque va lever
+Rs 28,5 milliards</b></p>
+			<hr>
+		</div>
+
+		<div style="text-align: center;">
+			<img style="width: 70%;" src="https://www.business-magazine.mu/wp-content/uploads/2026/01/Screenshot-2026-01-08-133348.png" alt="">
+		</div>
+		<br />
+		<div>
+			<p> Dans le cadre de son programme
+d’émission de titres publics,
+la Banque de Maurice va lever
+jusqu’à Rs 28,5 milliards pour la
+période de janvier à juin 2026 à
+travers les émissions de bons
+du Trésor, de Treasury Notes
+et de Government of Mauritius
+Bonds pour financer des projets
+gouvernementaux.
+Ces opérations sur le marché
+obligataire auront pour
+conséquence qu’elles impacteront
+directement le niveau de la dette
+publique. Celle-ci était calculée
+à 89,3 % à fin septembre. Ces
+Rs 28,5 milliards représentent
+l’équivalent de 3,8 % du PIB.</p>
+		</div>
+	</div>
+</div></div></div><div class="empty-space marg-lg-b30"></div><div id="custom_html-7" class="widget_text sidebar-item widget widget_custom_html"><div class="textwidget custom-html-widget"><style>
+	#content {
+	    display: flex;
+	    flex-wrap: wrap;
+	}
+
+	#sidebar-bm {
+	   width: 50%;
+	   flex-basis: 50%;
+	}
+
+	.sidebar-bm-social {
+	   width: 30px;
+	   height: 30px;
+	   flex-basis: 5%;
+	}
+
+	.sidebar-emptyspace {
+	   flex-basis: 20%;
+	}
+</style>
+<div style="padding: 20px 20px; background-color: #fefaed;">
+	<div id="content">
+		<img id="sidebar-bm" src="/wp-content/uploads/2020/11/NEW-LOGO-BUSINESS-MAGAZINE.png" alt="">
+		<span class="sidebar-emptyspace"></span>
+		<a href="https://www.facebook.com/businessmag.mu/" target="_blank" rel="noopener noreferrer"><img class="sidebar-bm-social" src="/wp-content/uploads/2020/11/iconfinder_online_social_media_facebook_734386.png" alt=""></a>
+		<span style="flex-basis: 1%"></span>
+		<a href="https://twitter.com/BusinessMag_Mu" target="_blank" rel="noopener noreferrer"><img class="sidebar-bm-social" src="/wp-content/uploads/2020/11/iconfinder_twitter_online_social_media_734367.png" alt=""></a>
+		<span style="flex-basis: 1%"></span>
+		<a href="https://www.linkedin.com/company/business-magazine/" target="_blank" rel="noopener noreferrer"><img class="sidebar-bm-social" src="/wp-content/uploads/2020/11/iconfinder_linked_in_online_social_media_734393.png" alt=""></a>
+	</div>
+	<br />
+	<div>
+		<a href="/a-propos/"><p style="color:#333;"><b>Leader de la presse économique à Maurice depuis 28 ans, Business Magazine est produit par Business Publications Ltd...</b></p></a>
+		<a href="/a-propos/"><p style="font-size: 12px;color:#333;">Cet hebdomadaire est une véritable mine d’or d’informations et de renseignements pour les hommes d’affaires et les entrepreneurs. </p></a>
+		<a href="/a-propos/"><p style="font-size: 13px; color: grey;"><b>Membre du groupe La Sentinelle depuis 1992.</b></p></a>
+	</div>
+</div></div></div><div class="empty-space marg-lg-b30"></div><div id="custom_html-8" class="widget_text sidebar-item widget widget_custom_html"><div class="tt-title-block"><h5 class="c-h5 widget-title tt-title-text">EDITO SECTION</h5></div><div class="empty-space marg-lg-b20"></div><div class="textwidget custom-html-widget"><style>
+	#content {
+	    display: flex;
+	    flex-wrap: wrap;
+	}
+
+	#sidebar-edito-photo {
+	   width: 30%;
+	   flex-basis: 30%;
+	}
+
+	#sidebar-edito-text {
+	   flex-basis: 60%;
+	}
+
+	.sidebar-edito-emptyspace {
+	   flex-basis: 10%;
+	}
+</style>
+<div style="border: 1px solid #E0DEDE; padding: 20px 20px;">
+
+<div class="tt-title-block custom-color-properties-1000 style4" style="border-bottom: 3px solid red !important;">
+	<h3 class="tt-title-text" style="background: red !important;">	Édito</h3>
+</div>
+
+<div style="height: 15px;"></div>
+
+<div id="content">
+	<img id="sidebar-edito-photo" src=https://www.business-magazine.mu/wp-content/uploads/2025/01/Untitled-design-70-1.png alt="">
+	<span class="sidebar-edito-emptyspace"></span>
+	<span id="sidebar-edito-text">
+		<a href="https://www.business-magazine.mu/rubrique/edito/"><p style="color: red; font-style: italic;font-size: 12px;line-height: 1.4;padding-bottom: 5px;">Économie – faire beaucoup mieux qu’en 2025</p></a>
+		<a href="https://www.business-magazine.mu/edito/in-g-major/"><p style="font-size: 11px;line-height: 1.5;padding-bottom: 9px; color:#333;">LE Premier ministre a eu les bons mots quand il s’est appesanti sur l’importance de placer l’économie au centre des priorités en 2026. Surtout après une année 2025 où l’on a constaté une dégradation des principaux indicateurs macroéconomiques, avec une croissance molle de 3,2 % du PIB, une inflation globale contenue à 3,7 % même si l’inflation réelle est certainement plus élevée, un niveau d’investissement national plongeant en dessous des 20 % et une économie centrée sur la consommation, fort probablement alimentée par la dette car le revenu disponible des ménages est en recul.
+</p></a>
+		<br />
+		<p style="font-size: 11px;">
+			<b>Richard Le Bon </b> Janvier 07 , 2026 
+		</p>
+	</span>
+</div>
+</div></div></div><div class="empty-space marg-lg-b30"></div><div id="custom_html-9" class="widget_text sidebar-item widget widget_custom_html"><div class="textwidget custom-html-widget"><!-- /21795836428/BM_homepage_side_billboard2_leaderboard -->
+<div id='div-gpt-ad-1606111951369-0'>
+  <script>
+    googletag.cmd.push(function() { googletag.display('div-gpt-ad-1606111951369-0'); });
+  </script>
+</div></div></div><div class="empty-space marg-lg-b30"></div>      </div>
+</div>
+    
+ </div><!-- .row -->
+</div>
+    <div class="vc_row wpb_row vc_row-fluid"><div class="wpb_column vc_column_container vc_col-sm-12"><div class="vc_column-inner"><div class="wpb_wrapper"><div  class="tt-title-block custom-color-properties-1007 style4"><h3 class="tt-title-text">Nos Publications</h3></div><div class="empty-space  marg-lg-b25"></div>
+	<div class="wpb_raw_code wpb_content_element wpb_raw_html" >
+		<div class="wpb_wrapper">
+			<div class='white' style='background:rgba(0,0,0,0); border:solid 0px rgba(0,0,0,0); border-radius:1px; padding:0px 10px 0px 0px;'>
+<div id='slider_27544' class='owl-carousel sa_owl_theme owl-pagination-true autohide-arrows' data-slider-id='slider_27544' style='visibility:hidden;'>
+<div id='slider_27544_slide01' class='sa_hover_container' style='padding:0% 0%; margin:0px 0%; background-image:url(&quot;https://www.business-magazine.mu/wp-content/uploads/2017/02/01_Cover-Business-Magazine-1717-scaled.jpg&quot;); background-position:center center; background-size:auto 100%; background-repeat:no-repeat; '><p><a class="btn-nos-pub" href="https://www.business-magazine.mu/nous-contacter/"><b>Acheter</b></a></p></div>
+<div id='slider_27544_slide02' class='sa_hover_container' style='padding:0% 0%; margin:0px 0%; background-image:url(&quot;https://www.business-magazine.mu/wp-content/uploads/2020/11/1-2.jpg&quot;); background-position:center center; background-size:auto 100%; background-repeat:no-repeat; '><p><a href="https://e-magazines.mu/ess-actives-5/full-view.html"><strong>Lire gratuitement</strong></a></p></div>
+<div id='slider_27544_slide03' class='sa_hover_container' style='padding:0% 0%; margin:0px 0%; background-image:url(&quot;https://www.business-magazine.mu/wp-content/uploads/2020/11/COVER-95-scaled.jpg&quot;); background-position:center center; background-size:auto 100%; background-repeat:no-repeat; '><p><a href="https://e-magazines.mu/lacase-88/full-view.html"><strong>Lire gratuitement</strong></a></p></div>
+<div id='slider_27544_slide04' class='sa_hover_container' style='padding:0% 0%; margin:0px 0%; background-image:url(&quot;https://www.business-magazine.mu/wp-content/uploads/2020/11/TECHTRENDS-COVER.jpg&quot;); background-position:center center; background-size:auto 100%; background-repeat:no-repeat; '><p><strong><a href="https://e-magazines.mu/techtrend/full-view.html">Lire gratuitement</a></strong></p></div>
+<div id='slider_27544_slide05' class='sa_hover_container' style='padding:0% 0%; margin:0px 0%; background-image:url(&quot;https://www.business-magazine.mu/wp-content/uploads/2020/11/Screenshot-2025-10-29-105930-COVER.jpg&quot;); background-position:center center; background-size:auto 100%; background-repeat:no-repeat; '><p><a class="btn-nos-pub" href="https://e-magazines.mu/agro-2024/full-view.html" target="_blank" rel="noopener"><b>Lire gratuitement</b></a></p></div>
+<div id='slider_27544_slide06' class='sa_hover_container' style='padding:0% 0%; margin:0px 0%; background-image:url(&quot;https://www.business-magazine.mu/wp-content/uploads/2020/11/Untitled-design-23.png&quot;); background-position:center center; background-size:auto 100%; background-repeat:no-repeat; '><p><a class="btn-nos-pub" href="https://docs.google.com/forms/d/1H9c30spRWb0E0wWWEaz09glSqUa_pIIRQzqRg4-1VJo/edit" target="_blank" rel="noopener"><b>Acheter</b></a></p></div>
+<div id='slider_27544_slide07' class='sa_hover_container' style='padding:0% 0%; margin:0px 0%; background-image:url(&quot;https://www.business-magazine.mu/wp-content/uploads/2020/11/Annuaire-de-la-Com-2024.jpg&quot;); background-position:center center; background-size:auto 100%; background-repeat:no-repeat; '><p><a href="https://e-magazines.mu/annuaire-de-la-com-2024/full-view.html"><strong>Lire gratuitement</strong></a></p></div>
+<div id='slider_27544_slide08' class='sa_hover_container' style='padding:0% 0%; margin:0px 0%; background-image:url(&quot;https://www.business-magazine.mu/wp-content/uploads/2020/11/unnamed.jpg&quot;); background-position:center center; background-size:auto 100%; background-repeat:no-repeat; '><p><a class="btn-nos-pub" href="https://www.business-magazine.mu/nous-contacter/" target="_blank" rel="noopener"><b>Acheter</b></a></p></div>
+<div id='slider_27544_slide09' class='sa_hover_container' style='padding:0% 0%; margin:0px 0%; '><p><a class="btn-nos-pub" href="https://e-magazines.mu/automoto-aout-2024/full-view.html" target="_blank" rel="noopener"><b>Lire gratuitement</b></a></p></div>
+<div id='slider_27544_slide10' class='sa_hover_container' style='padding:0% 0%; margin:0px 0%; background-image:url(&quot;https://www.business-magazine.mu/wp-content/uploads/2020/11/Untitled-design-22.jpg&quot;); background-position:center center; background-size:auto 100%; background-repeat:no-repeat; '><p><a class="btn-nos-pub" href="https://e-magazines.mu/education-2024/full-view.html" target="_blank" rel="noopener"><b>Lire gratuitement</b></a></p></div>
+<div id='slider_27544_slide11' class='sa_hover_container' style='padding:0% 0%; margin:0px 0%; background-image:url(&quot;https://www.business-magazine.mu/wp-content/uploads/2020/11/Immobilier-Construction-.jpg&quot;); background-position:center center; background-size:auto 100%; background-repeat:no-repeat; '><p><a class="btn-nos-pub" href="https://e-magazines.mu/immobilier-et-construction-aout-2024/full-view.html" target="_blank" rel="noopener"><b>Lire gratuitement</b></a></p></div>
+<div id='slider_27544_slide12' class='sa_hover_container' style='padding:0% 0%; margin:0px 0%; background-image:url(&quot;https://www.business-magazine.mu/wp-content/uploads/2020/11/Lifestyle-Cover-206.jpg&quot;); background-position:center center; background-size:auto 100%; background-repeat:no-repeat; '><p><a class="btn-nos-pub" href="https://e-magazines.mu/lifestyle-197/full-view.html" target="_blank" rel="noopener"><b>Lire gratuitement</b></a></p></div>
+<div id='slider_27544_slide13' class='sa_hover_container' style='padding:0% 0%; margin:0px 0%; background-image:url(&quot;https://www.business-magazine.mu/wp-content/uploads/2020/11/Untitled-design-24.jpg&quot;); background-position:center center; background-size:auto 100%; background-repeat:no-repeat; '><p><a href="https://www.essentielle.mu/nous-contacter"><strong>Acheter </strong></a></p></div>
+</div>
+</div>
+<script type='text/javascript'>
+	jQuery(document).ready(function() {
+		jQuery('#slider_27544').owlCarousel({
+			responsive:{
+				0:{ items:1 },
+				480:{ items:1 },
+				768:{ items:2 },
+				980:{ items:4 },
+				1200:{ items:4 },
+				1500:{ items:4 }
+			},
+			autoplay : true,
+			autoplayTimeout : 5000,
+			autoplayHoverPause : true,
+			smartSpeed : 200,
+			fluidSpeed : 200,
+			autoplaySpeed : 200,
+			navSpeed : 200,
+			dotsSpeed : 200,
+			loop : true,
+			nav : true,
+			navText : ['Previous','Next'],
+			dots : true,
+			responsiveRefreshRate : 200,
+			slideBy : 1,
+			mergeFit : true,
+			autoHeight : false,
+			mouseDrag : false,
+			touchDrag : true
+		});
+		jQuery('#slider_27544').css('visibility', 'visible');
+		sa_resize_slider_27544();
+		window.addEventListener('resize', sa_resize_slider_27544);
+		function sa_resize_slider_27544() {
+			var min_height = '100';
+			var win_width = jQuery(window).width();
+			var slider_width = jQuery('#slider_27544').width();
+			if (win_width < 480) {
+				var slide_width = slider_width / 1;
+			} else if (win_width < 768) {
+				var slide_width = slider_width / 1;
+			} else if (win_width < 980) {
+				var slide_width = slider_width / 2;
+			} else if (win_width < 1200) {
+				var slide_width = slider_width / 4;
+			} else if (win_width < 1500) {
+				var slide_width = slider_width / 4;
+			} else {
+				var slide_width = slider_width / 4;
+			}
+			slide_width = Math.round(slide_width);
+			var slide_height = '0';
+			if (min_height == 'aspect43') {
+				slide_height = (slide_width / 4) * 3;				slide_height = Math.round(slide_height);
+			} else if (min_height == 'aspect169') {
+				slide_height = (slide_width / 16) * 9;				slide_height = Math.round(slide_height);
+			} else {
+				slide_height = (slide_width / 100) * min_height;				slide_height = Math.round(slide_height);
+			}
+			jQuery('#slider_27544 .owl-item .sa_hover_container').css('min-height', slide_height+'px');
+		}
+		var owl_goto = jQuery('#slider_27544');
+		jQuery('.slider_27544_goto1').click(function(event){
+			owl_goto.trigger('to.owl.carousel', 0);
+		});
+		jQuery('.slider_27544_goto2').click(function(event){
+			owl_goto.trigger('to.owl.carousel', 1);
+		});
+		jQuery('.slider_27544_goto3').click(function(event){
+			owl_goto.trigger('to.owl.carousel', 2);
+		});
+		jQuery('.slider_27544_goto4').click(function(event){
+			owl_goto.trigger('to.owl.carousel', 3);
+		});
+		jQuery('.slider_27544_goto5').click(function(event){
+			owl_goto.trigger('to.owl.carousel', 4);
+		});
+		jQuery('.slider_27544_goto6').click(function(event){
+			owl_goto.trigger('to.owl.carousel', 5);
+		});
+		jQuery('.slider_27544_goto7').click(function(event){
+			owl_goto.trigger('to.owl.carousel', 6);
+		});
+		jQuery('.slider_27544_goto8').click(function(event){
+			owl_goto.trigger('to.owl.carousel', 7);
+		});
+		jQuery('.slider_27544_goto9').click(function(event){
+			owl_goto.trigger('to.owl.carousel', 8);
+		});
+		jQuery('.slider_27544_goto10').click(function(event){
+			owl_goto.trigger('to.owl.carousel', 9);
+		});
+		jQuery('.slider_27544_goto11').click(function(event){
+			owl_goto.trigger('to.owl.carousel', 10);
+		});
+		jQuery('.slider_27544_goto12').click(function(event){
+			owl_goto.trigger('to.owl.carousel', 11);
+		});
+		jQuery('.slider_27544_goto13').click(function(event){
+			owl_goto.trigger('to.owl.carousel', 12);
+		});
+		var resize_27544 = jQuery('.owl-carousel');
+		resize_27544.on('initialized.owl.carousel', function(e) {
+			if (typeof(Event) === 'function') {
+				window.dispatchEvent(new Event('resize'));
+			} else {
+				var evt = window.document.createEvent('UIEvents');
+				evt.initUIEvent('resize', true, false, window, 0);
+				window.dispatchEvent(evt);
+			}
+		});
+	});
+</script>
+
+		</div>
+	</div>
+</div></div></div></div><div class="vc_row wpb_row vc_row-fluid"><div class="wpb_column vc_column_container vc_col-sm-8"><div class="vc_column-inner"><div class="wpb_wrapper"><div  class="tt-title-block custom-color-properties-1008 style4"><h3 class="tt-title-text">À lire aussi</h3></div><div class="empty-space  marg-lg-b25"></div>
+  <div class="tt-recent-news">
+            <div class="tt-post has-thumbnail type-6 clearfix post-70480 post type-post status-publish format-standard has-post-thumbnail hentry category-bons-plans category-lifestyle tag-bon-plan tag-lifestyle tag-st-valentin">
+              <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/lifestyle/bons-plans/st-valentin-un-coffret-deux-cadeaux/">
+      <img width="288" height="180" src="https://www.business-magazine.mu/wp-content/uploads/2026/02/FB_IMG_1770867408569-e1770873103511-288x180.jpg?v=1770873049" class="img-responsive wp-post-image" alt="Charlotte Skin et Jackies Florals signe un partenariat" loading="lazy" />    </a>
+        <div class="tt-post-info">
+            <div class="tt-post-cat"><a href="https://www.business-magazine.mu/rubrique/lifestyle/bons-plans/" rel="category tag">Bons plans</a>, <a href="https://www.business-magazine.mu/rubrique/lifestyle/" rel="category tag">Lifestyle</a></div>
+              <a class="tt-post-title c-h4" href="https://www.business-magazine.mu/lifestyle/bons-plans/st-valentin-un-coffret-deux-cadeaux/"><small>St-Valentin : un coffret, deux cadeaux</small></a>
+              <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/marie_gouges/">Marie Gouges</a></span>
+                    <span class="tt-post-date">February 12, 2026</span>
+          </div>
+              <div class="simple-text">
+      <p>St-Valentin : un coffret, deux cadeaux &nbsp; Il y a des rencontres qui créent la magie. Celle de Charlotte Skin et Jackies Florals en fait partie. Pour cette St-Valentin, les deux maisons unissent leur savoir-faire ...</p>
+    </div>
+                  <div class="tt-post-bottom">
+              <span class="tt-post-comment"><i class="material-icons">chat_bubble</i>0 Comment</span>
+                    <span class="tt-post-views"><i class="material-icons">visibility</i>2 Views</span>
+                </div>
+        </div>
+    </div>
+    <div class="empty-space marg-lg-b30"></div>
+            <div class="tt-post has-thumbnail type-6 clearfix post-70478 post type-post status-publish format-standard has-post-thumbnail hentry category-business-files category-entreprendre tag-authentic-bloom tag-business-files tag-saint-valentin tag-shireen-etoola">
+              <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/entreprendre/business-files/authentic-bloom-dites-le-avec-des-fleurs/">
+      <img width="288" height="180" src="https://www.business-magazine.mu/wp-content/uploads/2026/02/Authentic-Bloom-288x180.jpg?v=1770804257" class="img-responsive wp-post-image" alt="Authentic Bloom" loading="lazy" />    </a>
+        <div class="tt-post-info">
+            <div class="tt-post-cat"><a href="https://www.business-magazine.mu/rubrique/entreprendre/business-files/" rel="category tag">Business files</a>, <a href="https://www.business-magazine.mu/rubrique/entreprendre/" rel="category tag">Entreprendre</a></div>
+              <a class="tt-post-title c-h4" href="https://www.business-magazine.mu/entreprendre/business-files/authentic-bloom-dites-le-avec-des-fleurs/"><small>Authentic Bloom : Dites-le avec des fleurs</small></a>
+              <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/kedvee_goinden/">kedvee goinden</a></span>
+                    <span class="tt-post-date">February 11, 2026</span>
+          </div>
+              <div class="simple-text">
+      <p>Authentic Bloom Dites-le avec des fleurs &nbsp; Authentic Bloom est une boutique florale située à Nouvelle Usine, à Floréal. Fondée par Shireen Etoola, elle propose des compositions florales destinées à différentes occasions, en mettant l’accent ...</p>
+    </div>
+                  <div class="tt-post-bottom">
+              <span class="tt-post-comment"><i class="material-icons">chat_bubble</i>0 Comment</span>
+                    <span class="tt-post-views"><i class="material-icons">visibility</i>7 Views</span>
+                </div>
+        </div>
+    </div>
+    <div class="empty-space marg-lg-b30"></div>
+            <div class="tt-post has-thumbnail type-6 clearfix post-70476 post type-post status-publish format-standard has-post-thumbnail hentry category-business-files category-entreprendre tag-business-files tag-eva-naidu tag-legend-hill tag-saint-valentin">
+              <a class="tt-post-img custom-hover" href="https://www.business-magazine.mu/entreprendre/business-files/legend-hill-une-escapade-romantique-face-au-lagon/">
+      <img width="288" height="180" src="https://www.business-magazine.mu/wp-content/uploads/2026/02/Luxury-Room-Legend-Hill-288x180.jpg?v=1770804017" class="img-responsive wp-post-image" alt="Luxury Room - Legend Hill" loading="lazy" />    </a>
+        <div class="tt-post-info">
+            <div class="tt-post-cat"><a href="https://www.business-magazine.mu/rubrique/entreprendre/business-files/" rel="category tag">Business files</a>, <a href="https://www.business-magazine.mu/rubrique/entreprendre/" rel="category tag">Entreprendre</a></div>
+              <a class="tt-post-title c-h4" href="https://www.business-magazine.mu/entreprendre/business-files/legend-hill-une-escapade-romantique-face-au-lagon/"><small>Legend Hill : Une escapade romantique face au lagon</small></a>
+              <div class="tt-post-label">
+              <span class="tt-post-author-name"><a href="https://www.business-magazine.mu/author/kedvee_goinden/">kedvee goinden</a></span>
+                    <span class="tt-post-date">February 11, 2026</span>
+          </div>
+              <div class="simple-text">
+      <p>Legend Hill  Une escapade romantique face au lagon &nbsp; SITUÉ sur les hauteurs de l’ouest mauricien, Legend Hill propose une offre spéciale pour la Saint-Valentin. L’établissement mise sur sa position géographique qui offre une vue ...</p>
+    </div>
+                  <div class="tt-post-bottom">
+              <span class="tt-post-comment"><i class="material-icons">chat_bubble</i>0 Comment</span>
+                    <span class="tt-post-views"><i class="material-icons">visibility</i>7 Views</span>
+                </div>
+        </div>
+    </div>
+    <div class="empty-space marg-lg-b30"></div>
+            <div class="text-center">
+           <ul class='page-numbers'>
+	<li><span class="page-numbers current">1</span></li>
+	<li><a class="page-numbers" href="https://www.business-magazine.mu/page/2/">2</a></li>
+	<li><a class="page-numbers" href="https://www.business-magazine.mu/page/3/">3</a></li>
+	<li><span class="page-numbers dots">&hellip;</span></li>
+	<li><a class="page-numbers" href="https://www.business-magazine.mu/page/5640/">5,640</a></li>
+	<li><a class="next page-numbers" href="https://www.business-magazine.mu/page/2/">Next &raquo;</a></li>
+</ul>
+                           
+        </div>
+        <div class="empty-space marg-sm-b60"></div>
+        </div>
+  
+	<div class="wpb_raw_code wpb_raw_js" >
+		<div class="wpb_wrapper">
+			<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-format="fluid"
+     data-ad-layout-key="-fv-3b+ka+23-1x4"
+     data-ad-client="ca-pub-8506233496443543"
+     data-ad-slot="4874338332"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+		</div>
+	</div>
+</div></div></div><div class="wpb_column vc_column_container vc_col-sm-4"><div class="vc_column-inner"><div class="wpb_wrapper"><div  class="tt-newsletter-wrap tt-border-block"><div class="tt-newsletter"><h4 class="tt-newsletter-title tt-newsletter-heading c-h4"><small>La Newsletter des décideurs.</small></h4><div class="simple-text tt-newsletter-sub-heading"><p>Toute l&#8217;actualité économique de l’ile Maurice en un clic.</p></div><a class="tt-newsletter-img" href="#"><img class="img-responsive" src="https://www.business-magazine.mu/wp-content/uploads/2017/02/Screenshot-2026-01-07-083138.jpg" height="149" width="105" alt=""></a><form method="post" action="https://www.business-magazine.mu/?na=s" onsubmit="return newsletter_check(this)"><input class="c-input" type="text" name="nn" required="" placeholder="First Name..."><input class="c-input" type="email" name="ne" required="" placeholder="Email Address"><div class="c-btn type-1 style-2 color-2 size-3"><input type="submit" class="newsletter-submit" value="INSCRIVEZ-VOUS"></div></form></div></div><div  class="empty-space  marg-lg-b30"></div></div></div></div></div><div class="vc_row wpb_row vc_row-fluid"><div class="wpb_column vc_column_container vc_col-sm-12"><div class="vc_column-inner"><div class="wpb_wrapper"><div class="text-block" ><div class="simple-text "></div></div></div></div></div></div>
+<span class="cp-load-after-post"></span>  </div>
+  <div class="empty-space tt-page-margin-bottom marg-lg-b60 marg-sm-b50 marg-xs-b30"></div>
+</div>
+
+
+
+<div class="tt-footer">
+  <div class="container">
+    <div class="row">
+            <div class="col-md-3 col-sm-6 col-1">
+                  <div id="custom_html-10" class="widget_text widget tt-footer-list footer_widget widget_custom_html"><div class="textwidget custom-html-widget"><style>
+	.btn-abonner{
+		background-color: #cc242b;
+    border-color: #cc242b;
+    border-radius: 5px !important;
+    font-size: 25px;
+    color: white;
+    padding: 20px;
+    width: 100% !important;
+    border: none;
+		display:inline-block;
+		text-align: center;
+	}
+</style>
+<div style="line-height: 1.1;">
+	<p style="font-size: 30px; color: white;">Avec</p>
+	<p style="font-size: 30px; color: white;font-weight:600;">business-magazine.mu,</p>
+	<p style="font-size: 24px; color: white;">prenez les bonnes d&eacute;cisions</p>	
+</div>
+<div style="height: 20px;"></div>
+<br />
+<div>
+<a class="btn-abonner" href="https://kiosk.lasentinelle.mu/" target="_blank" rel="noopener noreferrer">S'abonner</a>
+</div></div></div>                <div class="empty-space marg-xs-b30"></div>
+      </div>
+          <div class="col-md-3 col-sm-6 col-2">
+                  <div id="custom_html-11" class="widget_text widget tt-footer-list footer_widget widget_custom_html"><div class="textwidget custom-html-widget"><style>
+	.menu-item{
+		font-size: 20px;
+		color: white;	
+	}
+	
+	.footer-menu{
+		line-height: 2;
+	}
+</style>
+<ul class="footer-menu">
+	<li ><a class="menu-item" href="/nous-contacter/">Nous contacter</a></li>
+	<li><a class="menu-item" href="https://www.business-magazine.mu/wp-content/uploads/2020/12/code_de_deontologie.pdf">Charte d’independance et de d&eacute;ontologie</a></li>
+	<li><a class="menu-item" href="/conditions-generales-d-utilisation/">CGU</a></li>
+	<li><a class="menu-item" href="/politique-de-confidentialite/">Politique de confidentialité</a></li>
+	<li><a class="menu-item" href="/a-propos/">&Agrave; Propos</a></li>
+	<li style="display: none;"><a class="menu-item" href="#">Media Kit</a></li>
+</ul></div></div>                <div class="empty-space marg-xs-b30"></div>
+      </div>
+          <div class="col-md-3 col-sm-6 col-3">
+                  <div id="custom_html-12" class="widget_text widget tt-footer-list footer_widget widget_custom_html"><div class="textwidget custom-html-widget"><style>
+	table, tr, td {
+			border: none;
+	}
+
+	a {
+		color: #ffffff;
+	}
+</style>
+<div>
+	<table>
+	<tr>
+			<td><a href="/rubrique/actualites/">Actualit&eacute;s</a></td>
+			<td><a href="/rubrique/automoto/">Automoto</a></td>
+		</tr>
+
+		<tr>
+			<td><a href="/rubrique/edito/">&Eacute;dito</a></td>
+			<td><a href="/rubrique/education-careeer/">Education & Career</a></td>
+		</tr>
+
+		<tr>
+			<td><a href="/rubrique/entreprendre/">Entreprendre</a></td>
+			<td><a href="/rubrique/immobilier-construction/">Immobilier & Construction</a></td>
+		</tr>
+
+		<tr>
+			<td><a href="/rubrique/rencontre/">Rencontre</a></td>
+			<td><a href="/rubrique/lifestyle/">Lifestyle</a></td>
+		</tr>
+</table>
+</div></div></div>                <div class="empty-space marg-xs-b30"></div>
+      </div>
+          <div class="col-md-3 col-sm-6 col-4">
+                  <div id="custom_html-13" class="widget_text widget tt-footer-list footer_widget widget_custom_html"><div class="textwidget custom-html-widget"><img style="width: 100%; height:100%; text-align: center;" src="https://www.business-magazine.mu/wp-content/uploads/2024/02/Untitled-design-2024-02-29T143547.949.png"/></div></div>                <div class="empty-space marg-xs-b30"></div>
+      </div>
+          <div class="col-md-12"><div class="empty-space marg-lg-b60 marg-sm-b50 marg-xs-b30"></div></div>
+    </div>
+  </div>
+  <div class="tt-footer-copy">
+    <div class="container">
+      © 2021 Business Publications Ltd | Crafted by Mediatiz Ltd    </div>
+  </div>
+</div> 
+
+</div>
+</div>
+				<script type="text/javascript" id="modal">
+					document.addEventListener("DOMContentLoaded", function(){
+						startclock();
+					});
+					function stopclock (){
+						if(timerRunning) clearTimeout(timerID);
+						timerRunning = false;
+						//document.cookie="time=0";
+					}
+					function showtime () {
+						var now = new Date();
+						var my = now.getTime() ;
+						now = new Date(my-diffms) ;
+						//document.cookie="time="+now.toLocaleString();
+						timerID = setTimeout('showtime()',10000);
+						timerRunning = true;
+					}
+					function startclock () {
+						stopclock();
+						showtime();
+					}
+					var timerID = null;
+					var timerRunning = false;
+					var x = new Date() ;
+					var now = x.getTime() ;
+					var gmt = 1770873270 * 1000 ;
+					var diffms = (now - gmt) ;
+				</script>
+								<script type="text/javascript" id="info-bar">
+					document.addEventListener("DOMContentLoaded", function(){
+						startclock();
+					});
+					function stopclock (){
+						if(timerRunning) clearTimeout(timerID);
+						timerRunning = false;
+						//document.cookie="time=0";
+					}
+					function showtime () {
+						var now = new Date();
+						var my = now.getTime() ;
+						now = new Date(my-diffms) ;
+						//document.cookie="time="+now.toLocaleString();
+						timerID = setTimeout('showtime()',10000);
+						timerRunning = true;
+					}
+					function startclock () {
+						stopclock();
+						showtime();
+					}
+					var timerID = null;
+					var timerRunning = false;
+					var x = new Date() ;
+					var now = x.getTime() ;
+					var gmt = 1770873270 * 1000 ;
+					var diffms = (now - gmt) ;
+				</script>
+								<script type="text/javascript" id="slidein">
+					document.addEventListener("DOMContentLoaded", function(){
+						startclock();
+					});
+					function stopclock (){
+						if(timerRunning) clearTimeout(timerID);
+						timerRunning = false;
+						//document.cookie="time=0";
+					}
+
+					function showtime () {
+						var now = new Date();
+						var my = now.getTime() ;
+						now = new Date(my-diffms) ;
+						//document.cookie="time="+now.toLocaleString();
+						timerID = setTimeout('showtime()',10000);
+						timerRunning = true;
+					}
+
+					function startclock () {
+						stopclock();
+						showtime();
+					}
+					var timerID = null;
+					var timerRunning = false;
+					var x = new Date() ;
+					var now = x.getTime() ;
+					var gmt = 1770873270 * 1000 ;
+					var diffms = (now - gmt) ;
+				</script>
+				<link rel="stylesheet" href="https://www.business-magazine.mu/wp-content/cache/minify/d9b7f.css" media="all" />
+
+
+
+
+
+
+<script src="https://www.business-magazine.mu/wp-content/cache/minify/c1e05.js"></script>
+
+<script type='text/javascript' id='lodash-js-after'>
+window.lodash = _.noConflict();
+</script>
+
+<script src="https://www.business-magazine.mu/wp-content/cache/minify/23007.js"></script>
+
+<script type='text/javascript' id='wp-api-fetch-js-translations'>
+( function( domain, translations ) {
+	var localeData = translations.locale_data[ domain ] || translations.locale_data.messages;
+	localeData[""].domain = domain;
+	wp.i18n.setLocaleData( localeData, domain );
+} )( "default", { "locale_data": { "messages": { "": {} } } } );
+</script>
+<script src="https://www.business-magazine.mu/wp-content/cache/minify/f565c.js"></script>
+
+<script type='text/javascript' id='wp-api-fetch-js-after'>
+wp.apiFetch.use( wp.apiFetch.createRootURLMiddleware( "https://www.business-magazine.mu/wp-json/" ) );
+wp.apiFetch.nonceMiddleware = wp.apiFetch.createNonceMiddleware( "9878cb234c" );
+wp.apiFetch.use( wp.apiFetch.nonceMiddleware );
+wp.apiFetch.use( wp.apiFetch.mediaUploadMiddleware );
+wp.apiFetch.nonceEndpoint = "https://www.business-magazine.mu/wp-admin/admin-ajax.php?action=rest-nonce";
+</script>
+<script type='text/javascript' id='contact-form-7-js-extra'>
+/* <![CDATA[ */
+var wpcf7 = {"cached":"1"};
+/* ]]> */
+</script>
+<script src="https://www.business-magazine.mu/wp-content/cache/minify/b68ea.js"></script>
+
+<script type='text/javascript' id='pt-cv-content-views-script-js-extra'>
+/* <![CDATA[ */
+var PT_CV_PUBLIC = {"_prefix":"pt-cv-","page_to_show":"5","_nonce":"20dcb64d53","is_admin":"","is_mobile":"","ajaxurl":"https:\/\/www.business-magazine.mu\/wp-admin\/admin-ajax.php","lang":"","loading_image_src":"data:image\/gif;base64,R0lGODlhDwAPALMPAMrKygwMDJOTkz09PZWVla+vr3p6euTk5M7OzuXl5TMzMwAAAJmZmWZmZszMzP\/\/\/yH\/C05FVFNDQVBFMi4wAwEAAAAh+QQFCgAPACwAAAAADwAPAAAEQvDJaZaZOIcV8iQK8VRX4iTYoAwZ4iCYoAjZ4RxejhVNoT+mRGP4cyF4Pp0N98sBGIBMEMOotl6YZ3S61Bmbkm4mAgAh+QQFCgAPACwAAAAADQANAAAENPDJSRSZeA418itN8QiK8BiLITVsFiyBBIoYqnoewAD4xPw9iY4XLGYSjkQR4UAUD45DLwIAIfkEBQoADwAsAAAAAA8ACQAABC\/wyVlamTi3nSdgwFNdhEJgTJoNyoB9ISYoQmdjiZPcj7EYCAeCF1gEDo4Dz2eIAAAh+QQFCgAPACwCAAAADQANAAAEM\/DJBxiYeLKdX3IJZT1FU0iIg2RNKx3OkZVnZ98ToRD4MyiDnkAh6BkNC0MvsAj0kMpHBAAh+QQFCgAPACwGAAAACQAPAAAEMDC59KpFDll73HkAA2wVY5KgiK5b0RRoI6MuzG6EQqCDMlSGheEhUAgqgUUAFRySIgAh+QQFCgAPACwCAAIADQANAAAEM\/DJKZNLND\/kkKaHc3xk+QAMYDKsiaqmZCxGVjSFFCxB1vwy2oOgIDxuucxAMTAJFAJNBAAh+QQFCgAPACwAAAYADwAJAAAEMNAs86q1yaWwwv2Ig0jUZx3OYa4XoRAfwADXoAwfo1+CIjyFRuEho60aSNYlOPxEAAAh+QQFCgAPACwAAAIADQANAAAENPA9s4y8+IUVcqaWJ4qEQozSoAzoIyhCK2NFU2SJk0hNnyEOhKR2AzAAj4Pj4GE4W0bkJQIAOw=="};
+var PT_CV_PAGINATION = {"first":"\u00ab","prev":"\u2039","next":"\u203a","last":"\u00bb","goto_first":"Go to first page","goto_prev":"Go to previous page","goto_next":"Go to next page","goto_last":"Go to last page","current_page":"Current page is","goto_page":"Go to page"};
+/* ]]> */
+</script>
+
+<script src="https://www.business-magazine.mu/wp-content/cache/minify/067ec.js"></script>
+
+<script type='text/javascript' id='magplus-global-js-extra'>
+/* <![CDATA[ */
+var magplus_ajax = {"ajaxurl":"https:\/\/www.business-magazine.mu\/wp-admin\/admin-ajax.php","siteurl":"https:\/\/www.business-magazine.mu\/wp-content\/themes\/magplus","nonce":"29ff849fd4"};
+/* ]]> */
+</script>
+
+
+
+
+
+
+<script src="https://www.business-magazine.mu/wp-content/cache/minify/cfafc.js"></script>
+
+<script type='text/javascript' src='https://www.google.com/recaptcha/api.js?render=6LdN1OkZAAAAAIgYe0ovLKzV_oYd8sJo2KQ1K9ZZ&#038;ver=3.0' id='google-recaptcha-js'></script>
+<script type='text/javascript' id='wpcf7-recaptcha-js-extra'>
+/* <![CDATA[ */
+var wpcf7_recaptcha = {"sitekey":"6LdN1OkZAAAAAIgYe0ovLKzV_oYd8sJo2KQ1K9ZZ","actions":{"homepage":"homepage","contactform":"contactform"}};
+/* ]]> */
+</script>
+
+
+<script src="https://www.business-magazine.mu/wp-content/cache/minify/d6f49.js"></script>
+
+
+		<!-- Cookie Notice plugin v2.0.3 by Digital Factory https://dfactory.eu/ -->
+		<div id="cookie-notice" role="banner" class="cookie-notice-hidden cookie-revoke-hidden cn-position-bottom" aria-label="Cookie Notice" style="background-color: rgba(0,0,0,1);"><div class="cookie-notice-container" style="color: #fff;"><span id="cn-notice-text" class="cn-text-container">L'utilisation de ce site Web implique votre acceptation des conditions générales d'utilisation et la politique de confidentialité de business-magazine.mu. Veuillez prendre quelques minutes pour lire les changements récents : Conditions générales d’utilisation.</span><span id="cn-notice-buttons" class="cn-buttons-container"><a href="#" id="cn-accept-cookie" data-cookie-set="accept" class="cn-set-cookie cn-button bootstrap" aria-label="Ok">Ok</a></span><a href="javascript:void(0);" id="cn-close-notice" data-cookie-set="accept" class="cn-close-icon" aria-label="Ok"></a></div>
+			
+		</div>
+		<!-- / Cookie Notice plugin --></body>
+
+<!--LinkedIn Insight Tag-->	
+<script type="text/javascript"> _linkedin_partner_id = "3364801"; window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || []; window._linkedin_data_partner_ids.push(_linkedin_partner_id); </script><script type="text/javascript"> (function(){var s = document.getElementsByTagName("script")[0]; var b = document.createElement("script"); b.type = "text/javascript";b.async = true; b.src = "https://snap.licdn.com/li.lms-analytics/insight.min.js"; s.parentNode.insertBefore(b, s);})(); </script> <noscript> <img height="1" width="1" style="display:none;" alt="" src="https://px.ads.linkedin.com/collect/?pid=3364801&fmt=gif" /> </noscript>
+
+</html>
+
+<!--
+Performance optimized by W3 Total Cache. Learn more: https://www.boldgrid.com/w3-total-cache/
+
+Object Caching 488/1390 objects using disk
+Page Caching using disk: enhanced 
+Minified using disk
+
+Served from: www.business-magazine.mu @ 2026-02-12 05:14:30 by W3 Total Cache
+-->

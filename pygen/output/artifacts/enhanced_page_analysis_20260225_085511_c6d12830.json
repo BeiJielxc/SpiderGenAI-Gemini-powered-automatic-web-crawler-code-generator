@@ -1,0 +1,1400 @@
+{
+  "data_status": {
+    "hasData": true,
+    "tableRowCount": 0,
+    "listItemCount": 7,
+    "potentialMenus": [
+      {
+        "text": "Monetary Policy Committee",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Inflation target",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Surveys",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Financial Stability Committee",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Macroprudential policy",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Foreign exchange",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Resolution Authority",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Regulated activities",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Financial undertakings",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Pension funds market",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Insurance activities",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Securities market and funds",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "PRIIPs",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Other undertakings",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Governance",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "International cooperation",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Careers",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Tariff",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Government Debt Management",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Interbank payment system",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Banknotes and coin",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Qualifying holding",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Outsourcing",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Cloud services",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Fit and proper assessments",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "News",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Publications",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Presentations and speeches",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Events",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Media",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Statistics release calendar",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Official exchange rate",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Inflation",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Methodology",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "SDDS",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Interest rates",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Loans",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Pensions",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Payment and savings accounts",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Funds",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Financial Instruments",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Insurance",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Debt collection",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Payment services",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Investor protection",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Information regarding NOVIS",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Warnings",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Laws",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Rules",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      },
+      {
+        "text": "Regulations",
+        "tag": "li",
+        "selector": "li.menu-menu-item",
+        "role": ""
+      }
+    ],
+    "emptyIndicators": [],
+    "needsInteraction": true
+  },
+  "interaction_apis": {
+    "initial_apis": [
+      {
+        "url": "https://cb.is/_blazor/initializers",
+        "method": "GET",
+        "headers": {
+          "sec-ch-ua-platform": "\"Windows\"",
+          "Referer": "",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "sec-ch-ua": "\"Not:A-Brand\";v=\"99\", \"Google Chrome\";v=\"145\", \"Chromium\";v=\"145\"",
+          "sec-ch-ua-mobile": "?0"
+        },
+        "post_data": null,
+        "postData": null,
+        "resourceType": "Fetch",
+        "initiator": {
+          "type": "script",
+          "stack": {
+            "callFrames": [
+              {
+                "functionName": "window.fetch",
+                "scriptId": "7",
+                "url": "",
+                "lineNumber": 61,
+                "columnNumber": 26
+              },
+              {
+                "functionName": "",
+                "scriptId": "22",
+                "url": "https://cb.is/_framework/blazor.server.js",
+                "lineNumber": 0,
+                "columnNumber": 149190
+              },
+              {
+                "functionName": "Pr",
+                "scriptId": "22",
+                "url": "https://cb.is/_framework/blazor.server.js",
+                "lineNumber": 0,
+                "columnNumber": 149376
+              }
+            ]
+          }
+        },
+        "_requestId": "34812.97",
+        "_is_api": true,
+        "response_status": 200,
+        "response_headers": {
+          "date": "Wed, 25 Feb 2026 08:38:33 GMT",
+          "strict-transport-security": "max-age=31557600",
+          "content-type": "application/json; charset=utf-8"
+        },
+        "_response_mime_type": "application/json",
+        "response_body": "[]",
+        "response_preview": "[]"
+      },
+      {
+        "url": "https://cb.is/_blazor/negotiate?negotiateVersion=1",
+        "method": "POST",
+        "headers": {
+          "sec-ch-ua-platform": "\"Windows\"",
+          "Referer": "",
+          "X-Requested-With": "XMLHttpRequest",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "sec-ch-ua": "\"Not:A-Brand\";v=\"99\", \"Google Chrome\";v=\"145\", \"Chromium\";v=\"145\"",
+          "sec-ch-ua-mobile": "?0",
+          "X-SignalR-User-Agent": "Microsoft SignalR/0.0 (0.0.0-DEV_BUILD; Unknown OS; Browser; Unknown Runtime Version)"
+        },
+        "post_data": null,
+        "postData": null,
+        "resourceType": "Fetch",
+        "initiator": {
+          "type": "script",
+          "stack": {
+            "callFrames": [
+              {
+                "functionName": "window.fetch",
+                "scriptId": "7",
+                "url": "",
+                "lineNumber": 61,
+                "columnNumber": 26
+              },
+              {
+                "functionName": "send",
+                "scriptId": "22",
+                "url": "https://cb.is/_framework/blazor.server.js",
+                "lineNumber": 0,
+                "columnNumber": 70213
+              },
+              {
+                "functionName": "send",
+                "scriptId": "22",
+                "url": "https://cb.is/_framework/blazor.server.js",
+                "lineNumber": 0,
+                "columnNumber": 72611
+              },
+              {
+                "functionName": "send",
+                "scriptId": "22",
+                "url": "https://cb.is/_framework/blazor.server.js",
+                "lineNumber": 0,
+                "columnNumber": 68432
+              },
+              {
+                "functionName": "post",
+                "scriptId": "22",
+                "url": "https://cb.is/_framework/blazor.server.js",
+                "lineNumber": 0,
+                "columnNumber": 67987
+              },
+              {
+                "functionName": "_getNegotiationResponse",
+                "scriptId": "22",
+                "url": "https://cb.is/_framework/blazor.server.js",
+                "lineNumber": 0,
+                "columnNumber": 86247
+              },
+              {
+                "functionName": "_startInternal",
+                "scriptId": "22",
+                "url": "https://cb.is/_framework/blazor.server.js",
+                "lineNumber": 0,
+                "columnNumber": 84893
+              },
+              {
+                "functionName": "start",
+                "scriptId": "22",
+                "url": "https://cb.is/_framework/blazor.server.js",
+                "lineNumber": 0,
+                "columnNumber": 82738
+              },
+              {
+                "functionName": "_startInternal",
+                "scriptId": "22",
+                "url": "https://cb.is/_framework/blazor.server.js",
+                "lineNumber": 0,
+                "columnNumber": 53746
+              },
+              {
+                "functionName": "_startWithStateTransitions",
+                "scriptId": "22",
+                "url": "https://cb.is/_framework/blazor.server.js",
+                "lineNumber": 0,
+                "columnNumber": 53149
+              },
+              {
+                "functionName": "start",
+                "scriptId": "22",
+                "url": "https://cb.is/_framework/blazor.server.js",
+                "lineNumber": 0,
+                "columnNumber": 52813
+              },
+              {
+                "functionName": "startConnection",
+                "scriptId": "22",
+                "url": "https://cb.is/_framework/blazor.server.js",
+                "lineNumber": 0,
+                "columnNumber": 136540
+              },
+              {
+                "functionName": "startCore",
+                "scriptId": "22",
+                "url": "https://cb.is/_framework/blazor.server.js",
+                "lineNumber": 0,
+                "columnNumber": 134337
+              },
+              {
+                "functionName": "start",
+                "scriptId": "22",
+                "url": "https://cb.is/_framework/blazor.server.js",
+                "lineNumber": 0,
+                "columnNumber": 133990
+              },
+              {
+                "functionName": "Pr",
+                "scriptId": "22",
+                "url": "https://cb.is/_framework/blazor.server.js",
+                "lineNumber": 0,
+                "columnNumber": 150180
+              }
+            ]
+          }
+        },
+        "_requestId": "34812.98",
+        "_is_api": true,
+        "response_status": 200,
+        "response_headers": {
+          "strict-transport-security": "max-age=31557600",
+          "content-length": "316",
+          "date": "Wed, 25 Feb 2026 08:38:33 GMT",
+          "content-type": "application/json",
+          "vary": "Accept-Encoding"
+        },
+        "_response_mime_type": "application/json",
+        "response_body": "{\"negotiateVersion\":1,\"connectionId\":\"f9-Az0LTB3kKjQzr7vhBjg\",\"connectionToken\":\"3LSxxBXRJkUQ1yZvq012cA\",\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]},{\"transport\":\"ServerSentEvents\",\"transferFormats\":[\"Text\"]},{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}",
+        "response_preview": "{\"negotiateVersion\":1,\"connectionId\":\"f9-Az0LTB3kKjQzr7vhBjg\",\"connectionToken\":\"3LSxxBXRJkUQ1yZvq012cA\",\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]},{\"transport\":\"ServerSentEvents\",\"transferFormats\":[\"Text\"]},{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}",
+        "response_field_structure": {
+          "negotiateVersion": {
+            "type": "int",
+            "example": 1
+          },
+          "connectionId": {
+            "type": "str",
+            "example": "f9-Az0LTB3kKjQzr7vhBjg"
+          },
+          "connectionToken": {
+            "type": "str",
+            "example": "3LSxxBXRJkUQ1yZvq012cA"
+          },
+          "availableTransports": {
+            "type": "list",
+            "length": 3,
+            "item_structure": {
+              "transport": {
+                "type": "str",
+                "example": "WebSockets"
+              },
+              "transferFormats": {
+                "type": "list",
+                "length": 2
+              }
+            }
+          }
+        }
+      },
+      {
+        "url": "https://cdn.cookiehub.eu/client/aa057b27/en.json",
+        "method": "GET",
+        "headers": {
+          "sec-ch-ua-platform": "\"Windows\"",
+          "Referer": "",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "sec-ch-ua": "\"Not:A-Brand\";v=\"99\", \"Google Chrome\";v=\"145\", \"Chromium\";v=\"145\"",
+          "sec-ch-ua-mobile": "?0"
+        },
+        "post_data": null,
+        "postData": null,
+        "resourceType": "XHR",
+        "initiator": {
+          "type": "script",
+          "stack": {
+            "callFrames": [
+              {
+                "functionName": "XMLHttpRequest.send",
+                "scriptId": "7",
+                "url": "",
+                "lineNumber": 33,
+                "columnNumber": 25
+              },
+              {
+                "functionName": "u.cl",
+                "scriptId": "29",
+                "url": "https://cookiehub.net/c2/aa057b27.js",
+                "lineNumber": 61,
+                "columnNumber": 42583
+              },
+              {
+                "functionName": "f",
+                "scriptId": "29",
+                "url": "https://cookiehub.net/c2/aa057b27.js",
+                "lineNumber": 61,
+                "columnNumber": 28651
+              },
+              {
+                "functionName": "u.initialProcessing",
+                "scriptId": "29",
+                "url": "https://cookiehub.net/c2/aa057b27.js",
+                "lineNumber": 61,
+                "columnNumber": 41173
+              },
+              {
+                "functionName": "hasInitialised.e.initialise",
+                "scriptId": "29",
+                "url": "https://cookiehub.net/c2/aa057b27.js",
+                "lineNumber": 61,
+                "columnNumber": 54864
+              },
+              {
+                "functionName": "hasInitialised.e.load",
+                "scriptId": "29",
+                "url": "https://cookiehub.net/c2/aa057b27.js",
+                "lineNumber": 61,
+                "columnNumber": 54910
+              },
+              {
+                "functionName": "e.onload",
+                "scriptId": "8",
+                "url": "https://cb.is/news-and-publications/news/",
+                "lineNumber": 12,
+                "columnNumber": 37
+              }
+            ]
+          }
+        },
+        "_requestId": "34812.100",
+        "_is_api": true,
+        "response_status": 200,
+        "response_headers": {
+          "cdn-status": "200",
+          "access-control-expose-headers": "Server, x-goog-meta-frames, Content-Length, Content-Type, Range, X-Requested-With, If-Modified-Since, If-None-Match",
+          "content-encoding": "zstd",
+          "etag": "\"886e38f67a205fd92597390a696b40a9\"",
+          "x-amz-version-id": "go8fKjW5vQUsd7OcfBulDhXep0M_FVGl",
+          "access-control-allow-methods": "GET",
+          "date": "Wed, 25 Feb 2026 08:38:35 GMT",
+          "last-modified": "Thu, 18 Dec 2025 13:46:06 GMT",
+          "content-type": "application/json",
+          "vary": "Accept-Encoding",
+          "cdn-cache": "STALE",
+          "x-amz-id-2": "zpXqr3Q+IMjKhOEOEJIDWTxQUxiVmEXRS9XlvkZWqxtKQHxkR5TEv2wKUAAWJIgBfC+SOtKq1yY=",
+          "access-control-allow-headers": "Server, x-goog-meta-frames, Content-Length, Content-Type, Range, X-Requested-With, If-Modified-Since, If-None-Match",
+          "cdn-requestpullcode": "200",
+          "cache-control": "public, max-age=86400",
+          "cdn-requestpullsuccess": "True",
+          "cdn-requesttime": "0",
+          "cdn-cachedat": "02/25/2026 07:42:17",
+          "cdn-requestid": "e4eb83c79dadfbbb42535056b820ff79",
+          "cdn-pullzone": "1027023",
+          "cdn-proxyver": "1.43",
+          "x-amz-request-id": "WK73PM07B3K8JB6T",
+          "access-control-allow-origin": "*",
+          "cdn-edgestorageid": "1365",
+          "server": "BunnyCDN-SYD1-1365",
+          "cdn-requestcountrycode": "AU",
+          "x-amz-server-side-encryption": "AES256"
+        },
+        "_response_mime_type": "application/json",
+        "response_body": "{\"labels\":{\"general_learn_more\":\"Learn more\",\"general_close\":\"Close\",\"general_session\":\"Session\",\"general_year\":\"year\",\"general_years\":\"years\",\"general_month\":\"month\",\"general_months\":\"months\",\"general_week\":\"week\",\"general_weeks\":\"weeks\",\"general_day\":\"day\",\"general_days\":\"days\",\"general_hour\":\"hour\",\"general_hours\":\"hours\",\"cookie_name\":\"Name\",\"cookie_hostname\":\"Hostname\",\"cookie_path\":\"Path\",\"cookie_expiry\":\"Expiry\",\"cookie_3rd_party\":\"3rd party\",\"cookie_http_only\":\"HTTP only\",\"cookie_secure\":\"Secure\",\"widget_title\":\"About cookies on this site\",\"widget_message\":\"We use cookies to collect and analyse information on site performance and usage, to provide social media features and to enhance and customise content and advertisements.\",\"widget_btn_allow_all\":\"Allow all cookies\",\"widget_btn_settings\":\"Cookie settings\",\"settings_title\":\"About cookies on this site\",\"settings_tab\":\"Cookie settings\",\"settings_message\":\"Cookies used on the site are categorized and below you can read about each category and allow or deny some or all of them. When categories than have been previously allowed are disabled, all cookies assigned to that category will be removed from your browser.\\nAdditionally you can see a list of cookies assigned to each category and detailed information in the cookie declaration.\",\"settings_btn_save\":\"Save settings\",\"settings_close\":\"Close\",\"declaration_tab\":\"Cookie declaration\",\"declaration_message\":\"Cookies used on the site are categorized and below you can read about each category and allow or deny some or all of them. When categories than have been previously allowed are disabled, all cookies assigned to that category will be removed from your browser.\\nAdditionally you can see a list of cookies assigned to each category and detailed information in the cookie declaration.\",\"icon_btn\":\"Cookie settings\",\"necessary_title\":\"Necessary cookies\",\"necessary_description\":\"Some cookies are required to provide core functionality. The website won't function properly without these cookies and they are enabled by default and cannot be disabled.\",\"preferences_title\":\"Preferences\",\"preferences_description\":\"Preference cookies enables the web site to remember information to customize how the web site looks or behaves for each user. This may include storing selected currency, region, language or color theme.\",\"analytics_title\":\"Analytical cookies\",\"analytics_description\":\"Analytical cookies help us improve our website by collecting and reporting information on its usage.\",\"marketing_title\":\"Marketing cookies\",\"marketing_description\":\"Marketing cookies are used to track visitors across websites to allow publishers to display relevant and engaging advertisements. By enabling marketing cookies, you grant permission for personalized advertising across various platforms.\",\"uncategorized_title\":\"Other cookies\",\"uncategorized_description\":\"The cookies in this category have not yet been categorized and the purpose may be unknown at this time.\",\"general_learn_more_link\":\"\",\"widget_btn_deny_all\":\"Deny all\",\"cookie_tags\":\"Tags\",\"widget_btn_ok\":\"OK\",\"widget_btn_donotsell\":\"Do not sell or share my personal information\",\"personal_data_tab\":\"Personal data\",\"personal_data_message\":\"Under the California Consumer Privacy Act (CCPA) and California Privacy Rights Act (CPRA), California residents have the right to opt-out of the \\u201esale\\u201c and \\u201esharing\\u201c of their personal information (i.e., disclosures to other businesses or third parties for monetary or other valuable consideration).\\nUse the toggle below to opt-out of sale and sharing of personal data.\",\"donotsell_title\":\"Allow sale and sharing of personal information\",\"donotsell_description\":\"\",\"token_title\":\"Your choices\",\"token_text\":\"Below you will see your current consent state\",\"token_categories\":\"Consented categories\",\"token_token\":\"Your ID\",\"token_datetime\":\"Date and time of consent\",\"general_categories\":\"Categories\",\"general_vendor\":\"Vendor\",\"general_vendors\":\"Vendors\",\"general_service\":\"Service\",\"general_services\":\"Services\",\"service_tab\":\"Services\",\"service_message\":\"Services collecting data and\\/or setting cookies on this website are listed below. You can expand each service to view further details.\",\"vendor_tab\":\"Vendors\",\"vendor_message\":\"Our vendors are listed below. You can expand each vendor to view further details and modify consent for services.\",\"vendor_privacy_policy\":\"Privacy Policy\",\"vendor_cookie_policy\":\"Cookie Policy\",\"tcf_notice_title\":\"Your Privacy Matters\",\"tcf_notice_message\":\"It's your legal right to choose which information a website may store and have access to. With your permission, we and [vendors]our third-party partners[\\/vendors] store and\\/or access information on a device, such as unique identifiers in cookies and browsing data to collect and process personal data.\\n<strong>We and our partners do the following data processing:<\\/strong>[br][purposesfeatures]\\nIf you accept any or all of these, you will have agreed to this website's use of cookies for these purposes. You may also choose to refuse consent, but certain personalized features of the site won't be available to you. Your consent choices will apply to this website only, and you can change your settings and withdraw consent at any time from the [privacypolicy]Privacy Policy[\\/privacypolicy] page or by clicking the <strong>Manage Consent<\\/strong> button in the bottom left corner.\",\"tcf_settings_title\":\"Privacy Preference Center\",\"tcf_vendor_tab\":\"Partners\",\"tcf_vendor_message\":\"Our partners are listed below. Expand each partner to view and modify consent for purposes and features. Additionally, you can object to purposes on the basis of legitimate interest.\",\"tcf_legitimate_interest_tab\":\"Legitimate Interest\",\"tcf_legitimate_interest_message\":\"Some of our partners process personal data without your consent on the basis of a legitimate interest. You can review purposes below and by expanding, see a list of each partner claiming legitimate interest for the purpose. To object to the processing on the basis of legitimate interest for any of the purposes below, switch off the toggle beside it.\",\"tcf_btn_allow_all\":\"Accept All\",\"tcf_btn_deny_all\":\"Reject All\",\"tcf_btn_settings\":\"More Options\",\"tcf_btn_save\":\"Save & Close\",\"tcf_btn_manage\":\"Manage Consent\",\"tcf_lifespan\":\"Lifespan\",\"tcf_storage_disclosure\":\"Device Storage Disclosure\",\"tcf_identifier\":\"Identifier\",\"tcf_type\":\"Type\",\"tcf_search\":\"Search\",\"tcf_filter\":\"Filter\",\"tcf_clear_filters\":\"Clear filters\",\"tcf_type_tf\":\"Features\",\"tcf_type_tsf\":\"Special Features\",\"tcf_type_tp\":\"Purposes\",\"tcf_type_tsp\":\"Special Purposes\",\"tcf_type_tlp\":\"Legitimate Interest Purposes\",\"tcf_vendor_cookies_and_other\":\"In addition to using cookies, this vendor uses other methods to store and access data and information.\",\"tcf_vendor_no_cookies\":\"This vendor doesn't use cookies but he uses other methods to store and access data and information.\",\"purpose_tab\":\"Purposes & Features\",\"purpose_message\":\"You can accept or reject data collection and processing all at once by using the buttons below, or you can tailor individual consents by switching the toggles on and off beside each purpose or feature. We share this information with our partners on the basis of consent and legitimate interest. In the Vendors tab, you will find a list of our partners and have the option to customize your consent for each of them and object to data processing for those who claim a legitimate interest to process your data.\\nThe choices you make are only relevant to this particular website and you can change your settings and withdraw consent at any time from the [privacypolicy]Privacy Policy[\\/privacypolicy] page or by clicking the Manage Consent button in the bottom left corner.\",\"purpose_footer\":\"By giving consent to the purposes and features listed here, you give us and our partners the ability to\",\"token_allowed\":\"All allowed\",\"token_denied\":\"All denied\",\"widget_btn_only_necessary\":\"Allow only necessary\",\"tcf_btn_only_necessary\":\"Accept only necessary\",\"general_persistent\":\"Persistent\",\"tcf_vendor_iab\":\"IAB Vendor\",\"tcf_vendor_gatp\":\"Google Ad Tech Provider\",\"tcf_vendor_cookies_general\":\"Cookies & storage\",\"tcf_vendor_cookies_cookie_access_extra\":\"In addition to using cookies, this vendor uses other methods to store and access data and information.\",\"tcf_vendor_cookies_cookie_access\":\"This vendor uses cookies to store and access data and information\",\"tcf_vendor_cookies_max_age\":\"Cookies may expire [expiryDays] from your last interaction with the property.\",\"tcf_vendor_cookies_max_age_refresh\":\"Cookies expire in [expiryDays].\",\"tcf_vendor_cookies_no_cookies_extra\":\"This vendor doesn't use cookies but he uses other methods to store and access data and information.\",\"tcf_vendor_cookies_no_cookies\":\"This vendor doesn't use cookies or other methods to store and access data and information.\",\"tcf_vendor_retention_general\":\"Retention periods\",\"tcf_vendor_retention_std_purpose\":\"Collected data is stored for up to [expiryDays] days by default but the following purposes have different retention period: \",\"tcf_vendor_retention_session_purpose\":\"Collected data is stored for the duration of each session by default but the following purposes have different retention period: \",\"tcf_vendor_retention_std\":\"Collected data is stored for up to [expiryDays] days\",\"tcf_vendor_retention_session\":\"Collected data is stored for the duration of each session\",\"tcf_vendor_categories_general\":\"Categories of data\",\"vendor_legitimate_interest\":\"Legitimate interest\"},\"descriptions\":{\"ARRAffinitySameSite\":\"Used to distribute traffic to the website on several servers in order to optimize response times.\",\"cookiehub\":\"Used by CookieHub to store information about whether visitors have given or declined the use of cookie categories used on the site.\",\"nmstat\":\"This cookie is used to help record visitors' use of the website.\\r\\nIt is used to collect statistics about site usage such as when the visitor last visited the site.\\r\\nThis information is then used to improve the user experience on the website. This Siteimprove Analytics cookie contains a randomly generated ID used to recognize the browser when a visitor reads a page.\\r\\nThe cookie contains no personal information and is used only for web analytics.\",\"__cf_bm\":\"The __cf_bm cookie supports Cloudflare Bot Management by managing incoming traffic that matches criteria associated with bots. The cookie does not collect any personal data, and any information collected is subject to one-way encryption.\",\"_cfuvid\":\"Used by Cloudflare WAF to distinguish individual users who share the same IP address and apply rate limits\",\"vuid\":\"These cookies are used by the Vimeo video player on websites.\"},\"serviceDescriptions\":{\"5\":\"CookieHub is a Consent Management Platform (CMP) which allows users to control storage and processing of personal information.\",\"19\":\"Microsoft Azure is a cloud computing platform offering a wide range of services, including virtual machines, databases, and AI tools.\",\"7\":\"Cloudflare is a global network designed to make everything you connect to the Internet secure, private, fast, and reliable.\",\"9\":\"Vimeo, Inc. is an American video hosting, sharing, services provider, and broadcaster. Vimeo focuses on the delivery of high-definition video across a range of devices.\"}}",
+        "response_preview": "{\"labels\":{\"general_learn_more\":\"Learn more\",\"general_close\":\"Close\",\"general_session\":\"Session\",\"general_year\":\"year\",\"general_years\":\"years\",\"general_month\":\"month\",\"general_months\":\"months\",\"general_week\":\"week\",\"general_weeks\":\"weeks\",\"general_day\":\"day\",\"general_days\":\"days\",\"general_hour\":\"hour\",\"general_hours\":\"hours\",\"cookie_name\":\"Name\",\"cookie_hostname\":\"Hostname\",\"cookie_path\":\"Path\",\"cookie_expiry\":\"Expiry\",\"cookie_3rd_party\":\"3rd party\",\"cookie_http_only\":\"HTTP only\",\"cookie_secure\":\"Secure\",\"widget_title\":\"About cookies on this site\",\"widget_message\":\"We use cookies to collect and analyse information on site performance and usage, to provide social media features and to enhance and customise content and advertisements.\",\"widget_btn_allow_all\":\"Allow all cookies\",\"widget_btn_settings\":\"Cookie settings\",\"settings_title\":\"About cookies on this site\",\"settings_tab\":\"Cookie settings\",\"settings_message\":\"Cookies used on the site are categorized and below you can read about each category and allow or deny some or all of them. When categories than have been previously allowed are disabled, all cookies assigned to that category will be removed from your browser.\\nAdditionally you can see a list of cookies assigned to each category and detailed information in the cookie declaration.\",\"settings_btn_save\":\"Save settings\",\"settings_close\":\"Close\",\"declaration_tab\":\"Cookie declaration\",\"declaration_message\":\"Cookies used on the site are categorized and below you can read about each category and allow or deny some or all of them. When categories than have been previously allowed are disabled, all cookies assigned to that category will be removed from your browser.\\nAdditionally you can see a list of cookies assigned to each category and detailed information in the cookie declaration.\",\"icon_btn\":\"Cookie settings\",\"necessary_title\":\"Necessary cookies\",\"necessary_description\":\"Some cookies are required to provide core functionality. The website won't function properly ",
+        "response_field_structure": {
+          "labels": {
+            "type": "object",
+            "fields": {
+              "general_learn_more": {
+                "type": "str",
+                "example": "Learn more"
+              },
+              "general_close": {
+                "type": "str",
+                "example": "Close"
+              },
+              "general_session": {
+                "type": "str",
+                "example": "Session"
+              },
+              "general_year": {
+                "type": "str",
+                "example": "year"
+              },
+              "general_years": {
+                "type": "str",
+                "example": "years"
+              },
+              "general_month": {
+                "type": "str",
+                "example": "month"
+              },
+              "general_months": {
+                "type": "str",
+                "example": "months"
+              },
+              "general_week": {
+                "type": "str",
+                "example": "week"
+              },
+              "general_weeks": {
+                "type": "str",
+                "example": "weeks"
+              },
+              "general_day": {
+                "type": "str",
+                "likely_date": true,
+                "example": "day"
+              },
+              "general_days": {
+                "type": "str",
+                "likely_date": true,
+                "example": "days"
+              },
+              "general_hour": {
+                "type": "str",
+                "example": "hour"
+              },
+              "general_hours": {
+                "type": "str",
+                "example": "hours"
+              },
+              "cookie_name": {
+                "type": "str",
+                "example": "Name"
+              },
+              "cookie_hostname": {
+                "type": "str",
+                "example": "Hostname"
+              },
+              "_more_fields": "... 还有 102 个字段被截断"
+            }
+          },
+          "descriptions": {
+            "type": "object",
+            "fields": {
+              "ARRAffinitySameSite": {
+                "type": "str",
+                "example": "Used to distribute traffic to the website on several servers in order to optimiz"
+              },
+              "cookiehub": {
+                "type": "str",
+                "example": "Used by CookieHub to store information about whether visitors have given or decl"
+              },
+              "nmstat": {
+                "type": "str",
+                "example": "This cookie is used to help record visitors' use of the website.\r\nIt is used to "
+              },
+              "__cf_bm": {
+                "type": "str",
+                "example": "The __cf_bm cookie supports Cloudflare Bot Management by managing incoming traff"
+              },
+              "_cfuvid": {
+                "type": "str",
+                "example": "Used by Cloudflare WAF to distinguish individual users who share the same IP add"
+              },
+              "vuid": {
+                "type": "str",
+                "example": "These cookies are used by the Vimeo video player on websites."
+              }
+            }
+          },
+          "serviceDescriptions": {
+            "type": "object",
+            "fields": {
+              "5": {
+                "type": "str",
+                "example": "CookieHub is a Consent Management Platform (CMP) which allows users to control s"
+              },
+              "19": {
+                "type": "str",
+                "example": "Microsoft Azure is a cloud computing platform offering a wide range of services,"
+              },
+              "7": {
+                "type": "str",
+                "example": "Cloudflare is a global network designed to make everything you connect to the In"
+              },
+              "9": {
+                "type": "str",
+                "example": "Vimeo, Inc. is an American video hosting, sharing, services provider, and broadc"
+              }
+            }
+          }
+        }
+      },
+      {
+        "url": "data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cg clip-path='url(%23clip0_2128_38847)'%3E%3Cpath d='M16 8.00035C16 7.44806 15.5523 7.00035 15 7.00035H3.83002L8.714 2.02815C9.09563 1.63963 9.0824 1.01306 8.68472 0.640986C8.30294 0.283787 7.70667 0.293703 7.33698 0.663398L1.06069 6.93969C0.474902 7.52547 0.474903 8.47522 1.06069 9.061L7.2947 15.295C7.68423 15.6845 8.31579 15.6845 8.70532 15.295C9.09461 14.9057 9.09489 14.2747 8.70595 13.885L3.83002 9.00034H15C15.5523 9.00034 16 8.55263 16 8.00035Z' fill='%23004964'/%3E%3C/g%3E%3Cdefs%3E%3CclipPath id='clip0_2128_38847'%3E%3Crect width='16' height='16' fill='white' transform='translate(0 0.000305176)'/%3E%3C/clipPath%3E%3C/defs%3E%3C/svg%3E%0A",
+        "method": "GET",
+        "headers": {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "Referer": ""
+        },
+        "post_data": null,
+        "postData": null,
+        "resourceType": "Image",
+        "initiator": {
+          "type": "parser",
+          "url": "https://cb.is/_content/SedlabankiVeva.Theme/SedlabankiVeva.Theme.nzb40naci2.bundle.scp.css"
+        },
+        "_requestId": "34812.111",
+        "_is_api": true,
+        "response_status": 200,
+        "response_headers": {
+          "Content-Type": "image/svg+xml"
+        },
+        "_response_mime_type": "image/svg+xml"
+      },
+      {
+        "url": "data:image/svg+xml;utf8, <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\"> <path d=\"M11.9431 5.269C11.9008 5.18796 11.8372 5.12005 11.7591 5.07262C11.681 5.0252 11.5914 5.00008 11.5001 5H4.50006C4.40861 5.00008 4.31892 5.02524 4.24077 5.07274C4.16262 5.12025 4.099 5.18828 4.05682 5.26943C4.01465 5.35058 3.99554 5.44175 4.00158 5.533C4.00762 5.62426 4.03857 5.71211 4.09106 5.787L7.59106 10.787C7.6372 10.8526 7.69845 10.9062 7.76963 10.9431C7.84082 10.9801 7.91985 10.9994 8.00006 10.9994C8.08027 10.9994 8.15931 10.9801 8.23049 10.9431C8.30168 10.9062 8.36292 10.8526 8.40906 10.787L11.9091 5.787C11.9616 5.71204 11.9926 5.6241 11.9986 5.53276C12.0045 5.44142 11.9854 5.35018 11.9431 5.269Z\" fill=\"black\" /> </svg>",
+        "method": "GET",
+        "headers": {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "Origin": "https://cb.is",
+          "Referer": ""
+        },
+        "post_data": null,
+        "postData": null,
+        "resourceType": "Image",
+        "initiator": {
+          "type": "parser",
+          "url": "https://cb.is/_content/SedlabankiVeva.Theme/SedlabankiVeva.Theme.nzb40naci2.bundle.scp.css"
+        },
+        "_requestId": "34812.112",
+        "_is_api": true,
+        "response_status": 200,
+        "response_headers": {
+          "Content-Type": "image/svg+xml"
+        },
+        "_response_mime_type": "image/svg+xml"
+      },
+      {
+        "url": "data:image/svg+xml;utf8, <svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M3.5 6L8 10L12.5 6\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>",
+        "method": "GET",
+        "headers": {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "Origin": "https://cb.is",
+          "Referer": ""
+        },
+        "post_data": null,
+        "postData": null,
+        "resourceType": "Image",
+        "initiator": {
+          "type": "parser",
+          "url": "https://cb.is/_content/SedlabankiVeva.Theme/css/theme-bundle.css?v=2026.02.04.1203"
+        },
+        "_requestId": "34812.113",
+        "_is_api": true,
+        "response_status": 200,
+        "response_headers": {
+          "Content-Type": "image/svg+xml"
+        },
+        "_response_mime_type": "image/svg+xml"
+      },
+      {
+        "url": "data:image/svg+xml;utf8, <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"12\" height=\"12\" viewBox=\"0 0 12 12\" fill=\"none\"> <g> <path d=\"M6.75011 3.00101H2.62502C2.32665 3.00101 2.04049 3.11954 1.82951 3.33052C1.61853 3.5415 1.5 3.82766 1.5 4.12603V9.37614C1.5 9.67451 1.61853 9.96067 1.82951 10.1716C2.04049 10.3826 2.32665 10.5012 2.62502 10.5012H7.87513C8.1735 10.5012 8.45966 10.3826 8.67064 10.1716C8.88162 9.96067 9.00015 9.67451 9.00015 9.37614V5.25105M3.75005 8.25111L10.5002 1.50098M10.5002 1.50098H7.87513M10.5002 1.50098V4.12603\" stroke=\"red\" stroke-width=\"1.12502\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> </g> <defs> <clipPath id=\"clip0_6013_135736\"> <rect width=\"12.0002\" height=\"12.0002\" fill=\"white\" transform=\"translate(0 0.000976562)\"/> </clipPath> </defs> </svg>",
+        "method": "GET",
+        "headers": {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "Origin": "https://cb.is",
+          "Referer": ""
+        },
+        "post_data": null,
+        "postData": null,
+        "resourceType": "Image",
+        "initiator": {
+          "type": "parser",
+          "url": "https://cb.is/_content/SedlabankiVeva.Theme/css/theme-bundle.css?v=2026.02.04.1203"
+        },
+        "_requestId": "34812.114",
+        "_is_api": true,
+        "response_status": 200,
+        "response_headers": {
+          "Content-Type": "image/svg+xml"
+        },
+        "_response_mime_type": "image/svg+xml"
+      }
+    ],
+    "interaction_apis": [],
+    "all_unique_apis": [
+      {
+        "url": "https://cb.is/_blazor/initializers",
+        "method": "GET",
+        "headers": {
+          "sec-ch-ua-platform": "\"Windows\"",
+          "Referer": "",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "sec-ch-ua": "\"Not:A-Brand\";v=\"99\", \"Google Chrome\";v=\"145\", \"Chromium\";v=\"145\"",
+          "sec-ch-ua-mobile": "?0"
+        },
+        "post_data": null,
+        "postData": null,
+        "resourceType": "Fetch",
+        "initiator": {
+          "type": "script",
+          "stack": {
+            "callFrames": [
+              {
+                "functionName": "window.fetch",
+                "scriptId": "7",
+                "url": "",
+                "lineNumber": 61,
+                "columnNumber": 26
+              },
+              {
+                "functionName": "",
+                "scriptId": "22",
+                "url": "https://cb.is/_framework/blazor.server.js",
+                "lineNumber": 0,
+                "columnNumber": 149190
+              },
+              {
+                "functionName": "Pr",
+                "scriptId": "22",
+                "url": "https://cb.is/_framework/blazor.server.js",
+                "lineNumber": 0,
+                "columnNumber": 149376
+              }
+            ]
+          }
+        },
+        "_requestId": "34812.97",
+        "_is_api": true,
+        "response_status": 200,
+        "response_headers": {
+          "date": "Wed, 25 Feb 2026 08:38:33 GMT",
+          "strict-transport-security": "max-age=31557600",
+          "content-type": "application/json; charset=utf-8"
+        },
+        "_response_mime_type": "application/json",
+        "response_body": "[]",
+        "response_preview": "[]"
+      },
+      {
+        "url": "https://cb.is/_blazor/negotiate?negotiateVersion=1",
+        "method": "POST",
+        "headers": {
+          "sec-ch-ua-platform": "\"Windows\"",
+          "Referer": "",
+          "X-Requested-With": "XMLHttpRequest",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "sec-ch-ua": "\"Not:A-Brand\";v=\"99\", \"Google Chrome\";v=\"145\", \"Chromium\";v=\"145\"",
+          "sec-ch-ua-mobile": "?0",
+          "X-SignalR-User-Agent": "Microsoft SignalR/0.0 (0.0.0-DEV_BUILD; Unknown OS; Browser; Unknown Runtime Version)"
+        },
+        "post_data": null,
+        "postData": null,
+        "resourceType": "Fetch",
+        "initiator": {
+          "type": "script",
+          "stack": {
+            "callFrames": [
+              {
+                "functionName": "window.fetch",
+                "scriptId": "7",
+                "url": "",
+                "lineNumber": 61,
+                "columnNumber": 26
+              },
+              {
+                "functionName": "send",
+                "scriptId": "22",
+                "url": "https://cb.is/_framework/blazor.server.js",
+                "lineNumber": 0,
+                "columnNumber": 70213
+              },
+              {
+                "functionName": "send",
+                "scriptId": "22",
+                "url": "https://cb.is/_framework/blazor.server.js",
+                "lineNumber": 0,
+                "columnNumber": 72611
+              },
+              {
+                "functionName": "send",
+                "scriptId": "22",
+                "url": "https://cb.is/_framework/blazor.server.js",
+                "lineNumber": 0,
+                "columnNumber": 68432
+              },
+              {
+                "functionName": "post",
+                "scriptId": "22",
+                "url": "https://cb.is/_framework/blazor.server.js",
+                "lineNumber": 0,
+                "columnNumber": 67987
+              },
+              {
+                "functionName": "_getNegotiationResponse",
+                "scriptId": "22",
+                "url": "https://cb.is/_framework/blazor.server.js",
+                "lineNumber": 0,
+                "columnNumber": 86247
+              },
+              {
+                "functionName": "_startInternal",
+                "scriptId": "22",
+                "url": "https://cb.is/_framework/blazor.server.js",
+                "lineNumber": 0,
+                "columnNumber": 84893
+              },
+              {
+                "functionName": "start",
+                "scriptId": "22",
+                "url": "https://cb.is/_framework/blazor.server.js",
+                "lineNumber": 0,
+                "columnNumber": 82738
+              },
+              {
+                "functionName": "_startInternal",
+                "scriptId": "22",
+                "url": "https://cb.is/_framework/blazor.server.js",
+                "lineNumber": 0,
+                "columnNumber": 53746
+              },
+              {
+                "functionName": "_startWithStateTransitions",
+                "scriptId": "22",
+                "url": "https://cb.is/_framework/blazor.server.js",
+                "lineNumber": 0,
+                "columnNumber": 53149
+              },
+              {
+                "functionName": "start",
+                "scriptId": "22",
+                "url": "https://cb.is/_framework/blazor.server.js",
+                "lineNumber": 0,
+                "columnNumber": 52813
+              },
+              {
+                "functionName": "startConnection",
+                "scriptId": "22",
+                "url": "https://cb.is/_framework/blazor.server.js",
+                "lineNumber": 0,
+                "columnNumber": 136540
+              },
+              {
+                "functionName": "startCore",
+                "scriptId": "22",
+                "url": "https://cb.is/_framework/blazor.server.js",
+                "lineNumber": 0,
+                "columnNumber": 134337
+              },
+              {
+                "functionName": "start",
+                "scriptId": "22",
+                "url": "https://cb.is/_framework/blazor.server.js",
+                "lineNumber": 0,
+                "columnNumber": 133990
+              },
+              {
+                "functionName": "Pr",
+                "scriptId": "22",
+                "url": "https://cb.is/_framework/blazor.server.js",
+                "lineNumber": 0,
+                "columnNumber": 150180
+              }
+            ]
+          }
+        },
+        "_requestId": "34812.98",
+        "_is_api": true,
+        "response_status": 200,
+        "response_headers": {
+          "strict-transport-security": "max-age=31557600",
+          "content-length": "316",
+          "date": "Wed, 25 Feb 2026 08:38:33 GMT",
+          "content-type": "application/json",
+          "vary": "Accept-Encoding"
+        },
+        "_response_mime_type": "application/json",
+        "response_body": "{\"negotiateVersion\":1,\"connectionId\":\"f9-Az0LTB3kKjQzr7vhBjg\",\"connectionToken\":\"3LSxxBXRJkUQ1yZvq012cA\",\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]},{\"transport\":\"ServerSentEvents\",\"transferFormats\":[\"Text\"]},{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}",
+        "response_preview": "{\"negotiateVersion\":1,\"connectionId\":\"f9-Az0LTB3kKjQzr7vhBjg\",\"connectionToken\":\"3LSxxBXRJkUQ1yZvq012cA\",\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]},{\"transport\":\"ServerSentEvents\",\"transferFormats\":[\"Text\"]},{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}",
+        "response_field_structure": {
+          "negotiateVersion": {
+            "type": "int",
+            "example": 1
+          },
+          "connectionId": {
+            "type": "str",
+            "example": "f9-Az0LTB3kKjQzr7vhBjg"
+          },
+          "connectionToken": {
+            "type": "str",
+            "example": "3LSxxBXRJkUQ1yZvq012cA"
+          },
+          "availableTransports": {
+            "type": "list",
+            "length": 3,
+            "item_structure": {
+              "transport": {
+                "type": "str",
+                "example": "WebSockets"
+              },
+              "transferFormats": {
+                "type": "list",
+                "length": 2
+              }
+            }
+          }
+        }
+      },
+      {
+        "url": "https://cdn.cookiehub.eu/client/aa057b27/en.json",
+        "method": "GET",
+        "headers": {
+          "sec-ch-ua-platform": "\"Windows\"",
+          "Referer": "",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "sec-ch-ua": "\"Not:A-Brand\";v=\"99\", \"Google Chrome\";v=\"145\", \"Chromium\";v=\"145\"",
+          "sec-ch-ua-mobile": "?0"
+        },
+        "post_data": null,
+        "postData": null,
+        "resourceType": "XHR",
+        "initiator": {
+          "type": "script",
+          "stack": {
+            "callFrames": [
+              {
+                "functionName": "XMLHttpRequest.send",
+                "scriptId": "7",
+                "url": "",
+                "lineNumber": 33,
+                "columnNumber": 25
+              },
+              {
+                "functionName": "u.cl",
+                "scriptId": "29",
+                "url": "https://cookiehub.net/c2/aa057b27.js",
+                "lineNumber": 61,
+                "columnNumber": 42583
+              },
+              {
+                "functionName": "f",
+                "scriptId": "29",
+                "url": "https://cookiehub.net/c2/aa057b27.js",
+                "lineNumber": 61,
+                "columnNumber": 28651
+              },
+              {
+                "functionName": "u.initialProcessing",
+                "scriptId": "29",
+                "url": "https://cookiehub.net/c2/aa057b27.js",
+                "lineNumber": 61,
+                "columnNumber": 41173
+              },
+              {
+                "functionName": "hasInitialised.e.initialise",
+                "scriptId": "29",
+                "url": "https://cookiehub.net/c2/aa057b27.js",
+                "lineNumber": 61,
+                "columnNumber": 54864
+              },
+              {
+                "functionName": "hasInitialised.e.load",
+                "scriptId": "29",
+                "url": "https://cookiehub.net/c2/aa057b27.js",
+                "lineNumber": 61,
+                "columnNumber": 54910
+              },
+              {
+                "functionName": "e.onload",
+                "scriptId": "8",
+                "url": "https://cb.is/news-and-publications/news/",
+                "lineNumber": 12,
+                "columnNumber": 37
+              }
+            ]
+          }
+        },
+        "_requestId": "34812.100",
+        "_is_api": true,
+        "response_status": 200,
+        "response_headers": {
+          "cdn-status": "200",
+          "access-control-expose-headers": "Server, x-goog-meta-frames, Content-Length, Content-Type, Range, X-Requested-With, If-Modified-Since, If-None-Match",
+          "content-encoding": "zstd",
+          "etag": "\"886e38f67a205fd92597390a696b40a9\"",
+          "x-amz-version-id": "go8fKjW5vQUsd7OcfBulDhXep0M_FVGl",
+          "access-control-allow-methods": "GET",
+          "date": "Wed, 25 Feb 2026 08:38:35 GMT",
+          "last-modified": "Thu, 18 Dec 2025 13:46:06 GMT",
+          "content-type": "application/json",
+          "vary": "Accept-Encoding",
+          "cdn-cache": "STALE",
+          "x-amz-id-2": "zpXqr3Q+IMjKhOEOEJIDWTxQUxiVmEXRS9XlvkZWqxtKQHxkR5TEv2wKUAAWJIgBfC+SOtKq1yY=",
+          "access-control-allow-headers": "Server, x-goog-meta-frames, Content-Length, Content-Type, Range, X-Requested-With, If-Modified-Since, If-None-Match",
+          "cdn-requestpullcode": "200",
+          "cache-control": "public, max-age=86400",
+          "cdn-requestpullsuccess": "True",
+          "cdn-requesttime": "0",
+          "cdn-cachedat": "02/25/2026 07:42:17",
+          "cdn-requestid": "e4eb83c79dadfbbb42535056b820ff79",
+          "cdn-pullzone": "1027023",
+          "cdn-proxyver": "1.43",
+          "x-amz-request-id": "WK73PM07B3K8JB6T",
+          "access-control-allow-origin": "*",
+          "cdn-edgestorageid": "1365",
+          "server": "BunnyCDN-SYD1-1365",
+          "cdn-requestcountrycode": "AU",
+          "x-amz-server-side-encryption": "AES256"
+        },
+        "_response_mime_type": "application/json",
+        "response_body": "{\"labels\":{\"general_learn_more\":\"Learn more\",\"general_close\":\"Close\",\"general_session\":\"Session\",\"general_year\":\"year\",\"general_years\":\"years\",\"general_month\":\"month\",\"general_months\":\"months\",\"general_week\":\"week\",\"general_weeks\":\"weeks\",\"general_day\":\"day\",\"general_days\":\"days\",\"general_hour\":\"hour\",\"general_hours\":\"hours\",\"cookie_name\":\"Name\",\"cookie_hostname\":\"Hostname\",\"cookie_path\":\"Path\",\"cookie_expiry\":\"Expiry\",\"cookie_3rd_party\":\"3rd party\",\"cookie_http_only\":\"HTTP only\",\"cookie_secure\":\"Secure\",\"widget_title\":\"About cookies on this site\",\"widget_message\":\"We use cookies to collect and analyse information on site performance and usage, to provide social media features and to enhance and customise content and advertisements.\",\"widget_btn_allow_all\":\"Allow all cookies\",\"widget_btn_settings\":\"Cookie settings\",\"settings_title\":\"About cookies on this site\",\"settings_tab\":\"Cookie settings\",\"settings_message\":\"Cookies used on the site are categorized and below you can read about each category and allow or deny some or all of them. When categories than have been previously allowed are disabled, all cookies assigned to that category will be removed from your browser.\\nAdditionally you can see a list of cookies assigned to each category and detailed information in the cookie declaration.\",\"settings_btn_save\":\"Save settings\",\"settings_close\":\"Close\",\"declaration_tab\":\"Cookie declaration\",\"declaration_message\":\"Cookies used on the site are categorized and below you can read about each category and allow or deny some or all of them. When categories than have been previously allowed are disabled, all cookies assigned to that category will be removed from your browser.\\nAdditionally you can see a list of cookies assigned to each category and detailed information in the cookie declaration.\",\"icon_btn\":\"Cookie settings\",\"necessary_title\":\"Necessary cookies\",\"necessary_description\":\"Some cookies are required to provide core functionality. The website won't function properly without these cookies and they are enabled by default and cannot be disabled.\",\"preferences_title\":\"Preferences\",\"preferences_description\":\"Preference cookies enables the web site to remember information to customize how the web site looks or behaves for each user. This may include storing selected currency, region, language or color theme.\",\"analytics_title\":\"Analytical cookies\",\"analytics_description\":\"Analytical cookies help us improve our website by collecting and reporting information on its usage.\",\"marketing_title\":\"Marketing cookies\",\"marketing_description\":\"Marketing cookies are used to track visitors across websites to allow publishers to display relevant and engaging advertisements. By enabling marketing cookies, you grant permission for personalized advertising across various platforms.\",\"uncategorized_title\":\"Other cookies\",\"uncategorized_description\":\"The cookies in this category have not yet been categorized and the purpose may be unknown at this time.\",\"general_learn_more_link\":\"\",\"widget_btn_deny_all\":\"Deny all\",\"cookie_tags\":\"Tags\",\"widget_btn_ok\":\"OK\",\"widget_btn_donotsell\":\"Do not sell or share my personal information\",\"personal_data_tab\":\"Personal data\",\"personal_data_message\":\"Under the California Consumer Privacy Act (CCPA) and California Privacy Rights Act (CPRA), California residents have the right to opt-out of the \\u201esale\\u201c and \\u201esharing\\u201c of their personal information (i.e., disclosures to other businesses or third parties for monetary or other valuable consideration).\\nUse the toggle below to opt-out of sale and sharing of personal data.\",\"donotsell_title\":\"Allow sale and sharing of personal information\",\"donotsell_description\":\"\",\"token_title\":\"Your choices\",\"token_text\":\"Below you will see your current consent state\",\"token_categories\":\"Consented categories\",\"token_token\":\"Your ID\",\"token_datetime\":\"Date and time of consent\",\"general_categories\":\"Categories\",\"general_vendor\":\"Vendor\",\"general_vendors\":\"Vendors\",\"general_service\":\"Service\",\"general_services\":\"Services\",\"service_tab\":\"Services\",\"service_message\":\"Services collecting data and\\/or setting cookies on this website are listed below. You can expand each service to view further details.\",\"vendor_tab\":\"Vendors\",\"vendor_message\":\"Our vendors are listed below. You can expand each vendor to view further details and modify consent for services.\",\"vendor_privacy_policy\":\"Privacy Policy\",\"vendor_cookie_policy\":\"Cookie Policy\",\"tcf_notice_title\":\"Your Privacy Matters\",\"tcf_notice_message\":\"It's your legal right to choose which information a website may store and have access to. With your permission, we and [vendors]our third-party partners[\\/vendors] store and\\/or access information on a device, such as unique identifiers in cookies and browsing data to collect and process personal data.\\n<strong>We and our partners do the following data processing:<\\/strong>[br][purposesfeatures]\\nIf you accept any or all of these, you will have agreed to this website's use of cookies for these purposes. You may also choose to refuse consent, but certain personalized features of the site won't be available to you. Your consent choices will apply to this website only, and you can change your settings and withdraw consent at any time from the [privacypolicy]Privacy Policy[\\/privacypolicy] page or by clicking the <strong>Manage Consent<\\/strong> button in the bottom left corner.\",\"tcf_settings_title\":\"Privacy Preference Center\",\"tcf_vendor_tab\":\"Partners\",\"tcf_vendor_message\":\"Our partners are listed below. Expand each partner to view and modify consent for purposes and features. Additionally, you can object to purposes on the basis of legitimate interest.\",\"tcf_legitimate_interest_tab\":\"Legitimate Interest\",\"tcf_legitimate_interest_message\":\"Some of our partners process personal data without your consent on the basis of a legitimate interest. You can review purposes below and by expanding, see a list of each partner claiming legitimate interest for the purpose. To object to the processing on the basis of legitimate interest for any of the purposes below, switch off the toggle beside it.\",\"tcf_btn_allow_all\":\"Accept All\",\"tcf_btn_deny_all\":\"Reject All\",\"tcf_btn_settings\":\"More Options\",\"tcf_btn_save\":\"Save & Close\",\"tcf_btn_manage\":\"Manage Consent\",\"tcf_lifespan\":\"Lifespan\",\"tcf_storage_disclosure\":\"Device Storage Disclosure\",\"tcf_identifier\":\"Identifier\",\"tcf_type\":\"Type\",\"tcf_search\":\"Search\",\"tcf_filter\":\"Filter\",\"tcf_clear_filters\":\"Clear filters\",\"tcf_type_tf\":\"Features\",\"tcf_type_tsf\":\"Special Features\",\"tcf_type_tp\":\"Purposes\",\"tcf_type_tsp\":\"Special Purposes\",\"tcf_type_tlp\":\"Legitimate Interest Purposes\",\"tcf_vendor_cookies_and_other\":\"In addition to using cookies, this vendor uses other methods to store and access data and information.\",\"tcf_vendor_no_cookies\":\"This vendor doesn't use cookies but he uses other methods to store and access data and information.\",\"purpose_tab\":\"Purposes & Features\",\"purpose_message\":\"You can accept or reject data collection and processing all at once by using the buttons below, or you can tailor individual consents by switching the toggles on and off beside each purpose or feature. We share this information with our partners on the basis of consent and legitimate interest. In the Vendors tab, you will find a list of our partners and have the option to customize your consent for each of them and object to data processing for those who claim a legitimate interest to process your data.\\nThe choices you make are only relevant to this particular website and you can change your settings and withdraw consent at any time from the [privacypolicy]Privacy Policy[\\/privacypolicy] page or by clicking the Manage Consent button in the bottom left corner.\",\"purpose_footer\":\"By giving consent to the purposes and features listed here, you give us and our partners the ability to\",\"token_allowed\":\"All allowed\",\"token_denied\":\"All denied\",\"widget_btn_only_necessary\":\"Allow only necessary\",\"tcf_btn_only_necessary\":\"Accept only necessary\",\"general_persistent\":\"Persistent\",\"tcf_vendor_iab\":\"IAB Vendor\",\"tcf_vendor_gatp\":\"Google Ad Tech Provider\",\"tcf_vendor_cookies_general\":\"Cookies & storage\",\"tcf_vendor_cookies_cookie_access_extra\":\"In addition to using cookies, this vendor uses other methods to store and access data and information.\",\"tcf_vendor_cookies_cookie_access\":\"This vendor uses cookies to store and access data and information\",\"tcf_vendor_cookies_max_age\":\"Cookies may expire [expiryDays] from your last interaction with the property.\",\"tcf_vendor_cookies_max_age_refresh\":\"Cookies expire in [expiryDays].\",\"tcf_vendor_cookies_no_cookies_extra\":\"This vendor doesn't use cookies but he uses other methods to store and access data and information.\",\"tcf_vendor_cookies_no_cookies\":\"This vendor doesn't use cookies or other methods to store and access data and information.\",\"tcf_vendor_retention_general\":\"Retention periods\",\"tcf_vendor_retention_std_purpose\":\"Collected data is stored for up to [expiryDays] days by default but the following purposes have different retention period: \",\"tcf_vendor_retention_session_purpose\":\"Collected data is stored for the duration of each session by default but the following purposes have different retention period: \",\"tcf_vendor_retention_std\":\"Collected data is stored for up to [expiryDays] days\",\"tcf_vendor_retention_session\":\"Collected data is stored for the duration of each session\",\"tcf_vendor_categories_general\":\"Categories of data\",\"vendor_legitimate_interest\":\"Legitimate interest\"},\"descriptions\":{\"ARRAffinitySameSite\":\"Used to distribute traffic to the website on several servers in order to optimize response times.\",\"cookiehub\":\"Used by CookieHub to store information about whether visitors have given or declined the use of cookie categories used on the site.\",\"nmstat\":\"This cookie is used to help record visitors' use of the website.\\r\\nIt is used to collect statistics about site usage such as when the visitor last visited the site.\\r\\nThis information is then used to improve the user experience on the website. This Siteimprove Analytics cookie contains a randomly generated ID used to recognize the browser when a visitor reads a page.\\r\\nThe cookie contains no personal information and is used only for web analytics.\",\"__cf_bm\":\"The __cf_bm cookie supports Cloudflare Bot Management by managing incoming traffic that matches criteria associated with bots. The cookie does not collect any personal data, and any information collected is subject to one-way encryption.\",\"_cfuvid\":\"Used by Cloudflare WAF to distinguish individual users who share the same IP address and apply rate limits\",\"vuid\":\"These cookies are used by the Vimeo video player on websites.\"},\"serviceDescriptions\":{\"5\":\"CookieHub is a Consent Management Platform (CMP) which allows users to control storage and processing of personal information.\",\"19\":\"Microsoft Azure is a cloud computing platform offering a wide range of services, including virtual machines, databases, and AI tools.\",\"7\":\"Cloudflare is a global network designed to make everything you connect to the Internet secure, private, fast, and reliable.\",\"9\":\"Vimeo, Inc. is an American video hosting, sharing, services provider, and broadcaster. Vimeo focuses on the delivery of high-definition video across a range of devices.\"}}",
+        "response_preview": "{\"labels\":{\"general_learn_more\":\"Learn more\",\"general_close\":\"Close\",\"general_session\":\"Session\",\"general_year\":\"year\",\"general_years\":\"years\",\"general_month\":\"month\",\"general_months\":\"months\",\"general_week\":\"week\",\"general_weeks\":\"weeks\",\"general_day\":\"day\",\"general_days\":\"days\",\"general_hour\":\"hour\",\"general_hours\":\"hours\",\"cookie_name\":\"Name\",\"cookie_hostname\":\"Hostname\",\"cookie_path\":\"Path\",\"cookie_expiry\":\"Expiry\",\"cookie_3rd_party\":\"3rd party\",\"cookie_http_only\":\"HTTP only\",\"cookie_secure\":\"Secure\",\"widget_title\":\"About cookies on this site\",\"widget_message\":\"We use cookies to collect and analyse information on site performance and usage, to provide social media features and to enhance and customise content and advertisements.\",\"widget_btn_allow_all\":\"Allow all cookies\",\"widget_btn_settings\":\"Cookie settings\",\"settings_title\":\"About cookies on this site\",\"settings_tab\":\"Cookie settings\",\"settings_message\":\"Cookies used on the site are categorized and below you can read about each category and allow or deny some or all of them. When categories than have been previously allowed are disabled, all cookies assigned to that category will be removed from your browser.\\nAdditionally you can see a list of cookies assigned to each category and detailed information in the cookie declaration.\",\"settings_btn_save\":\"Save settings\",\"settings_close\":\"Close\",\"declaration_tab\":\"Cookie declaration\",\"declaration_message\":\"Cookies used on the site are categorized and below you can read about each category and allow or deny some or all of them. When categories than have been previously allowed are disabled, all cookies assigned to that category will be removed from your browser.\\nAdditionally you can see a list of cookies assigned to each category and detailed information in the cookie declaration.\",\"icon_btn\":\"Cookie settings\",\"necessary_title\":\"Necessary cookies\",\"necessary_description\":\"Some cookies are required to provide core functionality. The website won't function properly ",
+        "response_field_structure": {
+          "labels": {
+            "type": "object",
+            "fields": {
+              "general_learn_more": {
+                "type": "str",
+                "example": "Learn more"
+              },
+              "general_close": {
+                "type": "str",
+                "example": "Close"
+              },
+              "general_session": {
+                "type": "str",
+                "example": "Session"
+              },
+              "general_year": {
+                "type": "str",
+                "example": "year"
+              },
+              "general_years": {
+                "type": "str",
+                "example": "years"
+              },
+              "general_month": {
+                "type": "str",
+                "example": "month"
+              },
+              "general_months": {
+                "type": "str",
+                "example": "months"
+              },
+              "general_week": {
+                "type": "str",
+                "example": "week"
+              },
+              "general_weeks": {
+                "type": "str",
+                "example": "weeks"
+              },
+              "general_day": {
+                "type": "str",
+                "likely_date": true,
+                "example": "day"
+              },
+              "general_days": {
+                "type": "str",
+                "likely_date": true,
+                "example": "days"
+              },
+              "general_hour": {
+                "type": "str",
+                "example": "hour"
+              },
+              "general_hours": {
+                "type": "str",
+                "example": "hours"
+              },
+              "cookie_name": {
+                "type": "str",
+                "example": "Name"
+              },
+              "cookie_hostname": {
+                "type": "str",
+                "example": "Hostname"
+              },
+              "_more_fields": "... 还有 102 个字段被截断"
+            }
+          },
+          "descriptions": {
+            "type": "object",
+            "fields": {
+              "ARRAffinitySameSite": {
+                "type": "str",
+                "example": "Used to distribute traffic to the website on several servers in order to optimiz"
+              },
+              "cookiehub": {
+                "type": "str",
+                "example": "Used by CookieHub to store information about whether visitors have given or decl"
+              },
+              "nmstat": {
+                "type": "str",
+                "example": "This cookie is used to help record visitors' use of the website.\r\nIt is used to "
+              },
+              "__cf_bm": {
+                "type": "str",
+                "example": "The __cf_bm cookie supports Cloudflare Bot Management by managing incoming traff"
+              },
+              "_cfuvid": {
+                "type": "str",
+                "example": "Used by Cloudflare WAF to distinguish individual users who share the same IP add"
+              },
+              "vuid": {
+                "type": "str",
+                "example": "These cookies are used by the Vimeo video player on websites."
+              }
+            }
+          },
+          "serviceDescriptions": {
+            "type": "object",
+            "fields": {
+              "5": {
+                "type": "str",
+                "example": "CookieHub is a Consent Management Platform (CMP) which allows users to control s"
+              },
+              "19": {
+                "type": "str",
+                "example": "Microsoft Azure is a cloud computing platform offering a wide range of services,"
+              },
+              "7": {
+                "type": "str",
+                "example": "Cloudflare is a global network designed to make everything you connect to the In"
+              },
+              "9": {
+                "type": "str",
+                "example": "Vimeo, Inc. is an American video hosting, sharing, services provider, and broadc"
+              }
+            }
+          }
+        }
+      },
+      {
+        "url": "data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cg clip-path='url(%23clip0_2128_38847)'%3E%3Cpath d='M16 8.00035C16 7.44806 15.5523 7.00035 15 7.00035H3.83002L8.714 2.02815C9.09563 1.63963 9.0824 1.01306 8.68472 0.640986C8.30294 0.283787 7.70667 0.293703 7.33698 0.663398L1.06069 6.93969C0.474902 7.52547 0.474903 8.47522 1.06069 9.061L7.2947 15.295C7.68423 15.6845 8.31579 15.6845 8.70532 15.295C9.09461 14.9057 9.09489 14.2747 8.70595 13.885L3.83002 9.00034H15C15.5523 9.00034 16 8.55263 16 8.00035Z' fill='%23004964'/%3E%3C/g%3E%3Cdefs%3E%3CclipPath id='clip0_2128_38847'%3E%3Crect width='16' height='16' fill='white' transform='translate(0 0.000305176)'/%3E%3C/clipPath%3E%3C/defs%3E%3C/svg%3E%0A",
+        "method": "GET",
+        "headers": {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "Referer": ""
+        },
+        "post_data": null,
+        "postData": null,
+        "resourceType": "Image",
+        "initiator": {
+          "type": "parser",
+          "url": "https://cb.is/_content/SedlabankiVeva.Theme/SedlabankiVeva.Theme.nzb40naci2.bundle.scp.css"
+        },
+        "_requestId": "34812.111",
+        "_is_api": true,
+        "response_status": 200,
+        "response_headers": {
+          "Content-Type": "image/svg+xml"
+        },
+        "_response_mime_type": "image/svg+xml"
+      },
+      {
+        "url": "data:image/svg+xml;utf8, <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\"> <path d=\"M11.9431 5.269C11.9008 5.18796 11.8372 5.12005 11.7591 5.07262C11.681 5.0252 11.5914 5.00008 11.5001 5H4.50006C4.40861 5.00008 4.31892 5.02524 4.24077 5.07274C4.16262 5.12025 4.099 5.18828 4.05682 5.26943C4.01465 5.35058 3.99554 5.44175 4.00158 5.533C4.00762 5.62426 4.03857 5.71211 4.09106 5.787L7.59106 10.787C7.6372 10.8526 7.69845 10.9062 7.76963 10.9431C7.84082 10.9801 7.91985 10.9994 8.00006 10.9994C8.08027 10.9994 8.15931 10.9801 8.23049 10.9431C8.30168 10.9062 8.36292 10.8526 8.40906 10.787L11.9091 5.787C11.9616 5.71204 11.9926 5.6241 11.9986 5.53276C12.0045 5.44142 11.9854 5.35018 11.9431 5.269Z\" fill=\"black\" /> </svg>",
+        "method": "GET",
+        "headers": {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "Origin": "https://cb.is",
+          "Referer": ""
+        },
+        "post_data": null,
+        "postData": null,
+        "resourceType": "Image",
+        "initiator": {
+          "type": "parser",
+          "url": "https://cb.is/_content/SedlabankiVeva.Theme/SedlabankiVeva.Theme.nzb40naci2.bundle.scp.css"
+        },
+        "_requestId": "34812.112",
+        "_is_api": true,
+        "response_status": 200,
+        "response_headers": {
+          "Content-Type": "image/svg+xml"
+        },
+        "_response_mime_type": "image/svg+xml"
+      },
+      {
+        "url": "data:image/svg+xml;utf8, <svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M3.5 6L8 10L12.5 6\" stroke=\"black\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>",
+        "method": "GET",
+        "headers": {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "Origin": "https://cb.is",
+          "Referer": ""
+        },
+        "post_data": null,
+        "postData": null,
+        "resourceType": "Image",
+        "initiator": {
+          "type": "parser",
+          "url": "https://cb.is/_content/SedlabankiVeva.Theme/css/theme-bundle.css?v=2026.02.04.1203"
+        },
+        "_requestId": "34812.113",
+        "_is_api": true,
+        "response_status": 200,
+        "response_headers": {
+          "Content-Type": "image/svg+xml"
+        },
+        "_response_mime_type": "image/svg+xml"
+      },
+      {
+        "url": "data:image/svg+xml;utf8, <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"12\" height=\"12\" viewBox=\"0 0 12 12\" fill=\"none\"> <g> <path d=\"M6.75011 3.00101H2.62502C2.32665 3.00101 2.04049 3.11954 1.82951 3.33052C1.61853 3.5415 1.5 3.82766 1.5 4.12603V9.37614C1.5 9.67451 1.61853 9.96067 1.82951 10.1716C2.04049 10.3826 2.32665 10.5012 2.62502 10.5012H7.87513C8.1735 10.5012 8.45966 10.3826 8.67064 10.1716C8.88162 9.96067 9.00015 9.67451 9.00015 9.37614V5.25105M3.75005 8.25111L10.5002 1.50098M10.5002 1.50098H7.87513M10.5002 1.50098V4.12603\" stroke=\"red\" stroke-width=\"1.12502\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> </g> <defs> <clipPath id=\"clip0_6013_135736\"> <rect width=\"12.0002\" height=\"12.0002\" fill=\"white\" transform=\"translate(0 0.000976562)\"/> </clipPath> </defs> </svg>",
+        "method": "GET",
+        "headers": {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "Origin": "https://cb.is",
+          "Referer": ""
+        },
+        "post_data": null,
+        "postData": null,
+        "resourceType": "Image",
+        "initiator": {
+          "type": "parser",
+          "url": "https://cb.is/_content/SedlabankiVeva.Theme/css/theme-bundle.css?v=2026.02.04.1203"
+        },
+        "_requestId": "34812.114",
+        "_is_api": true,
+        "response_status": 200,
+        "response_headers": {
+          "Content-Type": "image/svg+xml"
+        },
+        "_response_mime_type": "image/svg+xml"
+      }
+    ],
+    "interactions_count": 0
+  },
+  "param_analysis": {},
+  "verified_category_mapping": {},
+  "recommendations": [
+    "未能捕获到交互后的API请求，可能需要手动分析"
+  ]
+}

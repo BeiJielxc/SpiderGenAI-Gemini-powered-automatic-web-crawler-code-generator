@@ -1,0 +1,191 @@
+{
+  "baseUrl": "https://press.vatican.va/content/salastampa/it/bollettino/pubblico/2026/02.html",
+  "bestCandidate": {
+    "selector": ".day > li",
+    "titleSelector": "a",
+    "dateSelector": "",
+    "score": 66,
+    "itemCount": 23,
+    "hasLink": 23,
+    "hasDate": 0
+  },
+  "structureHint": "Each item is a <li>; title/link in <a>",
+  "sampleHtml": "<li>\n<a href=\"/content/salastampa/it/bollettino/pubblico/2026/02/01.html\" title=\"01\">01.02.2026</a>\n<ul>\n<li>\n<a href=\"/content/salastampa/it/bollettino/pubblico/2026/02/01/0090/00171.html\" title=\" Udienza ai Gentiluomini di S.S., Addetti di Anticamera e Sediari Pontifici\"> Udienza ai Gentiluomini di S.S., Addetti di Anticamera e Sediari Pontifici [B0090]</a>\n</li>\n<li>\n<a href=\"/content/salastampa/it/bollettino/pubblico/2026/02/01/0089/00170.html\" title=\" Le parole del Papa alla recita dell’Angelus\"> Le parole del Papa alla recita dell’Angelus [B0089]</a>\n</li>\n<li>\n<a href=\"/content/salastam...\n<li>\n<a href=\"/content/salastampa/it/bollettino/pubblico/2026/02/02.html\" title=\"02\">02.02.2026</a>\n<ul>\n<li>\n<a href=\"/content/salastampa/it/bollettino/pubblico/2026/02/02/0092/00173.html\" title=\" Le Udienze\"> Le Udienze [B0092]</a>\n</li>\n<li>\n<a href=\"/content/salastampa/it/bollettino/pubblico/2026/02/02/0092/00174.html\" title=\" Rinunce e nomine\"> Rinunce e nomine [B0092]</a>\n</li>\n<li>\n<a href=\"/content/salastampa/it/bollettino/pubblico/2026/02/02/0093/00181.html\" title=\" Comunicato della Sala Stampa della Santa Sede: Udienza al Presidente della Repubblica Portoghese\"> Comunicato della Sala...",
+  "items": [
+    {
+      "title": "01.02.2026",
+      "url": "https://press.vatican.va/content/salastampa/it/bollettino/pubblico/2026/02/01.html",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "02.02.2026",
+      "url": "https://press.vatican.va/content/salastampa/it/bollettino/pubblico/2026/02/02.html",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "03.02.2026",
+      "url": "https://press.vatican.va/content/salastampa/it/bollettino/pubblico/2026/02/03.html",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "04.02.2026",
+      "url": "https://press.vatican.va/content/salastampa/it/bollettino/pubblico/2026/02/04.html",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "05.02.2026",
+      "url": "https://press.vatican.va/content/salastampa/it/bollettino/pubblico/2026/02/05.html",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "06.02.2026",
+      "url": "https://press.vatican.va/content/salastampa/it/bollettino/pubblico/2026/02/06.html",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "07.02.2026",
+      "url": "https://press.vatican.va/content/salastampa/it/bollettino/pubblico/2026/02/07.html",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "08.02.2026",
+      "url": "https://press.vatican.va/content/salastampa/it/bollettino/pubblico/2026/02/08.html",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "09.02.2026",
+      "url": "https://press.vatican.va/content/salastampa/it/bollettino/pubblico/2026/02/09.html",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "10.02.2026",
+      "url": "https://press.vatican.va/content/salastampa/it/bollettino/pubblico/2026/02/10.html",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "11.02.2026",
+      "url": "https://press.vatican.va/content/salastampa/it/bollettino/pubblico/2026/02/11.html",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "12.02.2026",
+      "url": "https://press.vatican.va/content/salastampa/it/bollettino/pubblico/2026/02/12.html",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "13.02.2026",
+      "url": "https://press.vatican.va/content/salastampa/it/bollettino/pubblico/2026/02/13.html",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "14.02.2026",
+      "url": "https://press.vatican.va/content/salastampa/it/bollettino/pubblico/2026/02/14.html",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "15.02.2026",
+      "url": "https://press.vatican.va/content/salastampa/it/bollettino/pubblico/2026/02/15.html",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "16.02.2026",
+      "url": "https://press.vatican.va/content/salastampa/it/bollettino/pubblico/2026/02/16.html",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "17.02.2026",
+      "url": "https://press.vatican.va/content/salastampa/it/bollettino/pubblico/2026/02/17.html",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "18.02.2026",
+      "url": "https://press.vatican.va/content/salastampa/it/bollettino/pubblico/2026/02/18.html",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "19.02.2026",
+      "url": "https://press.vatican.va/content/salastampa/it/bollettino/pubblico/2026/02/19.html",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "20.02.2026",
+      "url": "https://press.vatican.va/content/salastampa/it/bollettino/pubblico/2026/02/20.html",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "21.02.2026",
+      "url": "https://press.vatican.va/content/salastampa/it/bollettino/pubblico/2026/02/21.html",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "22.02.2026",
+      "url": "https://press.vatican.va/content/salastampa/it/bollettino/pubblico/2026/02/22.html",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "23.02.2026",
+      "url": "https://press.vatican.va/content/salastampa/it/bollettino/pubblico/2026/02/23.html",
+      "date": "",
+      "dateText": ""
+    }
+  ],
+  "pagination": {
+    "next": null,
+    "prev": null,
+    "pageNums": [],
+    "totalPages": 0
+  },
+  "dateHints": {
+    "minDate": "",
+    "maxDate": "",
+    "startDate": "",
+    "endDate": "",
+    "hasInRange": false,
+    "hasOlderThanStart": false,
+    "suggestStopPaging": false
+  },
+  "otherCandidates": [
+    {
+      "selector": "li",
+      "score": 34,
+      "count": 7
+    },
+    {
+      "selector": "li",
+      "score": 32,
+      "count": 6
+    },
+    {
+      "selector": "li",
+      "score": 32,
+      "count": 6
+    },
+    {
+      "selector": "li",
+      "score": 32,
+      "count": 6
+    }
+  ]
+}

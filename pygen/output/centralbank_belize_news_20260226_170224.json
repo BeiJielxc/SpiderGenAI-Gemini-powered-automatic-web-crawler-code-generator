@@ -1,0 +1,61 @@
+{
+  "total": 5,
+  "crawlTime": "2026-02-26 17:02:24",
+  "articles": [
+    {
+      "id": "1",
+      "title": "Publications Search",
+      "name": "Publications Search",
+      "date": "",
+      "source": "Central Bank of Belize",
+      "author": "",
+      "sourceUrl": "https://www.centralbank.org.bz:443/publications-search?Keywords=&SortOrder=DESC&TypeFacet=&DateFacet=&Categories=ed43f9fa-c7bc-4331-a1ef-edc598db2118",
+      "summary": "",
+      "content": "\n<div class=\"sf_colsIn interior-layout page-bounds\" data-placeholder-label=\"Full Width Content\" data-sf-element=\"Container\" id=\"ContentPlaceholder_T5E3E3FE2012_Col00\">\n</div>\n<div class=\"interior-layout page-bounds\" data-sf-element=\"Row\">\n<div class=\"sf_colsIn interior-layout__container\" data-sf-element=\"Column 1\" id=\"ContentPlaceholder_T5E3E3FE2005_Col00\"><div class=\"sf_colsIn interior-layout__na"
+    },
+    {
+      "id": "2",
+      "title": "Publications Search",
+      "name": "Publications Search",
+      "date": "",
+      "source": "Central Bank of Belize",
+      "author": "",
+      "sourceUrl": "https://www.centralbank.org.bz:443/publications-search?Keywords=&SortOrder=DESC&TypeFacet=&DateFacet=&Categories=fade7bf2-8f88-408f-8401-74d2f5069883",
+      "summary": "",
+      "content": "\n<div class=\"sf_colsIn interior-layout page-bounds\" data-placeholder-label=\"Full Width Content\" data-sf-element=\"Container\" id=\"ContentPlaceholder_T5E3E3FE2012_Col00\">\n</div>\n<div class=\"interior-layout page-bounds\" data-sf-element=\"Row\">\n<div class=\"sf_colsIn interior-layout__container\" data-sf-element=\"Column 1\" id=\"ContentPlaceholder_T5E3E3FE2005_Col00\"><div class=\"sf_colsIn interior-layout__na"
+    },
+    {
+      "id": "3",
+      "title": "Publications Search",
+      "name": "Publications Search",
+      "date": "",
+      "source": "Central Bank of Belize",
+      "author": "",
+      "sourceUrl": "https://www.centralbank.org.bz:443/publications-search?Keywords=&SortOrder=DESC&TypeFacet=&DateFacet=&Categories=eeb22bd4-842e-44c1-b439-2b0ab1f38a60",
+      "summary": "",
+      "content": "\n<div class=\"sf_colsIn interior-layout page-bounds\" data-placeholder-label=\"Full Width Content\" data-sf-element=\"Container\" id=\"ContentPlaceholder_T5E3E3FE2012_Col00\">\n</div>\n<div class=\"interior-layout page-bounds\" data-sf-element=\"Row\">\n<div class=\"sf_colsIn interior-layout__container\" data-sf-element=\"Column 1\" id=\"ContentPlaceholder_T5E3E3FE2005_Col00\"><div class=\"sf_colsIn interior-layout__na"
+    },
+    {
+      "id": "4",
+      "title": "Publications Search",
+      "name": "Publications Search",
+      "date": "",
+      "source": "Central Bank of Belize",
+      "author": "",
+      "sourceUrl": "https://www.centralbank.org.bz:443/publications-search?Keywords=&SortOrder=DESC&TypeFacet=&DateFacet=&Categories=8b9ca46c-d4b0-4a4f-b15c-242c7fe01043",
+      "summary": "",
+      "content": "\n<div class=\"sf_colsIn interior-layout page-bounds\" data-placeholder-label=\"Full Width Content\" data-sf-element=\"Container\" id=\"ContentPlaceholder_T5E3E3FE2012_Col00\">\n</div>\n<div class=\"interior-layout page-bounds\" data-sf-element=\"Row\">\n<div class=\"sf_colsIn interior-layout__container\" data-sf-element=\"Column 1\" id=\"ContentPlaceholder_T5E3E3FE2005_Col00\"><div class=\"sf_colsIn interior-layout__na"
+    },
+    {
+      "id": "5",
+      "title": "Publications Search",
+      "name": "Publications Search",
+      "date": "",
+      "source": "Central Bank of Belize",
+      "author": "",
+      "sourceUrl": "https://www.centralbank.org.bz:443/publications-search?Keywords=&SortOrder=DESC&TypeFacet=&DateFacet=&Categories=b8f0a4a8-8ea6-4242-ae4d-9cd7b2d3b4a2",
+      "summary": "",
+      "content": "\n<div class=\"sf_colsIn interior-layout page-bounds\" data-placeholder-label=\"Full Width Content\" data-sf-element=\"Container\" id=\"ContentPlaceholder_T5E3E3FE2012_Col00\">\n</div>\n<div class=\"interior-layout page-bounds\" data-sf-element=\"Row\">\n<div class=\"sf_colsIn interior-layout__container\" data-sf-element=\"Column 1\" id=\"ContentPlaceholder_T5E3E3FE2005_Col00\"><div class=\"sf_colsIn interior-layout__na"
+    }
+  ]
+}

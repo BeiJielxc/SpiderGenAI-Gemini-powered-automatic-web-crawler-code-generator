@@ -1,0 +1,104 @@
+{
+  "baseUrl": "https://www.cityam.com/news/",
+  "bestCandidate": {
+    "selector": ".content-listing__content-item",
+    "titleSelector": ".card__title a",
+    "dateSelector": "",
+    "score": 44,
+    "itemCount": 12,
+    "hasLink": 12,
+    "hasDate": 0
+  },
+  "structureHint": "Each item is a <li class='content-listing__content-item'>; title/link in <h3 class='card__title'> > <a>",
+  "sampleHtml": "<li class=\"content-listing__content-item\">\n<article class=\"card card--has-media card--has-kicker card--has-density-hd-md category__banking\">\n<div class=\"card__content\">\n<h3 class=\"card__title\"> <a cmp-ltrk=\"content-container\" cmp-ltrk-idx=\"1\" data-mrf-link=\"https://www.cityam.com/vulnerable-lloyds-and-barclays-shares-dip-as-tariff-turmoil-hits-ftse-100/\" href=\"https://www.cityam.com/vulnerable-lloyds-and-barclays-shares-dip-as-tariff-turmoil-hits-ftse-100/\" mrfobservableid=\"9e010a8f-de4c-45a1-9597-cef81a6ee1c1\">\n\t\t\t\t‘Vulnerable’ Lloyds and Barclays shares dip as tariff turmoil hits FTSE 100\t\t\t...\n<li class=\"content-listing__content-item\">\n<article class=\"card card--has-media card--has-kicker card--has-density-hd-md category__business\">\n<div class=\"card__content\">\n<h3 class=\"card__title\"> <a cmp-ltrk=\"content-container\" cmp-ltrk-idx=\"2\" data-mrf-link=\"https://www.cityam.com/pubs-to-open-late-during-world-cup-a-life-raft-for-hospitality/\" href=\"https://www.cityam.com/pubs-to-open-late-during-world-cup-a-life-raft-for-hospitality/\" mrfobservableid=\"6c93b5ce-a971-40a7-96d7-0bb077dcd3b9\">\n\t\t\t\tPubs to open late during World Cup – a life raft for hospitality?\t\t\t</a>\n</h3>\n<div class=\"card__me...",
+  "items": [
+    {
+      "title": "‘Vulnerable’ Lloyds and Barclays shares dip as tariff turmoil hits FTSE 100",
+      "url": "https://www.cityam.com/vulnerable-lloyds-and-barclays-shares-dip-as-tariff-turmoil-hits-ftse-100/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Pubs to open late during World Cup – a life raft for hospitality?",
+      "url": "https://www.cityam.com/pubs-to-open-late-during-world-cup-a-life-raft-for-hospitality/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Raducanu ditches Nike after eight years to sign £2.6m deal with rival",
+      "url": "https://www.cityam.com/raducanu-ditches-nike-after-eight-years-to-sign-2-6m-deal-with-rival/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Trump calls on Big Tech to protect households from AI power costs",
+      "url": "https://www.cityam.com/trump-calls-on-big-tech-to-protect-households-from-ai-power-costs/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Record number of women appointed to FTSE 350 boards",
+      "url": "https://www.cityam.com/record-number-of-women-appointed-to-ftse-350-boards/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Occupancy down at Unite Students, but demand surges at ‘elite’ universities",
+      "url": "https://www.cityam.com/occupancy-down-at-unite-students-but-demand-surges-at-elite-universities/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Standard Chartered hikes investor returns despite profit miss",
+      "url": "https://www.cityam.com/standard-chartered-hikes-investor-returns-despite-profit-miss/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Money Supermarket doubles down on AI in push to placate investor fears",
+      "url": "https://www.cityam.com/money-supermarket-doubles-down-on-ai-in-push-to-placate-investor-fears/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "FTSE 100 Live: Stocks take a dip amid tariff turmoil; Oil price soars",
+      "url": "https://www.cityam.com/ftse-100-live-city-stocks-to-shrug-off-trump-tariff-drama/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Checkout.com defies AI job fears with hiring spree",
+      "url": "https://www.cityam.com/checkout-com-defies-ai-job-fears-with-hiring-spree/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Why US tech firms are circling Wales for AI investment",
+      "url": "https://www.cityam.com/forget-london-why-us-tech-firms-are-circling-wales-for-ai-investment/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Exclusive: Inside the plan to keep the Welsh Rugby Union in check",
+      "url": "https://www.cityam.com/exclusive-inside-the-plan-to-keep-the-welsh-rugby-union-in-check/",
+      "date": "",
+      "dateText": ""
+    }
+  ],
+  "pagination": {
+    "next": null,
+    "prev": null,
+    "pageNums": [],
+    "totalPages": 0
+  },
+  "dateHints": {
+    "minDate": "",
+    "maxDate": "",
+    "startDate": "",
+    "endDate": "",
+    "hasInRange": false,
+    "hasOlderThanStart": false,
+    "suggestStopPaging": false
+  },
+  "otherCandidates": []
+}

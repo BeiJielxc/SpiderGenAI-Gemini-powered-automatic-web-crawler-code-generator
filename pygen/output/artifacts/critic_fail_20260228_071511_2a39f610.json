@@ -1,0 +1,338 @@
+{
+  "final_round": 3,
+  "max_retries": 3,
+  "repaired_code": "#!/usr/bin/env python3\n# -*- coding: utf-8 -*-\n\"\"\"\n爬虫脚本 - 中诚信国际 (企业评级板块)\n自动生成于 PyGen\n\n功能：\n1. 使用 Playwright 模拟浏览器访问中诚信国际官网。\n2. 针对单一板块（当前页面默认列表）进行爬取。\n3. 抓取列表页数据，按日期范围筛选。\n4. 智能提取下载链接（优先从列表行提取，必要时进入详情页，兜底使用详情页链接）。\n5. 修复标题提取为数字的问题，修复因未找到PDF导致记录丢失的问题。\n\"\"\"\n\nimport os\nimport re\nimport time\nimport json\nfrom datetime import datetime\nfrom playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError\n\n# ================= 配置区域 =================\n# 目标URL\nBASE_URL = \"https://www.ccxi.com.cn/creditrating/result\"\n\n# 输出目录\nOUTPUT_DIR = r\"d:\\llm_mcp_genpy\\pygen\\output\"\n\n# 爬取时间范围 (用户指定)\nSTART_DATE = \"2026-02-01\"\nEND_DATE = \"2026-02-28\"\n\n# 浏览器配置\nHEADLESS = True\nTIMEOUT = 30000\n\n# ================= 工具函数 =================\n\ndef _normalize_date(date_str: str) -> str:\n    \"\"\"标准化日期格式为 YYYY-MM-DD\"\"\"\n    if not date_str:\n        return \"\"\n    date_str = date_str.strip()\n    # 尝试匹配 YYYY-MM-DD / YYYY.MM.DD / YYYY/MM/DD\n    match = re.search(r'(\\d{4})[-/\\.](\\d{1,2})[-/\\.](\\d{1,2})', date_str)\n    if match:\n        return f\"{match.group(1)}-{match.group(2).zfill(2)}-{match.group(3).zfill(2)}\"\n    # 尝试匹配 YYYY年MM月DD日\n    match_cn = re.search(r'(\\d{4})年(\\d{1,2})月(\\d{1,2})日', date_str)\n    if match_cn:\n        return f\"{match_cn.group(1)}-{match_cn.group(2).zfill(2)}-{match_cn.group(3).zfill(2)}\"\n    return \"\"\n\ndef save_results(reports: list, output_path: str):\n    \"\"\"保存结果到 JSON 文件\"\"\"\n    if not os.path.exists(os.path.dirname(output_path)):\n        os.makedirs(os.path.dirname(output_path), exist_ok=True)\n    \n    # 构建下载头信息\n    download_headers = {\n        \"User-Agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\",\n        \"Referer\": BASE_URL,\n    }\n    \n    result = {\n        \"total\": len(reports),\n        \"crawlTime\": datetime.now().strftime(\"%Y-%m-%d %H:%M:%S\"),\n        \"dateRange\": f\"{START_DATE} to {END_DATE}\",\n        \"downloadHeaders\": download_headers,\n        \"reports\": reports\n    }\n    \n    with open(output_path, 'w', encoding='utf-8') as f:\n        json.dump(result, f, ensure_ascii=False, indent=2)\n    print(f\"[INFO] 已保存 {len(reports)} 条记录到 {output_path}\")\n\n# ================= 核心逻辑 =================\n\ndef extract_pdf_from_detail(context, url: str) -> dict:\n    \"\"\"\n    在新页面中打开详情页，提取下载链接\n    \"\"\"\n    page = context.new_page()\n    result = {\"downloadUrl\": \"\", \"fileType\": \"\"}\n    \n    try:\n        # 拦截不必要的资源加载以加速\n        page.route(\"**/*.{png,jpg,jpeg,gif,css,woff,woff2,svg}\", lambda route: route.abort())\n        \n        page.goto(url, wait_until=\"domcontentloaded\", timeout=20000)\n        page.wait_for_timeout(1500) # 等待动态渲染\n        \n        # 策略1: 查找 href 包含 .pdf 的链接\n        pdf_link = page.locator(\"a[href$='.pdf']\").first\n        if pdf_link.count() > 0:\n            href = pdf_link.get_attribute(\"href\")\n            if href:\n                result[\"downloadUrl\"] = href if href.startswith(\"http\") else \"https://www.ccxi.com.cn\" + href\n                result[\"fileType\"] = \"pdf\"\n                return result\n\n        # 策略2: 查找文本包含 \"下载\" 的链接\n        download_link = page.locator(\"a:has-text('下载'), a:has-text('Download')\").first\n        if download_link.count() > 0:\n            href = download_link.get_attribute(\"href\")\n            if href and not href.startswith(\"javascript\"):\n                result[\"downloadUrl\"] = href if href.startswith(\"http\") else \"https://www.ccxi.com.cn\" + href\n                result[\"fileType\"] = \"unknown\"\n                return result\n\n        # 策略3: iframe\n        iframe = page.locator(\"iframe[src*='.pdf']\").first\n        if iframe.count() > 0:\n            src = iframe.get_attribute(\"src\")\n            if src:\n                result[\"downloadUrl\"] = src if src.startswith(\"http\") else \"https://www.ccxi.com.cn\" + src\n                result[\"fileType\"] = \"pdf\"\n                return result\n\n    except Exception as e:\n        print(f\"    [WARN] 详情页解析失败: {e}\")\n    finally:\n        page.close()\n        \n    return result\n\ndef run_crawler():\n    print(f\"[INFO] 启动爬虫，目标: {BASE_URL}\")\n    print(f\"[INFO] 筛选日期范围: {START_DATE} ~ {END_DATE}\")\n    \n    all_reports = []\n    \n    with sync_playwright() as p:\n        # 启动浏览器\n        browser = p.chromium.launch(\n            headless=HEADLESS,\n            args=[\"--disable-blink-features=AutomationControlled\"]\n        )\n        context = browser.new_context(\n            user_agent=\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\",\n            viewport={\"width\": 1440, \"height\": 900}\n        )\n        page = context.new_page()\n        \n        try:\n            # 1. 访问首页\n            page.goto(BASE_URL, wait_until=\"domcontentloaded\", timeout=TIMEOUT)\n            page.wait_for_timeout(3000) # 等待SPA初始渲染\n            \n            # 分页循环\n            page_num = 1\n            max_pages = 50 # 安全限制\n            \n            while page_num <= max_pages:\n                print(f\"[INFO] 正在抓取第 {page_num} 页...\")\n                \n                # 尝试定位数据行\n                rows = page.locator(\".table-body .row\").all()\n                if not rows:\n                    # 备用选择器\n                    rows = page.locator(\"tr.el-table__row, .list-item, .news-item\").all()\n                \n                if not rows:\n                    print(\"[WARN] 当前页未找到数据行，停止翻页。\")\n                    break\n                    \n                print(f\"  -> 当前页共有 {len(rows)} 条记录\")\n                \n                # 遍历行\n                for row in rows:\n                    try:\n                        # 提取文本内容\n                        row_text = row.inner_text()\n                        \n                        # 1. 提取日期 (使用正则扫描整行)\n                        date_match = re.search(r'(\\d{4}[-/\\.]\\d{1,2}[-/\\.]\\d{1,2}|\\d{4}年\\d{1,2}月\\d{1,2}日)', row_text)\n                        if not date_match:\n                            continue\n                        \n                        date_val = _normalize_date(date_match.group(1))\n                        \n                        # 2. 越界检查 (假设列表按日期倒序)\n                        if date_val < START_DATE:\n                            print(f\"  -> 遇到旧数据 ({date_val} < {START_DATE})，爬取结束。\")\n                            # 保存并退出\n                            filename = f\"ccxi_reports_{START_DATE.replace('-', '')}_{END_DATE.replace('-', '')}.json\"\n                            output_path = os.path.join(OUTPUT_DIR, filename)\n                            save_results(all_reports, output_path)\n                            return\n\n                        if date_val > END_DATE:\n                            continue # 太新，跳过\n                            \n                        # 3. 提取标题 (修复：避免提取到数字索引)\n                        links = row.locator(\"a\").all()\n                        title_link = None\n                        max_len = 0\n                        for link in links:\n                            txt = link.inner_text().strip()\n                            # 排除纯数字、日期、短文本\n                            if len(txt) > max_len and not re.match(r'^[\\d\\.\\-]+$', txt) and len(txt) > 2:\n                                max_len = len(txt)\n                                title_link = link\n                        \n                        if title_link:\n                            title = title_link.inner_text().strip()\n                            detail_href = title_link.get_attribute(\"href\")\n                        else:\n                            # 兜底：取最长的一行文本\n                            lines = row_text.split('\\n')\n                            title = max(lines, key=len).strip() if lines else \"无标题报告\"\n                            detail_href = None\n                            # 尝试找任意链接作为详情\n                            first_link = row.locator(\"a\").first\n                            if first_link.count() > 0:\n                                detail_href = first_link.get_attribute(\"href\")\n                        \n                        print(f\"  -> 命中目标: [{date_val}] {title}\")\n                        \n                        # 4. 提取下载链接\n                        download_url = \"\"\n                        file_type = \"pdf\"\n                        \n                        # 优先：检查行内是否有直接的 PDF 链接\n                        pdf_direct = row.locator(\"a[href$='.pdf']\").first\n                        if pdf_direct.count() > 0:\n                            href = pdf_direct.get_attribute(\"href\")\n                            download_url = href if href.startswith(\"http\") else \"https://www.ccxi.com.cn\" + href\n                        \n                        # 其次：进入详情页提取\n                        if not download_url and detail_href:\n                            # 构造完整 URL\n                            if detail_href.startswith(\"http\"):\n                                detail_url = detail_href\n                            else:\n                                detail_url = \"https://www.ccxi.com.cn\" + detail_href\n                                \n                            if not detail_url.startswith(\"javascript\"):\n                                # 进入详情页\n                                detail_info = extract_pdf_from_detail(context, detail_url)\n                                if detail_info[\"downloadUrl\"]:\n                                    download_url = detail_info[\"downloadUrl\"]\n                                    file_type = detail_info[\"fileType\"]\n                                else:\n                                    # 兜底：使用详情页 URL 本身，避免丢数据\n                                    download_url = detail_url\n                                    file_type = \"html\"\n                        \n                        # 再次兜底\n                        if not download_url and detail_href and not detail_href.startswith(\"javascript\"):\n                             download_url = detail_href if detail_href.startswith(\"http\") else \"https://www.ccxi.com.cn\" + detail_href\n                             file_type = \"html\"\n\n                        if download_url:\n                            all_reports.append({\n                                \"name\": title,\n                                \"date\": date_val,\n                                \"downloadUrl\": download_url,\n                                \"fileType\": file_type\n                            })\n                            \n                    except Exception as e:\n                        print(f\"  [ERROR] 解析行数据出错: {e}\")\n                        continue\n                \n                # 翻页逻辑\n                next_btn = page.locator(\"button.btn-next, a.next, li.next\").first\n                \n                if next_btn.count() > 0 and next_btn.is_visible():\n                    is_disabled = next_btn.get_attribute(\"disabled\") is not None or \"disabled\" in (next_btn.get_attribute(\"class\") or \"\")\n                    if is_disabled:\n                        print(\"  -> 已到最后一页 (按钮禁用)\")\n                        break\n                    \n                    next_btn.click()\n                    page_num += 1\n                    page.wait_for_timeout(2000) # 等待加载\n                else:\n                    print(\"  -> 未找到下一页按钮，停止翻页。\")\n                    break\n            \n        except Exception as e:\n            print(f\"[ERROR] 爬虫运行异常: {e}\")\n            import traceback\n            traceback.print_exc()\n        finally:\n            browser.close()\n            \n    # 保存结果\n    filename = f\"ccxi_reports_{START_DATE.replace('-', '')}_{END_DATE.replace('-', '')}.json\"\n    output_path = os.path.join(OUTPUT_DIR, filename)\n    save_results(all_reports, output_path)\n\nif __name__ == \"__main__\":\n    run_crawler()",
+  "rounds": [
+    {
+      "round": 1,
+      "passed": false,
+      "primary_cause": "timeout",
+      "backup_cause": "unknown",
+      "uncertain": false,
+      "classifier_confidence": 0.99,
+      "record_count": 0,
+      "static_error_count": 0
+    },
+    {
+      "round": 2,
+      "passed": false,
+      "primary_cause": "empty_output",
+      "backup_cause": "unknown",
+      "uncertain": false,
+      "classifier_confidence": 0.75,
+      "record_count": 0,
+      "static_error_count": 0
+    },
+    {
+      "round": 3,
+      "passed": false,
+      "primary_cause": "unknown",
+      "backup_cause": "empty_output",
+      "uncertain": true,
+      "classifier_confidence": 0.75,
+      "record_count": 0,
+      "static_error_count": 0
+    },
+    {
+      "round": 3,
+      "passed": false,
+      "primary_cause": "empty_output",
+      "backup_cause": "unknown",
+      "uncertain": false,
+      "classifier_confidence": 0.75,
+      "record_count": 0,
+      "static_error_count": 0
+    }
+  ],
+  "evidence": [
+    {
+      "round": 1,
+      "step": "static_check",
+      "result": {
+        "error_count": 0,
+        "warning_count": 0,
+        "top_errors": [],
+        "top_warnings": []
+      }
+    },
+    {
+      "round": 1,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": false,
+        "timed_out": true,
+        "exit_code": 1,
+        "duration_seconds": 120.084,
+        "record_count": 0,
+        "date_fill_rate": 0.0,
+        "status": "timeout",
+        "http_statuses": [],
+        "stdout_tail": "",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 1,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "timeout",
+        "backup_cause": "unknown",
+        "confidence": 0.99,
+        "classifier_summary": "脚本执行超时"
+      }
+    },
+    {
+      "round": 1,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "network_probe",
+        "cause": "timeout",
+        "result": {
+          "ok": true,
+          "status": 200,
+          "error": null,
+          "challenge_detected": false
+        }
+      }
+    },
+    {
+      "round": 1,
+      "step": "output_quality",
+      "result": {
+        "record_count": 0,
+        "required_fields": [
+          "name",
+          "downloadUrl"
+        ],
+        "field_fill_rate": {
+          "name": 0.0,
+          "downloadUrl": 0.0
+        },
+        "required_fields_ok": false,
+        "meets_min_items": false,
+        "recommendations": [
+          "Extract at least 1 items in lightweight validation.",
+          "Ensure required fields are populated: ['name', 'downloadUrl']"
+        ],
+        "sample_records": []
+      }
+    },
+    {
+      "round": 2,
+      "step": "llm_repair",
+      "result": {
+        "changed": true
+      }
+    },
+    {
+      "round": 2,
+      "step": "static_check",
+      "result": {
+        "error_count": 0,
+        "warning_count": 0,
+        "top_errors": [],
+        "top_warnings": []
+      }
+    },
+    {
+      "round": 2,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": false,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 19.713,
+        "record_count": 0,
+        "date_fill_rate": 0.0,
+        "status": "no_data",
+        "http_statuses": [],
+        "stdout_tail": "[INFO] 启动爬虫，目标: https://www.ccxi.com.cn/creditrating/result\n[INFO] 筛选日期范围: 2026-02-01 ~ 2026-02-28\n[INFO] 模式: 单一板块爬取 (避免遍历菜单导致超时)\n[INFO] 正在抓取第 1 页...\n  -> 当前页共有 20 条记录\n  -> 命中目标: [2026-02-12] 1\n  -> 遇到旧数据 (2026-01-28 < 2026-02-01)，爬取结束。\n[INFO] 已保存 0 条记录到 d:\\llm_mcp_genpy\\pygen\\output\\ccxi_reports_20260201_20260228.json",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 2,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "empty_output",
+        "backup_cause": "unknown",
+        "confidence": 0.75,
+        "classifier_summary": "脚本执行完成但输出为空"
+      }
+    },
+    {
+      "round": 2,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "selector_brittleness_probe",
+        "cause": "empty_output",
+        "result": {
+          "select_calls": 0,
+          "find_calls": 0,
+          "has_chained_find": false
+        }
+      }
+    },
+    {
+      "round": 2,
+      "step": "output_quality",
+      "result": {
+        "record_count": 0,
+        "required_fields": [
+          "name",
+          "downloadUrl"
+        ],
+        "field_fill_rate": {
+          "name": 0.0,
+          "downloadUrl": 0.0
+        },
+        "required_fields_ok": false,
+        "meets_min_items": false,
+        "recommendations": [
+          "Extract at least 1 items in lightweight validation.",
+          "Ensure required fields are populated: ['name', 'downloadUrl']"
+        ],
+        "sample_records": []
+      }
+    },
+    {
+      "round": 3,
+      "step": "static_check",
+      "result": {
+        "error_count": 0,
+        "warning_count": 0,
+        "top_errors": [],
+        "top_warnings": []
+      }
+    },
+    {
+      "round": 3,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": false,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 18.903,
+        "record_count": 0,
+        "date_fill_rate": 0.0,
+        "status": "no_data",
+        "http_statuses": [],
+        "stdout_tail": "[INFO] 启动爬虫，目标: https://www.ccxi.com.cn/creditrating/result\n[INFO] 筛选日期范围: 2026-02-01 ~ 2026-02-28\n[INFO] 模式: 单一板块爬取 (避免遍历菜单导致超时)\n[INFO] 正在抓取第 1 页...\n  -> 当前页共有 20 条记录\n  -> 命中目标: [2026-02-12] 1\n  -> 遇到旧数据 (2026-01-28 < 2026-02-01)，爬取结束。\n[INFO] 已保存 0 条记录到 d:\\llm_mcp_genpy\\pygen\\output\\ccxi_reports_20260201_20260228.json",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 3,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "unknown",
+        "backup_cause": "empty_output",
+        "confidence": 0.75,
+        "classifier_summary": "脚本执行完成但输出为空"
+      }
+    },
+    {
+      "round": 3,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "selector_brittleness_probe",
+        "cause": "unknown",
+        "result": {
+          "select_calls": 0,
+          "find_calls": 0,
+          "has_chained_find": false
+        }
+      }
+    },
+    {
+      "round": 3,
+      "step": "output_quality",
+      "result": {
+        "record_count": 0,
+        "required_fields": [
+          "name",
+          "downloadUrl"
+        ],
+        "field_fill_rate": {
+          "name": 0.0,
+          "downloadUrl": 0.0
+        },
+        "required_fields_ok": false,
+        "meets_min_items": false,
+        "recommendations": [
+          "Extract at least 1 items in lightweight validation.",
+          "Ensure required fields are populated: ['name', 'downloadUrl']"
+        ],
+        "sample_records": []
+      }
+    },
+    {
+      "round": 3,
+      "step": "final_targeted_repair",
+      "result": {
+        "changed": true
+      }
+    },
+    {
+      "round": 3,
+      "step": "static_check",
+      "result": {
+        "error_count": 0,
+        "warning_count": 0,
+        "top_errors": [],
+        "top_warnings": []
+      }
+    },
+    {
+      "round": 3,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": false,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 19.456,
+        "record_count": 0,
+        "date_fill_rate": 0.0,
+        "status": "no_data",
+        "http_statuses": [],
+        "stdout_tail": "[INFO] 启动爬虫，目标: https://www.ccxi.com.cn/creditrating/result\n[INFO] 筛选日期范围: 2026-02-01 ~ 2026-02-28\n[INFO] 正在抓取第 1 页...\n  -> 当前页共有 20 条记录\n  -> 命中目标: [2026-02-12] 合肥市建设投资控股（集团）有限公司\n  -> 遇到旧数据 (2026-01-28 < 2026-02-01)，爬取结束。\n[INFO] 已保存 0 条记录到 d:\\llm_mcp_genpy\\pygen\\output\\ccxi_reports_20260201_20260228.json",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 3,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "empty_output",
+        "backup_cause": "unknown",
+        "confidence": 0.75,
+        "classifier_summary": "脚本执行完成但输出为空"
+      }
+    },
+    {
+      "round": 3,
+      "step": "output_quality",
+      "result": {
+        "record_count": 0,
+        "required_fields": [
+          "name",
+          "downloadUrl"
+        ],
+        "field_fill_rate": {
+          "name": 0.0,
+          "downloadUrl": 0.0
+        },
+        "required_fields_ok": false,
+        "meets_min_items": false,
+        "recommendations": [
+          "Extract at least 1 items in lightweight validation.",
+          "Ensure required fields are populated: ['name', 'downloadUrl']"
+        ],
+        "sample_records": []
+      }
+    }
+  ],
+  "stopped_reason": "max_retries_exceeded",
+  "primary_cause": "empty_output",
+  "backup_cause": "unknown"
+}

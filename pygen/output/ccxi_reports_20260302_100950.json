@@ -1,0 +1,51 @@
+{
+  "total": 5,
+  "crawlTime": "2026-03-02 10:09:50",
+  "dateRange": "2026-02-01 to 2026-02-28",
+  "downloadHeaders": {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Referer": "https://www.ccxi.com.cn/"
+  },
+  "reports": [
+    {
+      "name": "合肥市建设投资控股（集团）有限公司",
+      "date": "2026-02-12",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260213-1770972307000-1IUu8Q-[[originalname]]-2026年度合肥市建设投资控股（集团）有限公司信用评级报告.pdf",
+      "fileType": "pdf",
+      "category": "主体评级",
+      "id": "285252"
+    },
+    {
+      "name": "北京国有资本运营管理有限公司2026年度第二期中期票据",
+      "date": "2026-02-13",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260302-1772417092005-y9K5vT-[[originalname]]-[2026]0485D-01 北京国有资本运营管理有限公司2026年度第二期中期票据信用评级报告.pdf",
+      "fileType": "pdf",
+      "category": "中期票据",
+      "id": "285259"
+    },
+    {
+      "name": "北京国有资本运营管理有限公司2026年度第一期中期票据",
+      "date": "2026-02-13",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260302-1772417048310-KPiO2S-[[originalname]]-[2026]0484D-01 北京国有资本运营管理有限公司2026年度第一期中期票据信用评级报告.pdf",
+      "fileType": "pdf",
+      "category": "中期票据",
+      "id": "285260"
+    },
+    {
+      "name": "宁波均普智能制造股份有限公司2026年度第一期科技创新债券",
+      "date": "2026-02-04",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260213-1770964594118-6N0a08-[[originalname]]-宁波均普智能制造股份有限公司2026年度第一期科技创新债券信用评级报告.pdf",
+      "fileType": "pdf",
+      "category": "中期票据",
+      "id": "285249"
+    },
+    {
+      "name": "陕西交通控股集团有限公司2026年度第一期中期票据",
+      "date": "2026-02-02",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260213-1770963970470-GFCp1a-[[originalname]]-陕西交通控股集团有限公司2026年度第一期中期票据信用评级报告.pdf",
+      "fileType": "pdf",
+      "category": "中期票据",
+      "id": "285230"
+    }
+  ]
+}

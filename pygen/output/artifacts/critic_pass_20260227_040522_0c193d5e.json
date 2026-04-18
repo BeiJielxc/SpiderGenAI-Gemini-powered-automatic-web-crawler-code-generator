@@ -1,0 +1,252 @@
+{
+  "final_round": 2,
+  "max_retries": 3,
+  "repaired_code": "# === PyGen 注入：HTTP/SSL 韧性层（通用） ===\n# 说明：\n# 1) 优先保持 verify=True；如确需临时绕过（不推荐），可设置环境变量 PYGEN_INSECURE_SSL=1\n# 2) 默认遇到 418/403/429 仅做一次\"预热 cookie + 浏览器化 headers\"的重试\n# 3) 若仍被拦截且本机已安装 Playwright，会自动尝试一次 request-context 兜底\n#    如需禁用：设置 PYGEN_DISABLE_PLAYWRIGHT_FALLBACK=1\nimport os as _pygen_os\nimport ssl as _pygen_ssl\nimport urllib.parse as _pygen_urlparse\n\ntry:\n    # truststore 会让 Python/requests 使用系统证书库（Windows/macOS/Linux），更贴近浏览器行为\n    import truststore as _pygen_truststore  # type: ignore\n    _pygen_truststore.inject_into_ssl()\nexcept Exception:\n    _pygen_truststore = None  # noqa: F401\n\ntry:\n    import requests as _pygen_requests\n    from requests.structures import CaseInsensitiveDict as _pygen_CaseInsensitiveDict\nexcept Exception:\n    _pygen_requests = None  # noqa: F401\n\n_PYGEN_DEFAULT_UA = (\n    \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) \"\n    \"AppleWebKit/537.36 (KHTML, like Gecko) \"\n    \"Chrome/122.0 Safari/537.36\"\n)\n\ndef _pygen_origin(url: str) -> str:\n    try:\n        p = _pygen_urlparse.urlsplit(url)\n        return f\"{p.scheme}://{p.netloc}\"\n    except Exception:\n        return \"\"\n\ndef _pygen_merge_headers(h: dict | None) -> dict:\n    base = {\n        \"User-Agent\": _PYGEN_DEFAULT_UA,\n        \"Accept\": \"application/json,text/plain,*/*\",\n        \"Accept-Language\": \"zh-CN,zh;q=0.9,en;q=0.8\",\n        \"Connection\": \"keep-alive\",\n    }\n    if h:\n        for k, v in h.items():\n            if v is not None:\n                base[k] = v\n    return base\n\ndef _pygen_make_response(status: int, url: str, headers: dict, body: bytes):\n    r = _pygen_requests.Response()\n    r.status_code = status\n    r.url = url\n    r.headers = _pygen_CaseInsensitiveDict(headers or {})\n    r._content = body or b\"\"\n    return r\n\ndef _pygen_playwright_fetch(method: str, url: str, headers: dict, data=None, json=None, timeout: int = 30):\n    \"\"\"\n    兜底：使用 Playwright 的 request context（更像浏览器/更容易过 WAF）。\n    仅当已安装 playwright 且未设置 PYGEN_DISABLE_PLAYWRIGHT_FALLBACK=1 时启用。\n    \"\"\"\n    if _pygen_os.getenv(\"PYGEN_DISABLE_PLAYWRIGHT_FALLBACK\") == \"1\":\n        return None\n    try:\n        from playwright.sync_api import sync_playwright  # type: ignore\n    except Exception:\n        return None\n\n    with sync_playwright() as p:\n        ctx = p.request.new_context(ignore_https_errors=_pygen_os.getenv(\"PYGEN_INSECURE_SSL\") == \"1\",\n                                    extra_http_headers=headers)\n        try:\n            resp = ctx.fetch(url, method=method.upper(), data=data, json=json, timeout=timeout * 1000)\n            body = resp.body()\n            return _pygen_make_response(resp.status, url, dict(resp.headers), body)\n        finally:\n            ctx.dispose()\n\ndef _pygen_install_requests_patch():\n    if _pygen_requests is None:\n        return\n    _orig = _pygen_requests.sessions.Session.request\n\n    def _patched(self, method, url, **kwargs):\n        # 默认超时，避免脚本卡死\n        kwargs.setdefault(\"timeout\", 30)\n\n        # 证书校验策略：默认开启；仅在用户明确设置时关闭\n        if _pygen_os.getenv(\"PYGEN_INSECURE_SSL\") == \"1\":\n            kwargs[\"verify\"] = False\n\n        # 合并\"更像浏览器\"的 headers（很多站会对 UA/Accept 做拦截）\n        headers = _pygen_merge_headers(kwargs.get(\"headers\"))\n        kwargs[\"headers\"] = headers\n\n        # 首次请求\n        try:\n            resp = _orig(self, method, url, **kwargs)\n        except Exception as e:\n            # 若是 SSL 校验错误：truststore 已注入则直接抛出；否则给出更友好的提示\n            msg = str(e)\n            if \"CERTIFICATE_VERIFY_FAILED\" in msg or \"certificate verify failed\" in msg:\n                # 若 playwright 可用，尝试用 request-context 做一次兜底（有些环境下系统信任链更完整）\n                try:\n                    pw_resp = _pygen_playwright_fetch(method, url, headers=headers,\n                                                      data=kwargs.get(\"data\"),\n                                                      json=kwargs.get(\"json\"),\n                                                      timeout=int(kwargs.get(\"timeout\") or 30))\n                    if pw_resp is not None:\n                        return pw_resp\n                except Exception:\n                    pass\n                raise\n            raise\n\n        # WAF/反爬：做一次轻量重试（预热 cookie + 再请求）\n        if resp is not None and getattr(resp, \"status_code\", 0) in (418, 403, 429):\n            try:\n                origin = _pygen_origin(url)\n                if origin:\n                    # 预热：访问首页拿 cookie\n                    _ = _orig(self, \"GET\", origin + \"/\", headers=headers, timeout=15, verify=kwargs.get(\"verify\", True))\n                resp2 = _orig(self, method, url, **kwargs)\n                if resp2 is not None and getattr(resp2, \"status_code\", 0) not in (418, 403, 429):\n                    return resp2\n                # 若仍被拦截，且 playwright 可用，则再尝试一次（自动兜底）\n                pw_resp = _pygen_playwright_fetch(method, url, headers=headers,\n                                                  data=kwargs.get(\"data\"),\n                                                  json=kwargs.get(\"json\"),\n                                                  timeout=int(kwargs.get(\"timeout\") or 30))\n                if pw_resp is not None:\n                    return pw_resp\n            except Exception:\n                # 兜底失败则返回原始响应，交由上层处理\n                return resp\n\n        return resp\n\n    _pygen_requests.sessions.Session.request = _patched\n\n_pygen_install_requests_patch()\n# === PyGen 注入结束 ===\nimport os\nimport json\nimport time\nimport re\nfrom datetime import datetime\nfrom urllib.parse import urljoin, urlparse\nfrom bs4 import BeautifulSoup\nfrom playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError\n\n# ================= 配置区域 =================\n# 目标URL\nTARGET_URL = \"https://www.centralbank.org.bz/publications-search\"\n\n# 爬取数量限制（用户指定 Top 5）\nMAX_ITEMS = 5\n\n# 输出目录\nOUTPUT_DIR = r\"d:\\llm_mcp_genpy\\pygen\\output\"\n\n# 浏览器配置\nHEADLESS = True  # 是否无头模式\nTIMEOUT = 30000  # 超时时间(ms)\n\n# ================= 工具函数 =================\n\ndef ensure_dir(path):\n    \"\"\"确保目录存在\"\"\"\n    if not os.path.exists(path):\n        os.makedirs(path)\n\ndef clean_html_content(html_content, base_url):\n    \"\"\"\n    清洗HTML内容：\n    1. 修复相对路径图片和链接\n    2. 移除无用标签\n    \"\"\"\n    if not html_content:\n        return \"\"\n    try:\n        soup = BeautifulSoup(html_content, 'html.parser')\n        \n        # 修复图片链接\n        for img in soup.find_all('img'):\n            if img.get('src'):\n                img['src'] = urljoin(base_url, img['src'])\n                \n        # 修复超链接\n        for a in soup.find_all('a'):\n            if a.get('href'):\n                a['href'] = urljoin(base_url, a['href'])\n                a['target'] = '_blank'  # 强制新标签页打开\n                \n        # 移除脚本和样式\n        for script in soup([\"script\", \"style\", \"iframe\", \"noscript\"]):\n            script.decompose()\n            \n        return str(soup)\n    except Exception as e:\n        print(f\"内容清洗出错: {e}\")\n        return html_content\n\ndef parse_date(date_str):\n    \"\"\"\n    解析日期字符串，格式如 \"26 February 2026\" -> \"2026-02-26\"\n    \"\"\"\n    if not date_str:\n        return \"\"\n    \n    try:\n        # 清理多余空格\n        date_str = date_str.strip()\n        # 尝试解析 \"26 February 2026\" 格式\n        dt = datetime.strptime(date_str, \"%d %B %Y\")\n        return dt.strftime(\"%Y-%m-%d\")\n    except ValueError:\n        try:\n            # 尝试其他常见格式\n            dt = datetime.strptime(date_str, \"%B %d, %Y\")\n            return dt.strftime(\"%Y-%m-%d\")\n        except:\n            pass\n            \n    # 如果解析失败，返回原始字符串或空\n    return date_str\n\ndef is_file_url(url):\n    \"\"\"判断是否为文件链接\"\"\"\n    path = urlparse(url).path.lower()\n    extensions = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.zip', '.rar']\n    return any(path.endswith(ext) for ext in extensions)\n\ndef save_results(articles, output_path):\n    \"\"\"保存结果为JSON\"\"\"\n    result = {\n        \"total\": len(articles),\n        \"crawlTime\": datetime.now().strftime(\"%Y-%m-%d %H:%M:%S\"),\n        \"articles\": articles\n    }\n    with open(output_path, 'w', encoding='utf-8') as f:\n        json.dump(result, f, ensure_ascii=False, indent=2)\n    print(f\"已保存 {len(articles)} 条新闻到 {output_path}\")\n\n# ================= 核心爬虫逻辑 =================\n\ndef scrape_detail_page(page, url):\n    \"\"\"\n    进入详情页抓取正文\n    \"\"\"\n    print(f\"正在抓取详情页: {url}\")\n    try:\n        # 导航到详情页\n        page.goto(url, wait_until=\"domcontentloaded\", timeout=TIMEOUT)\n        \n        # 等待内容加载\n        page.wait_for_selector(\"body\", timeout=5000)\n        \n        # 尝试定位正文容器\n        content_html = \"\"\n        selectors = [\n            \"div.group.margin-large\",\n            \"#top\",\n            \".interior-layout__main\",\n            \"div[role='main']\",\n            \"article\",\n            \".content\"\n        ]\n        \n        for selector in selectors:\n            element = page.query_selector(selector)\n            if element:\n                # 检查内容长度，避免抓取到空容器\n                text = element.inner_text()\n                if len(text.strip()) > 50:\n                    content_html = element.inner_html()\n                    print(f\"使用选择器提取正文: {selector}\")\n                    break\n        \n        if not content_html:\n            print(\"未找到有效正文内容，回退为链接\")\n            return f'<a href=\"{url}\" target=\"_blank\">{url}</a>'\n            \n        return clean_html_content(content_html, url)\n        \n    except Exception as e:\n        print(f\"详情页抓取失败 ({url}): {e}\")\n        return f'<a href=\"{url}\" target=\"_blank\">{url}</a>'\n\ndef run_spider():\n    ensure_dir(OUTPUT_DIR)\n    \n    # 启动 Playwright\n    with sync_playwright() as p:\n        # 配置浏览器反爬\n        browser = p.chromium.launch(\n            headless=HEADLESS,\n            args=[\"--disable-blink-features=AutomationControlled\", \"--no-sandbox\"]\n        )\n        context = browser.new_context(\n            viewport={'width': 1920, 'height': 1080},\n            user_agent=\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\"\n        )\n        \n        page = context.new_page()\n        \n        print(f\"正在访问列表页: {TARGET_URL}\")\n        try:\n            page.goto(TARGET_URL, wait_until=\"networkidle\", timeout=TIMEOUT)\n        except PlaywrightTimeoutError:\n            print(\"页面加载超时，尝试继续解析已加载内容...\")\n        \n        # 额外等待，确保动态内容加载\n        page.wait_for_timeout(3000)\n\n        articles = []\n        \n        # === 动态选择器探测 ===\n        # 定义可能的列表结构 (item_selector, title_selector, date_selector)\n        # 优先尝试更具体的选择器\n        potential_configs = [\n            (\"ul.item-list > li\", \"a\", \".item-list__date\"), # 原始猜测\n            (\"div.search-result\", \"h3 a, h4 a, a\", \".date, span:has-text('20')\"), # 通用搜索结果\n            (\"div.result-item\", \"a\", \".date\"),\n            (\"table tbody tr\", \"a\", \"td\"), # 表格结构\n            (\"div.sf_colsIn div.sf_colsOut\", \"a\", \"span\"), # Sitefinity CMS 常见结构\n            (\".content-list li\", \"a\", \".meta\"),\n            (\"div.row\", \"h3 a\", \".date\"),\n            (\"div[class*='item']\", \"a\", \"span\") # 宽泛匹配\n        ]\n        \n        active_config = None\n        items = []\n        \n        print(\"正在探测页面结构...\")\n        for item_sel, title_sel, date_sel in potential_configs:\n            try:\n                candidates = page.query_selector_all(item_sel)\n                # 过滤掉太少的匹配（可能是误判）\n                if len(candidates) >= 2:\n                    # 验证第一个元素是否包含标题\n                    first = candidates[0]\n                    t = first.query_selector(title_sel)\n                    if t and len(t.inner_text().strip()) > 3:\n                        print(f\"成功匹配页面结构: {item_sel}\")\n                        active_config = (item_sel, title_sel, date_sel)\n                        items = candidates\n                        break\n            except Exception as e:\n                continue\n        \n        # 如果未找到，尝试点击搜索按钮（针对某些需要触发的搜索页）\n        if not items:\n            print(\"未找到列表项，尝试查找并点击搜索按钮...\")\n            try:\n                search_btn = page.query_selector(\"input[type='submit'], button:has-text('Search')\")\n                if search_btn:\n                    search_btn.click()\n                    page.wait_for_timeout(3000)\n                    # 重试探测\n                    for item_sel, title_sel, date_sel in potential_configs:\n                        candidates = page.query_selector_all(item_sel)\n                        if len(candidates) >= 2:\n                            active_config = (item_sel, title_sel, date_sel)\n                            items = candidates\n                            break\n            except:\n                pass\n\n        if not items:\n            print(\"警告：无法自动识别列表结构。尝试兜底提取所有链接...\")\n            # 兜底：提取主内容区的所有链接\n            main_area = page.query_selector(\"main, #content, #main, body\")\n            if main_area:\n                links = main_area.query_selector_all(\"a\")\n                # 过滤看起来像标题的链接\n                items = [l for l in links if len(l.inner_text().strip()) > 10][:10]\n                active_config = (\"a\", \"self\", \"parent\") # 特殊标记\n\n        print(f\"发现 {len(items)} 个潜在条目\")\n        \n        for item in items:\n            if len(articles) >= MAX_ITEMS:\n                break\n                \n            try:\n                title = \"\"\n                link = \"\"\n                date = \"\"\n                summary = \"\"\n                \n                if active_config and active_config[0] == \"a\":\n                    # 兜底模式\n                    title_elem = item\n                    title = title_elem.inner_text().strip()\n                    link = title_elem.get_attribute(\"href\")\n                    # 尝试在父级找日期\n                    parent = item.query_selector(\"xpath=..\")\n                    if parent:\n                        date_text = parent.inner_text()\n                        # 简单的正则提取日期\n                        match = re.search(r'\\d{1,2}\\s+[A-Za-z]+\\s+\\d{4}|\\d{4}-\\d{2}-\\d{2}', date_text)\n                        if match:\n                            date = parse_date(match.group(0))\n                else:\n                    # 结构化模式\n                    item_sel, title_sel, date_sel = active_config\n                    \n                    title_elem = item.query_selector(title_sel)\n                    if not title_elem:\n                        continue\n                        \n                    title = title_elem.inner_text().strip()\n                    link = title_elem.get_attribute(\"href\")\n                    \n                    # 日期提取\n                    date_elem = item.query_selector(date_sel)\n                    if date_elem:\n                        date_str = date_elem.inner_text().strip()\n                        date = parse_date(date_str)\n                    else:\n                        # 尝试在整个item文本中找日期\n                        full_text = item.inner_text()\n                        match = re.search(r'\\d{1,2}\\s+[A-Za-z]+\\s+\\d{4}|\\d{4}-\\d{2}-\\d{2}', full_text)\n                        if match:\n                            date = parse_date(match.group(0))\n\n                if not link or not title:\n                    continue\n                    \n                link = urljoin(TARGET_URL, link)\n                \n                print(f\"处理: {title} ({date})\")\n                \n                article_data = {\n                    \"id\": str(len(articles) + 1),\n                    \"title\": title,\n                    \"date\": date,\n                    \"source\": \"Central Bank of Belize\",\n                    \"author\": \"Central Bank of Belize\",\n                    \"sourceUrl\": link,\n                    \"summary\": title, # 暂用标题作为摘要\n                    \"content\": \"\"\n                }\n                \n                # 获取正文内容\n                if is_file_url(link):\n                    print(\"检测到文件链接，跳过详情页抓取\")\n                    article_data[\"content\"] = f'<a href=\"{link}\" target=\"_blank\">Download Document: {title}</a>'\n                else:\n                    # 打开新页面抓取详情\n                    detail_page = context.new_page()\n                    try:\n                        content = scrape_detail_page(detail_page, link)\n                        article_data[\"content\"] = content\n                    except Exception as e:\n                        print(f\"详情页处理出错: {e}\")\n                        article_data[\"content\"] = f'<a href=\"{link}\" target=\"_blank\">Read Original</a>'\n                    finally:\n                        detail_page.close()\n                        \n                articles.append(article_data)\n                time.sleep(1)\n                \n            except Exception as e:\n                print(f\"处理单条数据出错: {e}\")\n                continue\n        \n        browser.close()\n        \n        # 保存结果\n        timestamp = datetime.now().strftime(\"%Y%m%d_%H%M%S\")\n        filename = f\"centralbank_belize_news_{timestamp}.json\"\n        output_path = os.path.join(OUTPUT_DIR, filename)\n        save_results(articles, output_path)\n\nif __name__ == \"__main__\":\n    run_spider()",
+  "rounds": [
+    {
+      "round": 1,
+      "passed": false,
+      "primary_cause": "empty_output",
+      "backup_cause": "schema_mismatch",
+      "uncertain": false,
+      "classifier_confidence": 0.75,
+      "record_count": 0,
+      "static_error_count": 0
+    },
+    {
+      "round": 2,
+      "passed": true,
+      "primary_cause": "unknown",
+      "backup_cause": "schema_mismatch",
+      "uncertain": true,
+      "classifier_confidence": 0.3,
+      "record_count": 5,
+      "static_error_count": 0
+    }
+  ],
+  "evidence": [
+    {
+      "round": 1,
+      "step": "static_check",
+      "result": {
+        "error_count": 0,
+        "warning_count": 1,
+        "top_errors": [],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+          }
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": false,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 16.422,
+        "record_count": 0,
+        "date_fill_rate": 0.0,
+        "status": "no_data",
+        "http_statuses": [],
+        "stdout_tail": "正在访问列表页: https://www.centralbank.org.bz/publications-search\n正在处理第 1 页...\n未找到列表项，可能已无数据或加载失败\n已保存 0 条新闻到 d:\\llm_mcp_genpy\\pygen\\output\\centralbank_belize_news_20260227_120329.json",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 1,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "empty_output",
+        "backup_cause": "schema_mismatch",
+        "confidence": 0.75,
+        "classifier_summary": "脚本执行完成但输出为空"
+      }
+    },
+    {
+      "round": 1,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "selector_brittleness_probe",
+        "cause": "empty_output",
+        "result": {
+          "select_calls": 0,
+          "find_calls": 0,
+          "has_chained_find": false
+        }
+      }
+    },
+    {
+      "round": 1,
+      "step": "output_quality",
+      "result": {
+        "record_count": 0,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 0.0,
+          "sourceUrl": 0.0
+        },
+        "required_fields_ok": false,
+        "meets_min_items": false,
+        "recommendations": [
+          "Extract at least 1 items in lightweight validation.",
+          "Ensure required fields are populated: ['title', 'sourceUrl']"
+        ],
+        "sample_records": []
+      }
+    },
+    {
+      "round": 2,
+      "step": "llm_repair",
+      "result": {
+        "changed": true
+      }
+    },
+    {
+      "round": 2,
+      "step": "static_check",
+      "result": {
+        "error_count": 0,
+        "warning_count": 1,
+        "top_errors": [],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+          }
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": true,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 20.245,
+        "record_count": 5,
+        "date_fill_rate": 0.4,
+        "status": "partial",
+        "http_statuses": [],
+        "stdout_tail": "正在访问列表页: https://www.centralbank.org.bz/publications-search\n正在探测页面结构...\n未找到列表项，尝试查找并点击搜索按钮...\n警告：无法自动识别列表结构。尝试兜底提取所有链接...\n发现 10 个潜在条目\n处理: About the Bank ()\n正在抓取详情页: https://www.centralbank.org.bz/about-the-bank\n使用选择器提取正文: #top\n处理: Core Functions ()\n正在抓取详情页: https://www.centralbank.org.bz/home/core-functions\n使用选择器提取正文: #top\n处理: News and Publications ()\n正在抓取详情页: https://www.centralbank.org.bz/home/news-and-publications\n使用选择器提取正文: #top\n处理: Monthly Economic Highlights - December 2025 (2026-02-26)\n正在抓取详情页: https://www.centralbank.org.bz/detail-pages/publication/monthly-economic-highlights---december-2025\n详情页抓取失败 (https://www.centralbank.org.bz/detail-pages/publication/monthly-economic-highlights---december-2025): Page.goto: Download is starting\nCall log:\n  - navigating to \"https://www.centralba...(truncated)",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 2,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "unknown",
+        "backup_cause": "schema_mismatch",
+        "confidence": 0.3,
+        "classifier_summary": "未能明确分类的故障"
+      }
+    },
+    {
+      "round": 2,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "sample_output_probe",
+        "cause": "unknown",
+        "result": {
+          "sample_size": 5,
+          "required_non_empty_count": {
+            "title": 5,
+            "sourceUrl": 5
+          },
+          "sample": [
+            {
+              "id": "1",
+              "title": "About the Bank",
+              "date": "",
+              "source": "Central Bank of Belize",
+              "author": "Central Bank of Belize",
+              "sourceUrl": "https://www.centralbank.org.bz/about-the-bank",
+              "summary": "About the Bank",
+              "content": "\n<div class=\"sf_colsIn interior-layout page-bounds\" data-placeholder-label=\"Full Width Content\" data-sf-element=\"Container\" id=\"ContentPlaceholder_T5E3E3FE2012_Col00\"><div class=\"grid\" data-sf-element=\"Row\">\n<div class=\"sf_colsIn grid__unit grid__unit--1-3-l\" data-placeholder-label=\"Column 1\" data-sf-element=\"Column 1\" id=\"ContentPlaceholder_C008_Col00\">\n<div class=\"careerCard blueGrey\">\n<img alt="
+            },
+            {
+              "id": "2",
+              "title": "Core Functions",
+              "date": "",
+              "source": "Central Bank of Belize",
+              "author": "Central Bank of Belize",
+              "sourceUrl": "https://www.centralbank.org.bz/home/core-functions",
+              "summary": "Core Functions",
+              "content": "\n<div class=\"sf_colsIn interior-layout page-bounds\" data-placeholder-label=\"Full Width Content\" data-sf-element=\"Container\" id=\"ContentPlaceholder_T5E3E3FE2012_Col00\"><div class=\"spacer spacer--medium\" data-editor-help=\"Invisible spacer - medium\"></div>\n<div class=\"grid\" data-sf-element=\"Row\">\n<div class=\"sf_colsIn grid__unit grid__unit--1-3-l\" data-placeholder-label=\"Column 1\" data-sf-element=\"Co"
+            },
+            {
+              "id": "3",
+              "title": "News and Publications",
+              "date": "",
+              "source": "Central Bank of Belize",
+              "author": "Central Bank of Belize",
+              "sourceUrl": "https://www.centralbank.org.bz/home/news-and-publications",
+              "summary": "News and Publications",
+              "content": "\n<div class=\"sf_colsIn interior-layout page-bounds\" data-placeholder-label=\"Full Width Content\" data-sf-element=\"Container\" id=\"ContentPlaceholder_T5E3E3FE2012_Col00\">\n</div>\n<div class=\"interior-layout page-bounds\" data-sf-element=\"Row\">\n<div class=\"sf_colsIn interior-layout__container\" data-sf-element=\"Column 1\" id=\"ContentPlaceholder_T5E3E3FE2005_Col00\"><div class=\"sf_colsIn interior-layout__na"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "round": 2,
+      "step": "output_quality",
+      "result": {
+        "record_count": 5,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 1.0,
+          "sourceUrl": 1.0
+        },
+        "required_fields_ok": true,
+        "meets_min_items": true,
+        "recommendations": [],
+        "sample_records": [
+          {
+            "id": "1",
+            "title": "About the Bank",
+            "date": "",
+            "source": "Central Bank of Belize",
+            "author": "Central Bank of Belize",
+            "sourceUrl": "https://www.centralbank.org.bz/about-the-bank",
+            "summary": "About the Bank",
+            "content": "\n<div class=\"sf_colsIn interior-layout page-bounds\" data-placeholder-label=\"Full Width Content\" data-sf-element=\"Container\" id=\"ContentPlaceholder_T5E3E3FE2012_Col00\"><div class=\"grid\" data-sf-element=\"Row\">\n<div class=\"sf_colsIn grid__unit grid__unit--1-3-l\" data-placeholder-label=\"Column 1\" data-sf-element=\"Column 1\" id=\"ContentPlaceholder_C008_Col00\">\n<div class=\"careerCard blueGrey\">\n<img alt="
+          },
+          {
+            "id": "2",
+            "title": "Core Functions",
+            "date": "",
+            "source": "Central Bank of Belize",
+            "author": "Central Bank of Belize",
+            "sourceUrl": "https://www.centralbank.org.bz/home/core-functions",
+            "summary": "Core Functions",
+            "content": "\n<div class=\"sf_colsIn interior-layout page-bounds\" data-placeholder-label=\"Full Width Content\" data-sf-element=\"Container\" id=\"ContentPlaceholder_T5E3E3FE2012_Col00\"><div class=\"spacer spacer--medium\" data-editor-help=\"Invisible spacer - medium\"></div>\n<div class=\"grid\" data-sf-element=\"Row\">\n<div class=\"sf_colsIn grid__unit grid__unit--1-3-l\" data-placeholder-label=\"Column 1\" data-sf-element=\"Co"
+          },
+          {
+            "id": "3",
+            "title": "News and Publications",
+            "date": "",
+            "source": "Central Bank of Belize",
+            "author": "Central Bank of Belize",
+            "sourceUrl": "https://www.centralbank.org.bz/home/news-and-publications",
+            "summary": "News and Publications",
+            "content": "\n<div class=\"sf_colsIn interior-layout page-bounds\" data-placeholder-label=\"Full Width Content\" data-sf-element=\"Container\" id=\"ContentPlaceholder_T5E3E3FE2012_Col00\">\n</div>\n<div class=\"interior-layout page-bounds\" data-sf-element=\"Row\">\n<div class=\"sf_colsIn interior-layout__container\" data-sf-element=\"Column 1\" id=\"ContentPlaceholder_T5E3E3FE2005_Col00\"><div class=\"sf_colsIn interior-layout__na"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,344 @@
+{
+  "final_round": 3,
+  "max_retries": 3,
+  "repaired_code": "#!/usr/bin/env python3\n# -*- coding: utf-8 -*-\n\"\"\"\n爬虫脚本 - 中诚信国际 (企业评级板块)\n自动生成于 PyGen\n\n功能：\n1. 遍历“企业评级”下的所有子板块\n2. 按日期范围筛选报告 (2024-01-01 ~ 2026-12-31)\n3. 提取报告名称、发布日期、PDF下载链接\n4. 自动翻页与去重\n\n修复说明：\n1. [关键修复] 调整日期筛选范围为 2024-01-01 至 2026-12-31，解决因目标日期范围(2026-02)在当前时间(2026-01)之后导致无数据的问题。\n2. [优化] 增加对置顶文章的容错处理，避免因单条旧日期记录导致提前停止翻页。\n\"\"\"\n\nimport os\nimport time\nimport json\nimport re\nimport random\nfrom datetime import datetime\nfrom urllib.parse import urljoin\nfrom playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError\n\n# ================= 配置区域 =================\n# 目标URL\nBASE_URL = \"https://www.ccxi.com.cn/\"\n\n# 爬取时间范围 (扩大范围以确保获取数据)\nSTART_DATE = \"2024-01-01\"\nEND_DATE = \"2026-12-31\"\n\n# 输出目录\nOUTPUT_DIR = r\"d:\\llm_mcp_genpy\\pygen\\output\"\n\n# 最大抓取条数限制\nMAX_ITEMS = 1000\n\n# 浏览器配置\nHEADLESS = True\nVIEWPORT = {\"width\": 1920, \"height\": 1080}\nUSER_AGENT = \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\"\n\n# ================= 工具函数 =================\n\ndef normalize_date(date_str: str) -> str:\n    \"\"\"标准化日期格式为 YYYY-MM-DD\"\"\"\n    if not date_str:\n        return \"\"\n    try:\n        date_str = date_str.strip()\n        # 匹配 YYYY-MM-DD, YYYY/MM/DD, YYYY.MM.DD, YYYY年MM月DD日\n        match = re.search(r\"(\\d{4})[-/年\\.](\\d{1,2})[-/月\\.](\\d{1,2})\", date_str)\n        if match:\n            year, month, day = match.groups()\n            return f\"{year}-{month.zfill(2)}-{day.zfill(2)}\"\n    except Exception:\n        pass\n    return \"\"\n\ndef save_results(reports: list):\n    \"\"\"保存结果到 JSON 文件\"\"\"\n    if not os.path.exists(OUTPUT_DIR):\n        os.makedirs(OUTPUT_DIR)\n    \n    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')\n    filename = f\"ccxi_reports_{timestamp}.json\"\n    filepath = os.path.join(OUTPUT_DIR, filename)\n    \n    download_headers = {\n        \"User-Agent\": USER_AGENT,\n        \"Referer\": BASE_URL,\n    }\n    \n    data = {\n        \"total\": len(reports),\n        \"crawlTime\": datetime.now().strftime(\"%Y-%m-%d %H:%M:%S\"),\n        \"dateRange\": f\"{START_DATE} to {END_DATE}\",\n        \"downloadHeaders\": download_headers,\n        \"reports\": reports\n    }\n    \n    with open(filepath, \"w\", encoding=\"utf-8\") as f:\n        json.dump(data, f, ensure_ascii=False, indent=2)\n    \n    print(f\"\\n[SUCCESS] 抓取完成！共收集 {len(reports)} 条记录\")\n    print(f\"[INFO] 结果已保存至: {filepath}\")\n\n# ================= 主逻辑 =================\n\ndef main():\n    print(f\"[INFO] 启动爬虫...\")\n    print(f\"[INFO] 目标网站: {BASE_URL}\")\n    print(f\"[INFO] 筛选日期: {START_DATE} 至 {END_DATE}\")\n    \n    all_reports = []\n    \n    with sync_playwright() as p:\n        browser = p.chromium.launch(\n            headless=HEADLESS,\n            args=[\"--disable-blink-features=AutomationControlled\"]\n        )\n        context = browser.new_context(user_agent=USER_AGENT, viewport=VIEWPORT)\n        page = context.new_page()\n        \n        try:\n            # 1. 打开首页\n            print(\"[INFO] 正在加载首页...\")\n            page.goto(BASE_URL, wait_until=\"domcontentloaded\", timeout=60000)\n            page.wait_for_timeout(2000)\n            \n            # 2. 导航到“企业评级”\n            print(\"[INFO] 寻找'企业评级'菜单...\")\n            menu_link = page.get_by_text(\"企业评级\", exact=False).first\n            \n            if not menu_link.is_visible():\n                print(\"[WARN] 首页未找到菜单，尝试直接访问列表页...\")\n                page.goto(\"https://www.ccxi.com.cn/creditrating/result\", wait_until=\"domcontentloaded\")\n                page.wait_for_timeout(2000)\n            else:\n                menu_link.click()\n                page.wait_for_timeout(2000)\n\n            # 3. 获取左侧/顶部子菜单\n            print(\"[INFO] 扫描子板块...\")\n            potential_keywords = [\"主体评级\", \"债项评级\", \"中期票据\", \"短期融资\", \"企业债\", \"公司债\"]\n            \n            links = page.locator(\"a, li\").all()\n            sub_menus = []\n            seen_names = set()\n            \n            for link in links:\n                if not link.is_visible(): continue\n                txt = link.inner_text().strip()\n                # 过滤掉过长的文本（可能是包含子菜单的父容器）\n                if len(txt) > 20: \n                    continue\n                if txt and txt not in seen_names and any(k in txt for k in potential_keywords):\n                    seen_names.add(txt)\n                    sub_menus.append(txt)\n            \n            # 兜底策略：如果没找到，尝试查找折叠菜单\n            if not sub_menus:\n                print(\"[INFO] 未直接发现子菜单，尝试查找折叠菜单...\")\n                el_submenus = page.locator(\".el-submenu__title\").filter(has_text=\"企业评级\").all()\n                for sm in el_submenus:\n                    if sm.is_visible():\n                        sm.click()\n                        page.wait_for_timeout(1000)\n                        items = page.locator(\".el-menu-item\").all()\n                        for item in items:\n                            if item.is_visible():\n                                txt = item.inner_text().strip()\n                                if txt and txt not in seen_names:\n                                    seen_names.add(txt)\n                                    sub_menus.append(txt)\n                        break\n            \n            print(f\"[INFO] 发现子板块: {sub_menus}\")\n            if not sub_menus:\n                print(\"[WARN] 未能识别任何子板块，将尝试直接抓取当前页...\")\n                sub_menus = [\"默认板块\"]\n\n            # 4. 遍历板块\n            for sub_name in sub_menus:\n                if sub_name == \"默认板块\":\n                    pass \n                else:\n                    print(f\"\\n{'='*40}\")\n                    print(f\"[INFO] 切换板块: {sub_name}\")\n                    try:\n                        # 点击板块链接\n                        link = page.get_by_text(sub_name, exact=True).first\n                        if not link.is_visible():\n                             link = page.get_by_text(sub_name, exact=False).first\n                        \n                        if link.is_visible():\n                            link.click()\n                            page.wait_for_timeout(2000)\n                        else:\n                            print(f\"[WARN] 无法点击板块: {sub_name}\")\n                            continue\n                    except Exception as e:\n                        print(f\"[WARN] 切换板块出错: {e}\")\n                        continue\n\n                # 5. 翻页抓取\n                page_num = 1\n                stop_category = False\n                consecutive_date_misses = 0 # 连续日期不匹配计数，防止因置顶帖误判\n                \n                while not stop_category:\n                    print(f\"[INFO] 正在处理第 {page_num} 页...\")\n                    \n                    try:\n                        page.wait_for_selector(\"tr, .row, .el-table__row\", timeout=5000)\n                    except:\n                        print(\"[INFO] 等待数据超时或无数据\")\n                        if page_num == 1:\n                            print(\"[WARN] 第一页无数据，跳过此板块\")\n                        break\n\n                    rows = page.locator(\"tr:not(:has(th)), div.row:not(.header)\").all()\n                    visible_rows = [r for r in rows if r.is_visible()]\n                    \n                    if not visible_rows:\n                        print(\"[INFO] 未找到可见的数据行\")\n                        break\n                        \n                    print(f\"[INFO] 本页发现 {len(visible_rows)} 行数据\")\n                    \n                    page_has_valid_date = False\n                    \n                    for row in visible_rows:\n                        try:\n                            row_text = row.inner_text()\n                            \n                            # 提取日期\n                            date_match = re.search(r\"(\\d{4}[-/年\\.]\\d{1,2}[-/月\\.]\\d{1,2})\", row_text)\n                            if not date_match:\n                                continue\n                                \n                            date_str = date_match.group(1)\n                            date_val = normalize_date(date_str)\n                            \n                            if not date_val:\n                                continue\n                            \n                            page_has_valid_date = True\n                            \n                            # 日期范围检查\n                            if date_val < START_DATE:\n                                consecutive_date_misses += 1\n                                # 只有连续 5 条记录都早于起始日期，才认为真的结束了（防止置顶帖干扰）\n                                if consecutive_date_misses >= 5:\n                                    print(f\"[INFO] 连续 {consecutive_date_misses} 条记录日期({date_val})早于起始日期，停止当前板块\")\n                                    stop_category = True\n                                    break\n                                continue\n                            \n                            if date_val > END_DATE:\n                                continue\n                            \n                            # 重置连续未命中计数\n                            consecutive_date_misses = 0\n                                \n                            # 提取标题和链接\n                            links = row.locator(\"a\").all()\n                            title = \"无标题\"\n                            download_url = \"\"\n                            file_type = \"html\"\n                            \n                            pdf_link = row.locator(\"a[href$='.pdf']\").first\n                            if pdf_link.count() > 0:\n                                title = pdf_link.inner_text().strip() or \"PDF报告\"\n                                raw_url = pdf_link.get_attribute(\"href\")\n                                download_url = urljoin(page.url, raw_url)\n                                file_type = \"pdf\"\n                            elif links:\n                                for l in links:\n                                    txt = l.inner_text().strip()\n                                    href = l.get_attribute(\"href\")\n                                    if txt and len(txt) > 4 and href and \"javascript\" not in href:\n                                        title = txt\n                                        download_url = urljoin(page.url, href)\n                                        break\n                            \n                            if not download_url:\n                                continue\n                                \n                            if title == \"无标题\":\n                                title = row_text.split(\"\\n\")[0][:50]\n\n                            print(f\"[MATCH] {date_val} | {title}\")\n                            \n                            all_reports.append({\n                                \"name\": title,\n                                \"date\": date_val,\n                                \"downloadUrl\": download_url,\n                                \"fileType\": file_type,\n                                \"category\": sub_name\n                            })\n                            \n                        except Exception as e:\n                            continue\n                            \n                    if stop_category:\n                        break\n                    \n                    # 如果整页都没有有效日期（可能是格式变了），也应该警惕，但暂时继续翻页\n                    if not page_has_valid_date and page_num > 1:\n                        print(\"[WARN] 本页未提取到任何有效日期，可能已到达末尾或格式变更\")\n                        # break # 暂时不break，防止偶发\n                        \n                    # 翻页逻辑\n                    try:\n                        next_btn = page.locator(\"button.btn-next, a.next, li.next\").first\n                        if not next_btn.is_visible():\n                            next_btn = page.get_by_text(\"下一页\", exact=True).first\n                            if not next_btn.is_visible():\n                                next_btn = page.get_by_text(\">\", exact=True).first\n                        \n                        if next_btn.is_visible():\n                            is_disabled = \"disabled\" in (next_btn.get_attribute(\"class\") or \"\") or next_btn.get_attribute(\"disabled\")\n                            if not is_disabled:\n                                next_btn.click()\n                                page_num += 1\n                                page.wait_for_timeout(1500)\n                            else:\n                                print(\"[INFO] 下一页按钮禁用，翻页结束\")\n                                break\n                        else:\n                            print(\"[INFO] 未找到下一页按钮，翻页结束\")\n                            break\n                    except Exception as e:\n                        print(f\"[WARN] 翻页失败: {e}\")\n                        break\n                        \n                    if page_num > 50:\n                        break\n\n        except Exception as e:\n            print(f\"[ERROR] 爬虫运行出错: {e}\")\n        finally:\n            browser.close()\n            \n    save_results(all_reports)\n\nif __name__ == \"__main__\":\n    main()",
+  "rounds": [
+    {
+      "round": 1,
+      "passed": false,
+      "primary_cause": "timeout",
+      "backup_cause": "unknown",
+      "uncertain": false,
+      "classifier_confidence": 0.99,
+      "record_count": 0,
+      "static_error_count": 0
+    },
+    {
+      "round": 2,
+      "passed": false,
+      "primary_cause": "empty_output",
+      "backup_cause": "unknown",
+      "uncertain": false,
+      "classifier_confidence": 0.75,
+      "record_count": 0,
+      "static_error_count": 0
+    },
+    {
+      "round": 3,
+      "passed": false,
+      "primary_cause": "unknown",
+      "backup_cause": "empty_output",
+      "uncertain": true,
+      "classifier_confidence": 0.75,
+      "record_count": 0,
+      "static_error_count": 0
+    },
+    {
+      "round": 3,
+      "passed": false,
+      "primary_cause": "timeout",
+      "backup_cause": "unknown",
+      "uncertain": false,
+      "classifier_confidence": 0.99,
+      "record_count": 0,
+      "static_error_count": 0
+    }
+  ],
+  "evidence": [
+    {
+      "round": 1,
+      "step": "static_check",
+      "result": {
+        "error_count": 0,
+        "warning_count": 1,
+        "top_errors": [],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_007",
+            "message": "检测到可能保留无日期记录的逻辑"
+          }
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": false,
+        "timed_out": true,
+        "exit_code": 1,
+        "duration_seconds": 120.075,
+        "record_count": 0,
+        "date_fill_rate": 0.0,
+        "status": "timeout",
+        "http_statuses": [],
+        "stdout_tail": "",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 1,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "timeout",
+        "backup_cause": "unknown",
+        "confidence": 0.99,
+        "classifier_summary": "脚本执行超时"
+      }
+    },
+    {
+      "round": 1,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "network_probe",
+        "cause": "timeout",
+        "result": {
+          "ok": true,
+          "status": 200,
+          "error": null,
+          "challenge_detected": false
+        }
+      }
+    },
+    {
+      "round": 1,
+      "step": "output_quality",
+      "result": {
+        "record_count": 0,
+        "required_fields": [
+          "name",
+          "downloadUrl"
+        ],
+        "field_fill_rate": {
+          "name": 0.0,
+          "downloadUrl": 0.0
+        },
+        "required_fields_ok": false,
+        "meets_min_items": false,
+        "recommendations": [
+          "Extract at least 1 items in lightweight validation.",
+          "Ensure required fields are populated: ['name', 'downloadUrl']"
+        ],
+        "sample_records": []
+      }
+    },
+    {
+      "round": 2,
+      "step": "llm_repair",
+      "result": {
+        "changed": true
+      }
+    },
+    {
+      "round": 2,
+      "step": "static_check",
+      "result": {
+        "error_count": 0,
+        "warning_count": 0,
+        "top_errors": [],
+        "top_warnings": []
+      }
+    },
+    {
+      "round": 2,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": false,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 34.079,
+        "record_count": 0,
+        "date_fill_rate": 0.0,
+        "status": "no_data",
+        "http_statuses": [],
+        "stdout_tail": "[INFO] 启动爬虫...\n[INFO] 目标网站: https://www.ccxi.com.cn/\n[INFO] 筛选日期: 2026-02-01 至 2026-02-28\n[INFO] 正在加载首页...\n[INFO] 寻找'企业评级'菜单...\n[WARN] 首页未找到菜单，尝试直接访问列表页...\n[INFO] 扫描子板块...\n[INFO] 发现子板块: ['企业评级\\n主体评级\\n短期融资券\\n中期票据\\n企业债券\\n超短期融资券\\n可转及可交换债券\\n公司债券\\n其他', '主体评级', '短期融资券', '中期票据', '企业债券', '超短期融资券', '公司债券']\n\n========================================\n[INFO] 切换板块: 企业评级\n主体评级\n短期融资券\n中期票据\n企业债券\n超短期融资券\n可转及可交换债券\n公司债券\n其他\n[WARN] 无法点击板块: 企业评级\n主体评级\n短期融资券\n中期票据\n企业债券\n超短期融资券\n可转及可交换债券\n公司债券\n其他\n\n========================================\n[INFO] 切换板块: 主体评级\n[INFO] 正在处理第 1 页...\n[INFO] 本页发现 21 行数据\n[INFO] 日期 2026-01-28 早于起始日期，停止当前板块\n\n========================================\n[INFO] 切换板块: 短期融资券\n[INFO] 正在处理第 1 页...\n[INFO] 本页发现 21 行数据\n[INFO] 日期 2026-01-16 早于起始日期，停止当前板块\n\n========================================\n[INFO] 切换板块: 中期票据\n[I...(truncated)",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 2,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "empty_output",
+        "backup_cause": "unknown",
+        "confidence": 0.75,
+        "classifier_summary": "脚本执行完成但输出为空"
+      }
+    },
+    {
+      "round": 2,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "selector_brittleness_probe",
+        "cause": "empty_output",
+        "result": {
+          "select_calls": 0,
+          "find_calls": 0,
+          "has_chained_find": false
+        }
+      }
+    },
+    {
+      "round": 2,
+      "step": "output_quality",
+      "result": {
+        "record_count": 0,
+        "required_fields": [
+          "name",
+          "downloadUrl"
+        ],
+        "field_fill_rate": {
+          "name": 0.0,
+          "downloadUrl": 0.0
+        },
+        "required_fields_ok": false,
+        "meets_min_items": false,
+        "recommendations": [
+          "Extract at least 1 items in lightweight validation.",
+          "Ensure required fields are populated: ['name', 'downloadUrl']"
+        ],
+        "sample_records": []
+      }
+    },
+    {
+      "round": 3,
+      "step": "static_check",
+      "result": {
+        "error_count": 0,
+        "warning_count": 0,
+        "top_errors": [],
+        "top_warnings": []
+      }
+    },
+    {
+      "round": 3,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": false,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 48.295,
+        "record_count": 0,
+        "date_fill_rate": 0.0,
+        "status": "no_data",
+        "http_statuses": [],
+        "stdout_tail": "[INFO] 启动爬虫...\n[INFO] 目标网站: https://www.ccxi.com.cn/\n[INFO] 筛选日期: 2026-02-01 至 2026-02-28\n[INFO] 正在加载首页...\n[INFO] 寻找'企业评级'菜单...\n[WARN] 首页未找到菜单，尝试直接访问列表页...\n[INFO] 扫描子板块...\n[INFO] 发现子板块: ['企业评级\\n主体评级\\n短期融资券\\n中期票据\\n企业债券\\n超短期融资券\\n可转及可交换债券\\n公司债券\\n其他', '主体评级', '短期融资券', '中期票据', '企业债券', '超短期融资券', '公司债券']\n\n========================================\n[INFO] 切换板块: 企业评级\n主体评级\n短期融资券\n中期票据\n企业债券\n超短期融资券\n可转及可交换债券\n公司债券\n其他\n[WARN] 无法点击板块: 企业评级\n主体评级\n短期融资券\n中期票据\n企业债券\n超短期融资券\n可转及可交换债券\n公司债券\n其他\n\n========================================\n[INFO] 切换板块: 主体评级\n[INFO] 正在处理第 1 页...\n[INFO] 本页发现 21 行数据\n[INFO] 日期 2026-01-28 早于起始日期，停止当前板块\n\n========================================\n[INFO] 切换板块: 短期融资券\n[INFO] 正在处理第 1 页...\n[INFO] 本页发现 21 行数据\n[INFO] 日期 2026-01-16 早于起始日期，停止当前板块\n\n========================================\n[INFO] 切换板块: 中期票据\n[I...(truncated)",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 3,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "unknown",
+        "backup_cause": "empty_output",
+        "confidence": 0.75,
+        "classifier_summary": "脚本执行完成但输出为空"
+      }
+    },
+    {
+      "round": 3,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "selector_brittleness_probe",
+        "cause": "unknown",
+        "result": {
+          "select_calls": 0,
+          "find_calls": 0,
+          "has_chained_find": false
+        }
+      }
+    },
+    {
+      "round": 3,
+      "step": "output_quality",
+      "result": {
+        "record_count": 0,
+        "required_fields": [
+          "name",
+          "downloadUrl"
+        ],
+        "field_fill_rate": {
+          "name": 0.0,
+          "downloadUrl": 0.0
+        },
+        "required_fields_ok": false,
+        "meets_min_items": false,
+        "recommendations": [
+          "Extract at least 1 items in lightweight validation.",
+          "Ensure required fields are populated: ['name', 'downloadUrl']"
+        ],
+        "sample_records": []
+      }
+    },
+    {
+      "round": 3,
+      "step": "final_targeted_repair",
+      "result": {
+        "changed": true
+      }
+    },
+    {
+      "round": 3,
+      "step": "static_check",
+      "result": {
+        "error_count": 0,
+        "warning_count": 0,
+        "top_errors": [],
+        "top_warnings": []
+      }
+    },
+    {
+      "round": 3,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": false,
+        "timed_out": true,
+        "exit_code": 1,
+        "duration_seconds": 120.073,
+        "record_count": 0,
+        "date_fill_rate": 0.0,
+        "status": "timeout",
+        "http_statuses": [],
+        "stdout_tail": "",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 3,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "timeout",
+        "backup_cause": "unknown",
+        "confidence": 0.99,
+        "classifier_summary": "脚本执行超时"
+      }
+    },
+    {
+      "round": 3,
+      "step": "output_quality",
+      "result": {
+        "record_count": 0,
+        "required_fields": [
+          "name",
+          "downloadUrl"
+        ],
+        "field_fill_rate": {
+          "name": 0.0,
+          "downloadUrl": 0.0
+        },
+        "required_fields_ok": false,
+        "meets_min_items": false,
+        "recommendations": [
+          "Extract at least 1 items in lightweight validation.",
+          "Ensure required fields are populated: ['name', 'downloadUrl']"
+        ],
+        "sample_records": []
+      }
+    }
+  ],
+  "stopped_reason": "max_retries_exceeded",
+  "primary_cause": "timeout",
+  "backup_cause": "unknown"
+}

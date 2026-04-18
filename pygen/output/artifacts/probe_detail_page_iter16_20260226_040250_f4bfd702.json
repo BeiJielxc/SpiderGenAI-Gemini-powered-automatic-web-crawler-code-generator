@@ -1,0 +1,85 @@
+{
+  "url": "https://www.seczambia.org.zm/public-alert-fud-football/",
+  "contentSelector": "div.elementor.elementor-116",
+  "contentTagName": "div",
+  "contentTextLength": 2332,
+  "sampleContentHtml": "<div class=\"elementor elementor-116\" data-elementor-id=\"116\" data-elementor-post-type=\"elementskit_template\" data-elementor-type=\"wp-post\">\n<div class=\"elementor-element elementor-element-0151241 e-flex e-con-boxed e-con e-parent e-lazyloaded\" data-e-type=\"container\" data-element_type=\"container\" data-id=\"0151241\">\n<div class=\"e-con-inner\">\n<div class=\"elementor-element elementor-element-33f3623 e-con-full e-flex e-con e-child\" data-e-type=\"container\" data-element_type=\"container\" data-id=\"33f3623\">\n<div class=\"elementor-element elementor-element-e702097 e-con-full e-flex e-con e-child\" data-e-type=\"container\" data-element_type=\"container\" data-id=\"e702097\">\n<div class=\"elementor-element elementor-element-0a04dd4 elementor-widget-mobile__width-auto elementor-widget elementor-widget-theme-site-logo elementor-widget-image\" data-e-type=\"widget\" data-element_type=\"widget\" data-id=\"0a04dd4\" data-widget_type=\"theme-site-logo.default\">\n<div class=\"elementor-widget-container\">\n<a href=\"https://www.seczambia.org.zm\">\n<img alt=\"\" class=\"attachment-full size-full wp-image-352\" fetchpriority=\"high\" height=\"1040\" sizes=\"(max-width: 2432px) 100vw, 2432px\" src=\"https://www.seczambia.org.zm/wp-con...",
+  "contentCandidates": [
+    {
+      "selector": "div.elementor.elementor-116",
+      "textLength": 2332,
+      "linkCount": 127,
+      "linkDensity": 0.0544,
+      "textPreview": "Facebook-fIcon-linkedinX-twitterYoutubeFind A LicenseePublications & ReportsOnli"
+    },
+    {
+      "selector": "div.elementor-element.elementor-element-e7d81ab.e-flex.e-con-boxed.e-con.e-parent.e-lazyloaded",
+      "textLength": 2196,
+      "linkCount": 115,
+      "linkDensity": 0.0523,
+      "textPreview": "HomeAbout UsMission and VisionOur BoardOur ValuesSEC SustainabilityManagement & "
+    },
+    {
+      "selector": "div.elementor-element.elementor-element-10aa888.e-flex.e-con-boxed.e-con.e-child",
+      "textLength": 2196,
+      "linkCount": 115,
+      "linkDensity": 0.0523,
+      "textPreview": "HomeAbout UsMission and VisionOur BoardOur ValuesSEC SustainabilityManagement & "
+    },
+    {
+      "selector": "div.elementor-element.elementor-element-d80c3e1.e-con-full.e-flex.e-con.e-child",
+      "textLength": 2113,
+      "linkCount": 106,
+      "linkDensity": 0.0501,
+      "textPreview": "HomeAbout UsMission and VisionOur BoardOur ValuesSEC SustainabilityManagement & "
+    },
+    {
+      "selector": "div.elementor-widget-container",
+      "textLength": 2113,
+      "linkCount": 106,
+      "linkDensity": 0.0501,
+      "textPreview": "HomeAbout UsMission and VisionOur BoardOur ValuesSEC SustainabilityManagement & "
+    },
+    {
+      "selector": "div.wp-block-button",
+      "textLength": 12,
+      "linkCount": 1,
+      "linkDensity": 0.0,
+      "textPreview": "[FILE] Download PDF",
+      "isFileContainer": true,
+      "fileExt": "pdf"
+    },
+    {
+      "selector": "div.elementor.elementor-2053.elementor-location-single.post-5941.latest-news.type-latest-news.status-publish.has-post-thumbnail.hentry.news-news.news-warnings-alerts",
+      "textLength": 1198,
+      "linkCount": 5,
+      "linkDensity": 0.0042,
+      "textPreview": "PUBLIC ALERT : FUD-FOOTBALLPUBLIC ALERT : FUD-FOOTBALLThe Securities and Exchang"
+    },
+    {
+      "selector": "div.elementor-element.elementor-element-46bb288f.e-flex.e-con-boxed.e-con.e-parent.e-lazyloaded",
+      "textLength": 1171,
+      "linkCount": 5,
+      "linkDensity": 0.0043,
+      "textPreview": "PUBLIC ALERT : FUD-FOOTBALLThe Securities and Exchange Commission (“SEC or the C"
+    },
+    {
+      "selector": "div.elementor-element.elementor-element-22e417f5.e-con-full.e-flex.e-con.e-child",
+      "textLength": 753,
+      "linkCount": 1,
+      "linkDensity": 0.0013,
+      "textPreview": "PUBLIC ALERT : FUD-FOOTBALLThe Securities and Exchange Commission (“SEC or the C"
+    },
+    {
+      "selector": "div.elementor-element.elementor-element-579bfeb.elementor-widget.elementor-widget-theme-post-content",
+      "textLength": 726,
+      "linkCount": 1,
+      "linkDensity": 0.0014,
+      "textPreview": "The Securities and Exchange Commission (“SEC or the Commission”) and the Financi"
+    }
+  ],
+  "titleSelector": "h1",
+  "titleTagName": "h1.elementor-heading-title.elementor-size-default",
+  "titleText": "PUBLIC ALERT : FUD-FOOTBALL",
+  "structureHint": "10 body container candidates for LLM to choose from; title in <h1.elementor-heading-title.elementor-size-default> (selector: 'h1')"
+}

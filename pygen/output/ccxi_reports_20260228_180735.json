@@ -1,0 +1,20 @@
+{
+  "total": 1,
+  "crawlTime": "2026-02-28 18:07:35",
+  "dateRange": "2026-02-01 to 2026-02-28",
+  "downloadHeaders": {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Referer": "https://www.ccxi.com.cn/creditrating/result"
+  },
+  "reports": [
+    {
+      "category": "主体评级",
+      "name": "合肥市建设投资控股（集团）有限公司",
+      "date": "2026-02-12",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260213-1770972307000-1IUu8Q-[[originalname]]-2026年度合肥市建设投资控股（集团）有限公司信用评级报告.pdf",
+      "fileType": "pdf",
+      "rating": "AAA",
+      "outlook": "稳定"
+    }
+  ]
+}

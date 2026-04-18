@@ -1,0 +1,55 @@
+{
+  "total": 5,
+  "crawlTime": "2026-02-12 20:41:36",
+  "dateRange": {
+    "start": "2026-02-01",
+    "end": "2026-02-28"
+  },
+  "articles": [
+    {
+      "title": "Weekly Monetary Aggregates 28 January 2026",
+      "date": "2026-02-11",
+      "source": "Central Bank of Belize",
+      "author": "",
+      "sourceUrl": "https://www.centralbank.org.bz/detail-pages/publication/weekly-monetary-aggregates-28-january-2026",
+      "summary": "The Weekly Monetary Aggregates summarizes the weekly activity of the banking system.",
+      "content": ""
+    },
+    {
+      "title": "Quarterly Financial Information of International Banks - December 2025",
+      "date": "2026-02-09",
+      "source": "Central Bank of Belize",
+      "author": "",
+      "sourceUrl": "https://www.centralbank.org.bz/detail-pages/publication/quarterly-financial-information-of-international-banks---december-2025",
+      "summary": "Quarterly financial information of international banks regulated by the Central Bank of Belize.",
+      "content": ""
+    },
+    {
+      "title": "Quarterly Financial Information of Credit Unions - December 2025",
+      "date": "2026-02-09",
+      "source": "Central Bank of Belize",
+      "author": "",
+      "sourceUrl": "https://www.centralbank.org.bz/detail-pages/publication/quarterly-financial-information-of-credit-unions---december-2025",
+      "summary": "Quarterly financial information of credit unions regulated by the Central Bank of Belize.",
+      "content": ""
+    },
+    {
+      "title": "Quarterly Financial Information of Domestic Banks – December 2025",
+      "date": "2026-02-09",
+      "source": "Central Bank of Belize",
+      "author": "",
+      "sourceUrl": "https://www.centralbank.org.bz/detail-pages/publication/quarterly-financial-information-of-domestic-banks---december-2025",
+      "summary": "Quarterly financial information of domestic banks regulated by the Central Bank of Belize.",
+      "content": ""
+    },
+    {
+      "title": "Monthly Economic Highlights - November 2025",
+      "date": "2026-02-02",
+      "source": "Central Bank of Belize",
+      "author": "",
+      "sourceUrl": "https://www.centralbank.org.bz/detail-pages/publication/monthly-economic-highlights---november-2025",
+      "summary": "The Monthly Economic Report provides a monthly review on the performance of the Belizean economy.",
+      "content": ""
+    }
+  ]
+}

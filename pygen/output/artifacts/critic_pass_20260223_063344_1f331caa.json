@@ -1,0 +1,246 @@
+{
+  "final_round": 2,
+  "max_retries": 3,
+  "repaired_code": "import os\nimport json\nimport time\nimport re\nfrom datetime import datetime, timedelta\nfrom urllib.parse import urljoin\nfrom bs4 import BeautifulSoup\nfrom playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError\n\n# ================= 配置区域 =================\n# 目标URL\nTARGET_URL = \"https://www.interfax-russia.ru/moscow/news\"\n\n# 爬取时间范围 (用户指定)\nSTART_DATE = \"2026-02-20\"\nEND_DATE = \"2026-02-23\"\n\n# 输出目录\nOUTPUT_DIR = r\"d:\\llm_mcp_genpy\\pygen\\output\"\n\n# 俄语月份映射表\nRU_MONTHS = {\n    \"января\": \"01\", \"февраля\": \"02\", \"марта\": \"03\", \"апреля\": \"04\",\n    \"мая\": \"05\", \"июня\": \"06\", \"июля\": \"07\", \"августа\": \"08\",\n    \"сентября\": \"09\", \"октября\": \"10\", \"ноября\": \"11\", \"декабря\": \"12\"\n}\n\n# ================= 核心功能函数 =================\n\ndef ensure_dir(path):\n    \"\"\"确保目录存在\"\"\"\n    if not os.path.exists(path):\n        os.makedirs(path)\n\ndef parse_ru_date(date_text, year):\n    \"\"\"\n    解析俄语日期字符串，如 \"20 февраля\" -> \"2026-02-20\"\n    \"\"\"\n    try:\n        # 移除多余空白和非日期字符\n        clean_text = re.sub(r'[^\\w\\s]', '', date_text).strip().lower()\n        parts = clean_text.split()\n        \n        # 寻找月份关键词\n        day = None\n        month = None\n        \n        for i, part in enumerate(parts):\n            if part in RU_MONTHS:\n                month = RU_MONTHS[part]\n                # 通常日期在月份前面\n                if i > 0 and parts[i-1].isdigit():\n                    day = parts[i-1].zfill(2)\n                break\n        \n        if day and month:\n            return f\"{year}-{month}-{day}\"\n            \n    except Exception as e:\n        print(f\"日期解析错误: {date_text}, {e}\")\n    return None\n\ndef clean_html_content(html_content, base_url):\n    \"\"\"\n    清洗HTML内容：修复相对路径图片和链接\n    \"\"\"\n    if not html_content:\n        return \"\"\n    try:\n        soup = BeautifulSoup(html_content, 'html.parser')\n        \n        # 移除无用标签\n        for tag in soup.select('script, style, iframe, .banner, .advertisement, .read-more'):\n            tag.decompose()\n\n        # 修复图片链接\n        for img in soup.find_all('img'):\n            if img.get('src'):\n                img['src'] = urljoin(base_url, img['src'])\n                \n        # 修复超链接\n        for a in soup.find_all('a'):\n            if a.get('href'):\n                a['href'] = urljoin(base_url, a['href'])\n                \n        return str(soup)\n    except Exception as e:\n        print(f\"内容清洗出错: {e}\")\n        return html_content\n\ndef extract_article_content(context, url):\n    \"\"\"\n    进入详情页提取正文 (使用新页面上下文)\n    \"\"\"\n    page = context.new_page()\n    try:\n        # print(f\"正在抓取详情: {url}\")\n        # 使用 domcontentloaded 避免加载广告导致的超时\n        page.goto(url, timeout=30000, wait_until=\"domcontentloaded\")\n        \n        content_html = \"\"\n        \n        # 尝试选择器列表 (包含常见的新闻正文结构)\n        selectors = [\n            'div[itemprop=\"articleBody\"]',\n            '.article-body',\n            '.news-body',\n            'div.text',\n            'main article',\n            'article'\n        ]\n        \n        for selector in selectors:\n            if page.locator(selector).count() > 0:\n                content_html = page.inner_html(selector)\n                break\n        \n        if not content_html:\n            # 兜底：获取 main 标签下的所有 p 标签\n            if page.locator('main p').count() > 0:\n                content_html = page.locator('main').inner_html()\n        \n        if content_html:\n            return clean_html_content(content_html, url)\n        else:\n            return \"\"\n            \n    except Exception as e:\n        print(f\"详情页抓取失败 {url}: {e}\")\n        return \"\"\n    finally:\n        page.close()\n\ndef crawl_news():\n    \"\"\"\n    主爬虫逻辑\n    \"\"\"\n    results = []\n    target_year = int(START_DATE.split('-')[0])\n    \n    with sync_playwright() as p:\n        # 启动浏览器\n        browser = p.chromium.launch(\n            headless=True,\n            args=[\"--disable-blink-features=AutomationControlled\", \"--no-sandbox\"]\n        )\n        \n        context = browser.new_context(\n            viewport={'width': 1920, 'height': 1080},\n            user_agent=\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\",\n            ignore_https_errors=True\n        )\n        \n        page = context.new_page()\n        \n        print(f\"开始访问列表页: {TARGET_URL}\")\n        try:\n            # 关键修复：使用 domcontentloaded 避免超时\n            page.goto(TARGET_URL, wait_until=\"domcontentloaded\", timeout=60000)\n            # 等待内容容器出现\n            page.wait_for_selector(\"div.timeline, ul.lenta-all-news, body\", timeout=10000)\n        except PlaywrightTimeoutError:\n            print(\"页面加载超时，尝试继续解析已加载的内容...\")\n        except Exception as e:\n            print(f\"页面加载出错: {e}\")\n            return []\n\n        # 状态变量\n        current_date_str = None\n        stop_crawling = False\n        processed_urls = set()\n        \n        while not stop_crawling:\n            # 动态定位列表容器\n            # Interfax 可能使用 div.timeline 或 ul.lenta-all-news\n            container = page.locator('div.timeline, ul.lenta-all-news').first\n            \n            if container.count() == 0:\n                print(\"未找到新闻列表容器，尝试直接搜索列表项...\")\n                # 兜底：直接搜索可能的列表项\n                list_items = page.locator('div.timeline__group, div.timeline__item, ul.lenta-all-news > li').all()\n            else:\n                # 获取容器下的直接子元素（日期头或新闻项）\n                list_items = container.locator('> div, > li').all()\n            \n            print(f\"当前页面扫描到 {len(list_items)} 个元素\")\n            \n            if len(list_items) == 0:\n                print(\"未找到任何列表元素，停止爬取\")\n                break\n\n            for item in list_items:\n                try:\n                    text_content = item.inner_text().strip()\n                    \n                    # --- 1. 识别日期标题 ---\n                    # 可能是 h2, h3, 或 class=\"timeline__group\"\n                    is_date_header = False\n                    date_text_candidate = \"\"\n                    \n                    class_attr = item.get_attribute(\"class\") or \"\"\n                    \n                    if \"timeline__group\" in class_attr:\n                        is_date_header = True\n                        date_text_candidate = text_content\n                    elif item.locator(\"h2, h3\").count() > 0:\n                        # 检查是否仅包含日期\n                        header_text = item.locator(\"h2, h3\").first.inner_text().strip()\n                        # 简单的启发式检查：是否包含月份名称\n                        if any(m in header_text.lower() for m in RU_MONTHS.keys()):\n                            is_date_header = True\n                            date_text_candidate = header_text\n                    \n                    if is_date_header:\n                        parsed_date = parse_ru_date(date_text_candidate, target_year)\n                        if parsed_date:\n                            current_date_str = parsed_date\n                            # print(f\"--- 扫描到日期: {current_date_str} ---\")\n                            \n                            # 检查是否超出范围（假设列表是倒序的）\n                            if current_date_str < START_DATE:\n                                print(f\"当前日期 {current_date_str} 早于开始日期 {START_DATE}，停止爬取\")\n                                stop_crawling = True\n                                break\n                        continue\n\n                    # --- 2. 识别新闻项 ---\n                    if not current_date_str:\n                        continue\n                        \n                    # 寻找时间标签和链接\n                    time_elem = None\n                    # 尝试多种时间选择器\n                    if item.locator(\"time\").count() > 0:\n                        time_elem = item.locator(\"time\").first\n                    elif item.locator(\".timeline__dt\").count() > 0:\n                        time_elem = item.locator(\".timeline__dt\").first\n                    elif item.locator(\".news-datetime\").count() > 0:\n                        time_elem = item.locator(\".news-datetime\").first\n                        \n                    link_elem = item.locator(\"a\").first\n                    \n                    if time_elem and link_elem.count() > 0:\n                        news_time = time_elem.inner_text().strip()\n                        title = link_elem.inner_text().strip()\n                        href = link_elem.get_attribute('href')\n                        \n                        if not href or not title:\n                            continue\n                            \n                        full_url = urljoin(TARGET_URL, href)\n                        \n                        # 唯一性检查\n                        if full_url in processed_urls:\n                            continue\n                        \n                        # 日期判断\n                        if START_DATE <= current_date_str <= END_DATE:\n                            print(f\"发现目标新闻: [{current_date_str} {news_time}] {title}\")\n                            \n                            # 提取详情\n                            content = extract_article_content(context, full_url)\n                            \n                            article = {\n                                \"name\": title, # 兼容 schema\n                                \"title\": title,\n                                \"date\": current_date_str,\n                                \"time\": news_time,\n                                \"source\": \"Interfax Russia\",\n                                \"sourceUrl\": full_url,\n                                \"summary\": title,\n                                \"content\": content\n                            }\n                            results.append(article)\n                            processed_urls.add(full_url)\n                        \n                        elif current_date_str < START_DATE:\n                            stop_crawling = True\n                            break\n                            \n                except Exception as e:\n                    # print(f\"处理列表项时微小错误: {e}\")\n                    continue\n            \n            if stop_crawling:\n                break\n                \n            # --- 翻页逻辑 ---\n            # 查找 \"加载更多\" 按钮\n            show_more_btn = page.locator('.btn-show-more, button:has-text(\"Показать еще\"), .timeline__more-btn')\n            \n            if show_more_btn.count() > 0 and show_more_btn.first.is_visible():\n                print(\"点击 '加载更多'...\")\n                try:\n                    prev_count = len(list_items)\n                    show_more_btn.first.click()\n                    # 等待新元素出现\n                    page.wait_for_timeout(2000) \n                except Exception as e:\n                    print(f\"点击加载更多失败: {e}\")\n                    break\n            else:\n                print(\"未找到更多数据按钮或已到底部\")\n                break\n\n        browser.close()\n        \n    return results\n\ndef save_results(articles, output_dir):\n    \"\"\"保存结果为JSON\"\"\"\n    ensure_dir(output_dir)\n    \n    timestamp = datetime.now().strftime(\"%Y%m%d_%H%M%S\")\n    filename = f\"interfax_news_{timestamp}.json\"\n    output_path = os.path.join(output_dir, filename)\n    \n    result_data = {\n        \"total\": len(articles),\n        \"crawlTime\": datetime.now().strftime(\"%Y-%m-%d %H:%M:%S\"),\n        \"dateRange\": {\n            \"start\": START_DATE,\n            \"end\": END_DATE\n        },\n        \"articles\": articles\n    }\n    \n    with open(output_path, 'w', encoding='utf-8') as f:\n        json.dump(result_data, f, ensure_ascii=False, indent=2)\n        \n    print(f\"\\n爬取完成！共保存 {len(articles)} 条新闻\")\n    print(f\"结果文件: {output_path}\")\n\ndef main():\n    print(f\"启动爬虫任务...\")\n    print(f\"目标网站: {TARGET_URL}\")\n    print(f\"时间范围: {START_DATE} 至 {END_DATE}\")\n    \n    try:\n        articles = crawl_news()\n        if not articles:\n            print(\"警告: 未抓取到任何新闻，请检查网络或选择器配置。\")\n        save_results(articles, OUTPUT_DIR)\n    except Exception as e:\n        print(f\"爬虫运行发生严重错误: {e}\")\n\nif __name__ == \"__main__\":\n    main()",
+  "rounds": [
+    {
+      "round": 1,
+      "passed": false,
+      "primary_cause": "empty_output",
+      "backup_cause": "schema_mismatch",
+      "uncertain": false,
+      "classifier_confidence": 0.75,
+      "record_count": 0,
+      "static_error_count": 0
+    },
+    {
+      "round": 2,
+      "passed": true,
+      "primary_cause": "unknown",
+      "backup_cause": "unknown",
+      "uncertain": true,
+      "classifier_confidence": 0.3,
+      "record_count": 5,
+      "static_error_count": 0
+    }
+  ],
+  "evidence": [
+    {
+      "round": 1,
+      "step": "static_check",
+      "result": {
+        "error_count": 0,
+        "warning_count": 1,
+        "top_errors": [],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+          }
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": false,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 91.861,
+        "record_count": 0,
+        "date_fill_rate": 0.0,
+        "status": "no_data",
+        "http_statuses": [],
+        "stdout_tail": "������������...\nĿ����վ: https://www.interfax-russia.ru/moscow/news\nʱ�䷶Χ: 2026-02-20 �� 2026-02-23\n��ʼ�����б�ҳ: https://www.interfax-russia.ru/moscow/news\n�������з������ش���: Page.goto: Timeout 60000ms exceeded.\nCall log:\n  - navigating to \"https://www.interfax-russia.ru/moscow/news\", waiting until \"networkidle\"\n",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 1,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "empty_output",
+        "backup_cause": "schema_mismatch",
+        "confidence": 0.75,
+        "classifier_summary": "脚本执行完成但输出为空"
+      }
+    },
+    {
+      "round": 1,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "selector_brittleness_probe",
+        "cause": "empty_output",
+        "result": {
+          "select_calls": 1,
+          "find_calls": 0,
+          "has_chained_find": false
+        }
+      }
+    },
+    {
+      "round": 1,
+      "step": "output_quality",
+      "result": {
+        "record_count": 0,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 0.0,
+          "sourceUrl": 0.0
+        },
+        "required_fields_ok": false,
+        "meets_min_items": false,
+        "recommendations": [
+          "Extract at least 1 items in lightweight validation.",
+          "Ensure required fields are populated: ['title', 'sourceUrl']"
+        ],
+        "sample_records": []
+      }
+    },
+    {
+      "round": 2,
+      "step": "llm_repair",
+      "result": {
+        "changed": true
+      }
+    },
+    {
+      "round": 2,
+      "step": "static_check",
+      "result": {
+        "error_count": 0,
+        "warning_count": 0,
+        "top_errors": [],
+        "top_warnings": []
+      }
+    },
+    {
+      "round": 2,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": true,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 36.499,
+        "record_count": 5,
+        "date_fill_rate": 1.0,
+        "status": "success",
+        "http_statuses": [],
+        "stdout_tail": "������������...\nĿ����վ: https://www.interfax-russia.ru/moscow/news\nʱ�䷶Χ: 2026-02-20 �� 2026-02-23\n��ʼ�����б�ҳ: https://www.interfax-russia.ru/moscow/news\n��ǰҳ��ɨ�赽 22 ��Ԫ��\n����Ŀ������: [2026-02-20 21:38] ����� ��֧�֧էѧ� �� ���ҧ��ӧ֧ߧߧ���� �ԧ���էѧ���ӧ� �ܧ�ާ�ѧߧڧ�-��ѧ٧�ѧҧ���ڧܧ� ��ڧ��֧ާ� �ҧ��ߧڧ��ӧѧߧڧ� \"���֧�ߧѧ�է�\"\n����Ŀ������: [2026-02-20 20:36] ������ڧ�֧ݧ���ӧ� �� ��֧ܧ�ߧ����ܧ�ڧ� ������ 50 �������ҧ�֧ܧ��� �٧ѧӧ֧��ѧ� �� �����ܧӧ� �� 2026 �ԧ�է�\n����Ŀ������: [2026-02-20 18:53] �����ڧ� ���֧էݧ�اڧ� �ߧѧ٧ߧѧ�ڧ�� ���ݧѧէڧާڧ�� ���ѧӧ��է�ӧ� ��֧�ӧ��� �٧ѧާ��֧է�� ���֧���ӧߧ�ԧ� ���է� ���� - ���ݧڧ�ѧ�\n����Ŀ������: [2026-02-20 17:58] �����ڧ� ����ӧ֧� ���ӧ֧�ѧߧڧ� �� ��ݧ֧ߧѧާ� ���� ����, �է�ܧݧѧ� ��� �ڧ��ԧѧ� ��֧�֧ԧ�ӧ���� �� ���֧ߧ֧ӧ� ���֧է��ѧӧڧݧ� ���֧էڧߧ�ܧڧ� �� �������ܧ��\n����Ŀ������: [2026-02-20 17:10] ����ڧ��ѧӧ� �է֧����ڧ��ӧѧ...(truncated)",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 2,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "unknown",
+        "backup_cause": "unknown",
+        "confidence": 0.3,
+        "classifier_summary": "未能明确分类的故障"
+      }
+    },
+    {
+      "round": 2,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "sample_output_probe",
+        "cause": "unknown",
+        "result": {
+          "sample_size": 5,
+          "required_non_empty_count": {
+            "title": 5,
+            "sourceUrl": 5
+          },
+          "sample": [
+            {
+              "name": "����� ��֧�֧էѧ� �� ���ҧ��ӧ֧ߧߧ���� �ԧ���էѧ���ӧ� �ܧ�ާ�ѧߧڧ�-��ѧ٧�ѧҧ���ڧܧ� ��ڧ��֧ާ� �ҧ��ߧڧ��ӧѧߧڧ� \"���֧�ߧѧ�է�\"",
+              "title": "����� ��֧�֧էѧ� �� ���ҧ��ӧ֧ߧߧ���� �ԧ���էѧ���ӧ� �ܧ�ާ�ѧߧڧ�-��ѧ٧�ѧҧ���ڧܧ� ��ڧ��֧ާ� �ҧ��ߧڧ��ӧѧߧڧ� \"���֧�ߧѧ�է�\"",
+              "date": "2026-02-20",
+              "time": "21:38",
+              "source": "Interfax Russia",
+              "sourceUrl": "https://www.interfax-russia.ru/moscow/news/sud-peredal-v-sobstvennost-gosudarstva-kompaniyu-razrabotchika-sistemy-bronirovaniya-leonardo",
+              "summary": "����� ��֧�֧էѧ� �� ���ҧ��ӧ֧ߧߧ���� �ԧ���էѧ���ӧ� �ܧ�ާ�ѧߧڧ�-��ѧ٧�ѧҧ���ڧܧ� ��ڧ��֧ާ� �ҧ��ߧڧ��ӧѧߧڧ� \"���֧�ߧѧ�է�\"",
+              "content": "\n<p data-v-5b1ec45c=\"\">�����ܧӧ�. 20 ��֧ӧ�ѧݧ�. ������������������ - ���ڧܧ�ݧڧߧ�ܧڧ� ���� �����ܧӧ� ��֧�֧էѧ� �ԧ���էѧ���ӧ� �ڧާ��֧��ӧ� ���ҧ��ӧ֧ߧߧڧܧ�� \"���ڧ�֧ߧ�-����ӧ֧�\", ��ѧ٧�ѧҧ���ڧܧ� �ܧ���ߧ֧ۧ�֧� �� ���� ��ڧ��֧ާ� �ҧ��ߧڧ��ӧѧߧڧ� �ѧӧڧѧҧڧݧ֧��� \"���֧�ߧѧ�է�\", ����ҧ�ڧ� \"���ߧ�֧��ѧܧ��\" ���ѧ��ߧڧ� �����֧���.</p>\n<main data-v-5b1ec45c=\"\">\n<p data-v-5b1ec45c=\"\">\"����ܧ�ӧ��� ���֧ҧ�ӧѧߧڧ� �ԧ֧ߧ֧�ѧݧ�ߧ�� ����ܧ��ѧ���� ��է�ӧݧ֧�ӧ��֧ߧ� ���ݧߧ�����\", - ��ܧѧ٧ѧ� ���ҧ֧�֧էߧڧ� �ѧԧ֧ߧ�"
+            },
+            {
+              "name": "������ڧ�֧ݧ���ӧ� �� ��֧ܧ�ߧ����ܧ�ڧ� ������ 50 �������ҧ�֧ܧ��� �٧ѧӧ֧��ѧ� �� �����ܧӧ� �� 2026 �ԧ�է�",
+              "title": "������ڧ�֧ݧ���ӧ� �� ��֧ܧ�ߧ����ܧ�ڧ� ������ 50 �������ҧ�֧ܧ��� �٧ѧӧ֧��ѧ� �� �����ܧӧ� �� 2026 �ԧ�է�",
+              "date": "2026-02-20",
+              "time": "20:36",
+              "source": "Interfax Russia",
+              "sourceUrl": "https://www.interfax-russia.ru/moscow/news/stroitelstvo-i-rekonstrukciyu-pochti-50-sportobektov-zavershat-v-moskve-v-2026-godu",
+              "summary": "������ڧ�֧ݧ���ӧ� �� ��֧ܧ�ߧ����ܧ�ڧ� ������ 50 �������ҧ�֧ܧ��� �٧ѧӧ֧��ѧ� �� �����ܧӧ� �� 2026 �ԧ�է�",
+              "content": "\n<p data-v-5b1ec45c=\"\">�����ܧӧ�. 20 ��֧ӧ�ѧݧ�. ������������������ - �� �����ܧӧ� �� 2026 �ԧ�է� ��ݧѧߧڧ��֧��� �٧ѧӧ֧��ڧ�� �����ڧ�֧ݧ���ӧ� �� ��֧ܧ�ߧ����ܧ�ڧ� 47 ������ڧӧߧ��� ��ҧ�֧ܧ���, �� ���� ��ڧ�ݧ� ���ѧէڧ�ߧ� \"������֧է�\" �ڧ�. ��.��.�����֧ݧ���ӧ� �� �ݧ֧է�ӧ�ԧ� ��֧ߧ��� \"���֧�֧��\", �� ��ѧܧا� ���٧էѧ�� 15 �٧�� ���է���� �� �ӧ�է� �� ��֧ާ� ��ܧ��ԧѧ� �����ܧӧ�, �� ���� ��ڧ�ݧ� ��֧����� �� �ҧѧ��֧ۧߧѧާ�, ����ҧ�ڧ� �ާ�� �����ܧӧ� ���֧�ԧ֧� ����ҧ�ߧڧ�.</p>\n<main data-v-5b1ec45c=\"\">\n<p data-v-5b"
+            },
+            {
+              "name": "�����ڧ� ���֧էݧ�اڧ� �ߧѧ٧ߧѧ�ڧ�� ���ݧѧէڧާڧ�� ���ѧӧ��է�ӧ� ��֧�ӧ��� �٧ѧާ��֧է�� ���֧���ӧߧ�ԧ� ���է� ���� - ���ݧڧ�ѧ�",
+              "title": "�����ڧ� ���֧էݧ�اڧ� �ߧѧ٧ߧѧ�ڧ�� ���ݧѧէڧާڧ�� ���ѧӧ��է�ӧ� ��֧�ӧ��� �٧ѧާ��֧է�� ���֧���ӧߧ�ԧ� ���է� ���� - ���ݧڧ�ѧ�",
+              "date": "2026-02-20",
+              "time": "18:53",
+              "source": "Interfax Russia",
+              "sourceUrl": "https://www.interfax-russia.ru/moscow/news/putin-predlozhil-naznachit-vladimira-davydova-pervym-zampredom-verhovnogo-suda-rf-klishas",
+              "summary": "�����ڧ� ���֧էݧ�اڧ� �ߧѧ٧ߧѧ�ڧ�� ���ݧѧէڧާڧ�� ���ѧӧ��է�ӧ� ��֧�ӧ��� �٧ѧާ��֧է�� ���֧���ӧߧ�ԧ� ���է� ���� - ���ݧڧ�ѧ�",
+              "content": "\n<p data-v-5b1ec45c=\"\">�����ܧӧ�. 20 ��֧ӧ�ѧݧ�. ������������������ - ����֧٧ڧէ֧ߧ� ���� ���ݧѧէڧާڧ� �����ڧ� �ӧߧ֧� �� ����ӧ֧� ���֧է֧�ѧ�ڧ� (����) ���֧է��ѧӧݧ֧ߧڧ� �� �ߧѧ٧ߧѧ�֧ߧڧ�� �ߧ� ���� �է�ݧاߧ���֧� �� ���֧���ӧߧ�� ���է� (����) ����, ����ҧ�ڧ� �ԧݧѧӧ� �ܧ�ާڧ�֧�� ���� ��� �ܧ�ߧ��ڧ���ڧ�ߧߧ�ާ� �٧ѧܧ�ߧ�էѧ�֧ݧ���ӧ� �� �ԧ������ڧ�֧ݧ���ӧ� ���ߧէ�֧� ���ݧڧ�ѧ�.</p>\n<main data-v-5b1ec45c=\"\">\n<p data-v-5b1ec45c=\"\">�� ����ӧ֧� ���֧է֧�ѧ�ڧ� �������ڧݧ� ���֧է��ѧӧݧ֧ߧڧ� �����ڧߧ� �� �ߧѧ٧ߧѧ�֧ߧڧ� �٧ѧާ֧��"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "round": 2,
+      "step": "output_quality",
+      "result": {
+        "record_count": 5,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 1.0,
+          "sourceUrl": 1.0
+        },
+        "required_fields_ok": true,
+        "meets_min_items": true,
+        "recommendations": [],
+        "sample_records": [
+          {
+            "name": "����� ��֧�֧էѧ� �� ���ҧ��ӧ֧ߧߧ���� �ԧ���էѧ���ӧ� �ܧ�ާ�ѧߧڧ�-��ѧ٧�ѧҧ���ڧܧ� ��ڧ��֧ާ� �ҧ��ߧڧ��ӧѧߧڧ� \"���֧�ߧѧ�է�\"",
+            "title": "����� ��֧�֧էѧ� �� ���ҧ��ӧ֧ߧߧ���� �ԧ���էѧ���ӧ� �ܧ�ާ�ѧߧڧ�-��ѧ٧�ѧҧ���ڧܧ� ��ڧ��֧ާ� �ҧ��ߧڧ��ӧѧߧڧ� \"���֧�ߧѧ�է�\"",
+            "date": "2026-02-20",
+            "time": "21:38",
+            "source": "Interfax Russia",
+            "sourceUrl": "https://www.interfax-russia.ru/moscow/news/sud-peredal-v-sobstvennost-gosudarstva-kompaniyu-razrabotchika-sistemy-bronirovaniya-leonardo",
+            "summary": "����� ��֧�֧էѧ� �� ���ҧ��ӧ֧ߧߧ���� �ԧ���էѧ���ӧ� �ܧ�ާ�ѧߧڧ�-��ѧ٧�ѧҧ���ڧܧ� ��ڧ��֧ާ� �ҧ��ߧڧ��ӧѧߧڧ� \"���֧�ߧѧ�է�\"",
+            "content": "\n<p data-v-5b1ec45c=\"\">�����ܧӧ�. 20 ��֧ӧ�ѧݧ�. ������������������ - ���ڧܧ�ݧڧߧ�ܧڧ� ���� �����ܧӧ� ��֧�֧էѧ� �ԧ���էѧ���ӧ� �ڧާ��֧��ӧ� ���ҧ��ӧ֧ߧߧڧܧ�� \"���ڧ�֧ߧ�-����ӧ֧�\", ��ѧ٧�ѧҧ���ڧܧ� �ܧ���ߧ֧ۧ�֧� �� ���� ��ڧ��֧ާ� �ҧ��ߧڧ��ӧѧߧڧ� �ѧӧڧѧҧڧݧ֧��� \"���֧�ߧѧ�է�\", ����ҧ�ڧ� \"���ߧ�֧��ѧܧ��\" ���ѧ��ߧڧ� �����֧���.</p>\n<main data-v-5b1ec45c=\"\">\n<p data-v-5b1ec45c=\"\">\"����ܧ�ӧ��� ���֧ҧ�ӧѧߧڧ� �ԧ֧ߧ֧�ѧݧ�ߧ�� ����ܧ��ѧ���� ��է�ӧݧ֧�ӧ��֧ߧ� ���ݧߧ�����\", - ��ܧѧ٧ѧ� ���ҧ֧�֧էߧڧ� �ѧԧ֧ߧ�"
+          },
+          {
+            "name": "������ڧ�֧ݧ���ӧ� �� ��֧ܧ�ߧ����ܧ�ڧ� ������ 50 �������ҧ�֧ܧ��� �٧ѧӧ֧��ѧ� �� �����ܧӧ� �� 2026 �ԧ�է�",
+            "title": "������ڧ�֧ݧ���ӧ� �� ��֧ܧ�ߧ����ܧ�ڧ� ������ 50 �������ҧ�֧ܧ��� �٧ѧӧ֧��ѧ� �� �����ܧӧ� �� 2026 �ԧ�է�",
+            "date": "2026-02-20",
+            "time": "20:36",
+            "source": "Interfax Russia",
+            "sourceUrl": "https://www.interfax-russia.ru/moscow/news/stroitelstvo-i-rekonstrukciyu-pochti-50-sportobektov-zavershat-v-moskve-v-2026-godu",
+            "summary": "������ڧ�֧ݧ���ӧ� �� ��֧ܧ�ߧ����ܧ�ڧ� ������ 50 �������ҧ�֧ܧ��� �٧ѧӧ֧��ѧ� �� �����ܧӧ� �� 2026 �ԧ�է�",
+            "content": "\n<p data-v-5b1ec45c=\"\">�����ܧӧ�. 20 ��֧ӧ�ѧݧ�. ������������������ - �� �����ܧӧ� �� 2026 �ԧ�է� ��ݧѧߧڧ��֧��� �٧ѧӧ֧��ڧ�� �����ڧ�֧ݧ���ӧ� �� ��֧ܧ�ߧ����ܧ�ڧ� 47 ������ڧӧߧ��� ��ҧ�֧ܧ���, �� ���� ��ڧ�ݧ� ���ѧէڧ�ߧ� \"������֧է�\" �ڧ�. ��.��.�����֧ݧ���ӧ� �� �ݧ֧է�ӧ�ԧ� ��֧ߧ��� \"���֧�֧��\", �� ��ѧܧا� ���٧էѧ�� 15 �٧�� ���է���� �� �ӧ�է� �� ��֧ާ� ��ܧ��ԧѧ� �����ܧӧ�, �� ���� ��ڧ�ݧ� ��֧����� �� �ҧѧ��֧ۧߧѧާ�, ����ҧ�ڧ� �ާ�� �����ܧӧ� ���֧�ԧ֧� ����ҧ�ߧڧ�.</p>\n<main data-v-5b1ec45c=\"\">\n<p data-v-5b"
+          },
+          {
+            "name": "�����ڧ� ���֧էݧ�اڧ� �ߧѧ٧ߧѧ�ڧ�� ���ݧѧէڧާڧ�� ���ѧӧ��է�ӧ� ��֧�ӧ��� �٧ѧާ��֧է�� ���֧���ӧߧ�ԧ� ���է� ���� - ���ݧڧ�ѧ�",
+            "title": "�����ڧ� ���֧էݧ�اڧ� �ߧѧ٧ߧѧ�ڧ�� ���ݧѧէڧާڧ�� ���ѧӧ��է�ӧ� ��֧�ӧ��� �٧ѧާ��֧է�� ���֧���ӧߧ�ԧ� ���է� ���� - ���ݧڧ�ѧ�",
+            "date": "2026-02-20",
+            "time": "18:53",
+            "source": "Interfax Russia",
+            "sourceUrl": "https://www.interfax-russia.ru/moscow/news/putin-predlozhil-naznachit-vladimira-davydova-pervym-zampredom-verhovnogo-suda-rf-klishas",
+            "summary": "�����ڧ� ���֧էݧ�اڧ� �ߧѧ٧ߧѧ�ڧ�� ���ݧѧէڧާڧ�� ���ѧӧ��է�ӧ� ��֧�ӧ��� �٧ѧާ��֧է�� ���֧���ӧߧ�ԧ� ���է� ���� - ���ݧڧ�ѧ�",
+            "content": "\n<p data-v-5b1ec45c=\"\">�����ܧӧ�. 20 ��֧ӧ�ѧݧ�. ������������������ - ����֧٧ڧէ֧ߧ� ���� ���ݧѧէڧާڧ� �����ڧ� �ӧߧ֧� �� ����ӧ֧� ���֧է֧�ѧ�ڧ� (����) ���֧է��ѧӧݧ֧ߧڧ� �� �ߧѧ٧ߧѧ�֧ߧڧ�� �ߧ� ���� �է�ݧاߧ���֧� �� ���֧���ӧߧ�� ���է� (����) ����, ����ҧ�ڧ� �ԧݧѧӧ� �ܧ�ާڧ�֧�� ���� ��� �ܧ�ߧ��ڧ���ڧ�ߧߧ�ާ� �٧ѧܧ�ߧ�էѧ�֧ݧ���ӧ� �� �ԧ������ڧ�֧ݧ���ӧ� ���ߧէ�֧� ���ݧڧ�ѧ�.</p>\n<main data-v-5b1ec45c=\"\">\n<p data-v-5b1ec45c=\"\">�� ����ӧ֧� ���֧է֧�ѧ�ڧ� �������ڧݧ� ���֧է��ѧӧݧ֧ߧڧ� �����ڧߧ� �� �ߧѧ٧ߧѧ�֧ߧڧ� �٧ѧާ֧��"
+          }
+        ]
+      }
+    }
+  ]
+}

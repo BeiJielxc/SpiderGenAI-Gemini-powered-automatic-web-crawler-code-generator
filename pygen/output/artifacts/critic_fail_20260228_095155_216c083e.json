@@ -1,0 +1,362 @@
+{
+  "final_round": 3,
+  "max_retries": 3,
+  "repaired_code": "#!/usr/bin/env python3\n# -*- coding: utf-8 -*-\n\"\"\"\n爬虫脚本 - 中诚信国际 (CCXI)\n自动生成于 PyGen\n\n功能：爬取企业评级板块（主体评级、短期融资券）的评级报告\n时间范围：2023-01-01 至 2025-12-31\n\"\"\"\n\nimport requests\nimport json\nimport os\nimport time\nimport re\nfrom datetime import datetime\nfrom urllib.parse import urljoin\n\n# ================= 配置区域 =================\n# 基础 API 地址\nBASE_API_URL = \"https://website-api.ccxi.com.cn/admin/content/cspj/page\"\n\n# 输出目录\nOUTPUT_DIR = r\"d:\\llm_mcp_genpy\\pygen\\output\"\n\n# 目标时间范围\nSTART_DATE = \"2023-01-01\"\nEND_DATE = \"2025-12-31\"\n\n# 最大翻页数 (防止无限循环导致超时)\nMAX_PAGES = 50\n\n# 请求头\nHEADERS = {\n    \"User-Agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\",\n    \"Referer\": \"https://www.ccxi.com.cn/\",\n    \"Origin\": \"https://www.ccxi.com.cn\",\n    \"Accept\": \"application/json, text/plain, */*\",\n    \"Accept-Language\": \"zh-CN,zh;q=0.9,en;q=0.8\"\n}\n\n# 分类配置\nCATEGORIES = {\n    \"企业评级/主体评级\": {\n        \"filters\": {\"launchedstatus\": \"启用\", \"levelone\": \"73\", \"leveltwo\": \"74\", \"levelthree\": \"121\"},\n        \"orderby\": {\"rankdate\": \"desc\"}\n    },\n    \"企业评级/短期融资券\": {\n        \"filters\": {\"launchedstatus\": \"启用\", \"levelone\": \"73\", \"leveltwo\": \"74\", \"levelthree\": \"81\"},\n        \"orderby\": {\"rankdate\": \"desc\"}\n    }\n}\n\n# ================= 工具函数 =================\n\ndef ensure_dir(path):\n    if not os.path.exists(path):\n        os.makedirs(path)\n\ndef save_results(reports: list, output_path: str, target_url: str = \"\"):\n    \"\"\"保存结果到 JSON 文件\"\"\"\n    from urllib.parse import urlsplit\n    _p = urlsplit(target_url)\n    _origin = \"{}://{}\".format(_p.scheme or \"https\", _p.netloc)\n    \n    download_headers = {\n        \"User-Agent\": HEADERS[\"User-Agent\"],\n        \"Referer\": target_url or _origin + \"/\",\n    }\n    \n    result = {\n        \"total\": len(reports),\n        \"crawlTime\": datetime.now().strftime(\"%Y-%m-%d %H:%M:%S\"),\n        \"downloadHeaders\": download_headers,\n        \"reports\": reports\n    }\n    \n    with open(output_path, 'w', encoding='utf-8') as f:\n        json.dump(result, f, ensure_ascii=False, indent=2)\n    print(f\"[INFO] 已保存 {len(reports)} 条记录到 {output_path}\")\n\ndef normalize_date(date_str: str) -> str:\n    \"\"\"标准化日期格式为 YYYY-MM-DD\"\"\"\n    if not date_str:\n        return \"\"\n    try:\n        date_str = str(date_str).strip()\n        # 处理时间戳 (毫秒)\n        if date_str.isdigit() and len(date_str) > 10:\n            return datetime.fromtimestamp(int(date_str)/1000).strftime('%Y-%m-%d')\n        # 处理 YYYY-MM-DD HH:MM:SS\n        if \" \" in date_str:\n            date_str = date_str.split(\" \")[0]\n        # 简单正则验证\n        if re.match(r'^\\d{4}-\\d{2}-\\d{2}$', date_str):\n            return date_str\n        return \"\"\n    except:\n        return \"\"\n\n# ================= 核心逻辑 =================\n\ndef fetch_data_by_category(category_name: str, config: dict) -> list:\n    \"\"\"\n    按分类获取数据\n    \"\"\"\n    collected_items = []\n    page = 1\n    page_size = 20\n    \n    print(f\"[INFO] 开始爬取分类: {category_name}\")\n    \n    while page <= MAX_PAGES:\n        try:\n            # 构造请求参数\n            params = {\n                \"pageNo\": page,\n                \"pageSize\": page_size,\n                \"filters\": json.dumps(config[\"filters\"]),\n                \"orderby\": json.dumps(config[\"orderby\"]),\n                \"codetranslate\": \"true\"\n            }\n            \n            print(f\"[INFO] 正在请求第 {page} 页...\")\n            response = requests.get(BASE_API_URL, params=params, headers=HEADERS, timeout=15)\n            \n            if response.status_code != 200:\n                print(f\"[ERROR] 请求失败，状态码: {response.status_code}\")\n                break\n                \n            resp_json = response.json()\n            \n            if resp_json.get(\"code\") != 0:\n                print(f\"[ERROR] API 返回错误: {resp_json.get('msg')}\")\n                break\n                \n            data_block = resp_json.get(\"data\", {})\n            records = data_block.get(\"records\", [])\n            \n            if not records:\n                print(\"[INFO] 当前页无数据，停止翻页\")\n                break\n            \n            # 调试：打印第一条记录的键，以便排查字段名问题\n            if page == 1:\n                print(f\"[DEBUG] 第一条记录字段示例: {list(records[0].keys())}\")\n\n            items_added_this_page = 0\n            stop_signal = False\n            \n            for item in records:\n                # 1. 提取日期 (尝试多个可能的字段)\n                raw_date = (item.get(\"rankdate\") or \n                           item.get(\"publishdate\") or \n                           item.get(\"createtime\") or \n                           item.get(\"showdate\"))\n                date_str = normalize_date(raw_date)\n                \n                # 2. 越界检查 (假设按日期倒序)\n                if date_str and date_str < START_DATE:\n                    print(f\"[INFO] 遇到旧数据 ({date_str} < {START_DATE})，停止该分类爬取\")\n                    stop_signal = True\n                    break\n                \n                # 3. 提取下载链接 (尝试多个可能的字段)\n                download_url = (item.get(\"bondreport\") or \n                               item.get(\"reporturl\") or \n                               item.get(\"filepath\") or \n                               item.get(\"path\") or\n                               item.get(\"url\"))\n                \n                if not download_url:\n                    continue\n                \n                # 4. 处理相对路径\n                if download_url.startswith(\"/\"):\n                    download_url = urljoin(\"https://www.ccxi.com.cn\", download_url)\n                \n                # 5. 提取标题 (尝试多个可能的字段)\n                name = (item.get(\"bondname\") or \n                       item.get(\"issuers\") or \n                       item.get(\"title\") or \n                       item.get(\"name\") or \n                       \"无标题\")\n                \n                # 6. 确定文件类型\n                file_type = \"pdf\"\n                if \".doc\" in download_url.lower():\n                    file_type = \"doc\"\n                elif \".xls\" in download_url.lower():\n                    file_type = \"xls\"\n                \n                # 7. 日期范围过滤\n                if not date_str:\n                    # 无日期记录，在严格过滤模式下丢弃\n                    continue\n                \n                if date_str > END_DATE:\n                    continue\n                \n                # 符合条件，加入结果\n                item_data = {\n                    \"name\": name,\n                    \"date\": date_str,\n                    \"downloadUrl\": download_url,\n                    \"fileType\": file_type,\n                    \"category\": category_name\n                }\n                collected_items.append(item_data)\n                items_added_this_page += 1\n            \n            print(f\"[INFO] 第 {page} 页处理完毕，新增 {items_added_this_page} 条有效数据\")\n            \n            if stop_signal:\n                break\n                \n            # 检查是否还有下一页\n            if len(records) < page_size:\n                print(\"[INFO] 已到达最后一页\")\n                break\n                \n            page += 1\n            # 简单的防封禁延时\n            time.sleep(1)\n            \n        except Exception as e:\n            print(f\"[ERROR] 处理第 {page} 页时发生异常: {e}\")\n            break\n            \n    return collected_items\n\ndef main():\n    ensure_dir(OUTPUT_DIR)\n    all_reports = []\n    \n    print(f\"[INFO] 启动爬虫，目标日期范围: {START_DATE} 至 {END_DATE}\")\n    print(f\"[INFO] 最大翻页限制: {MAX_PAGES} 页\")\n    \n    for cat_name, cat_config in CATEGORIES.items():\n        try:\n            cat_data = fetch_data_by_category(cat_name, cat_config)\n            all_reports.extend(cat_data)\n            print(f\"[INFO] 分类 [{cat_name}] 爬取完成，共获取 {len(cat_data)} 条数据\")\n        except Exception as e:\n            print(f\"[ERROR] 分类 [{cat_name}] 爬取失败: {e}\")\n            continue\n    \n    # 保存最终结果\n    output_file = os.path.join(OUTPUT_DIR, f\"ccxi_reports_{START_DATE}_{END_DATE}.json\")\n    save_results(all_reports, output_file, target_url=\"https://www.ccxi.com.cn/\")\n    \n    print(f\"[INFO] 所有任务完成，总计获取 {len(all_reports)} 条数据\")\n\nif __name__ == \"__main__\":\n    main()",
+  "rounds": [
+    {
+      "round": 1,
+      "passed": false,
+      "primary_cause": "empty_output",
+      "backup_cause": "unknown",
+      "uncertain": false,
+      "classifier_confidence": 0.75,
+      "record_count": 0,
+      "static_error_count": 0
+    },
+    {
+      "round": 2,
+      "passed": false,
+      "primary_cause": "timeout",
+      "backup_cause": "unknown",
+      "uncertain": false,
+      "classifier_confidence": 0.99,
+      "record_count": 0,
+      "static_error_count": 0
+    },
+    {
+      "round": 3,
+      "passed": false,
+      "primary_cause": "unknown",
+      "backup_cause": "timeout",
+      "uncertain": true,
+      "classifier_confidence": 0.99,
+      "record_count": 0,
+      "static_error_count": 0
+    },
+    {
+      "round": 3,
+      "passed": false,
+      "primary_cause": "timeout",
+      "backup_cause": "unknown",
+      "uncertain": false,
+      "classifier_confidence": 0.99,
+      "record_count": 0,
+      "static_error_count": 0
+    }
+  ],
+  "evidence": [
+    {
+      "round": 1,
+      "step": "static_check",
+      "result": {
+        "error_count": 0,
+        "warning_count": 1,
+        "top_errors": [],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_007",
+            "message": "检测到可能保留无日期记录的逻辑"
+          }
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": false,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 21.197,
+        "record_count": 0,
+        "date_fill_rate": 0.0,
+        "status": "no_data",
+        "http_statuses": [],
+        "stdout_tail": "[INFO] 启动爬虫，目标日期范围: 2026-02-01 至 2026-02-28\n[INFO] 开始爬取分类: 企业评级/主体评级\n[INFO] 正在请求第 1 页...\n[INFO] 第 1 页处理完毕，新增 0 条有效数据\n[INFO] 正在请求第 2 页...\n[INFO] 第 2 页处理完毕，新增 0 条有效数据\n[INFO] 正在请求第 3 页...\n[INFO] 第 3 页处理完毕，新增 0 条有效数据\n[INFO] 正在请求第 4 页...\n[INFO] 第 4 页处理完毕，新增 0 条有效数据\n[INFO] 正在请求第 5 页...\n[INFO] 第 5 页处理完毕，新增 0 条有效数据\n[INFO] 正在请求第 6 页...\n[INFO] 第 6 页处理完毕，新增 0 条有效数据\n[INFO] 正在请求第 7 页...\n[INFO] 遇到旧数据 (2025-07-18 < 2026-02-01)，停止该分类爬取\n[INFO] 第 7 页处理完毕，新增 0 条有效数据\n[INFO] 分类 [企业评级/主体评级] 爬取完成，共获取 0 条数据\n[INFO] 开始爬取分类: 企业评级/短期融资券\n[INFO] 正在请求第 1 页...\n[INFO] 遇到旧数据 (2025-12-26 < 2026-02-01)，停止该分类爬取\n[INFO] 第 1 页处理完毕，新增 0 条有效数据\n[INFO] 分类 [企业评级/短期融资券] 爬取完成，共获取 0 条数据\n[INFO] 已保存 0 条记录到 d:\\llm_mcp_genpy\\pygen\\output\\ccxi_reports_2026-02-01_2026-02-28.json\n[INFO] 所有任务完成，总计获取 0 条数据",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 1,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "empty_output",
+        "backup_cause": "unknown",
+        "confidence": 0.75,
+        "classifier_summary": "脚本执行完成但输出为空"
+      }
+    },
+    {
+      "round": 1,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "selector_brittleness_probe",
+        "cause": "empty_output",
+        "result": {
+          "select_calls": 0,
+          "find_calls": 0,
+          "has_chained_find": false
+        }
+      }
+    },
+    {
+      "round": 1,
+      "step": "output_quality",
+      "result": {
+        "record_count": 0,
+        "required_fields": [
+          "name",
+          "downloadUrl"
+        ],
+        "field_fill_rate": {
+          "name": 0.0,
+          "downloadUrl": 0.0
+        },
+        "required_fields_ok": false,
+        "meets_min_items": false,
+        "recommendations": [
+          "Extract at least 1 items in lightweight validation.",
+          "Ensure required fields are populated: ['name', 'downloadUrl']"
+        ],
+        "sample_records": []
+      }
+    },
+    {
+      "round": 2,
+      "step": "llm_repair",
+      "result": {
+        "changed": true
+      }
+    },
+    {
+      "round": 2,
+      "step": "static_check",
+      "result": {
+        "error_count": 0,
+        "warning_count": 1,
+        "top_errors": [],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_007",
+            "message": "检测到可能保留无日期记录的逻辑"
+          }
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": false,
+        "timed_out": true,
+        "exit_code": 1,
+        "duration_seconds": 120.013,
+        "record_count": 0,
+        "date_fill_rate": 0.0,
+        "status": "timeout",
+        "http_statuses": [],
+        "stdout_tail": "",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 2,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "timeout",
+        "backup_cause": "unknown",
+        "confidence": 0.99,
+        "classifier_summary": "脚本执行超时"
+      }
+    },
+    {
+      "round": 2,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "network_probe",
+        "cause": "timeout",
+        "result": {
+          "ok": true,
+          "status": 200,
+          "error": null,
+          "challenge_detected": false
+        }
+      }
+    },
+    {
+      "round": 2,
+      "step": "output_quality",
+      "result": {
+        "record_count": 0,
+        "required_fields": [
+          "name",
+          "downloadUrl"
+        ],
+        "field_fill_rate": {
+          "name": 0.0,
+          "downloadUrl": 0.0
+        },
+        "required_fields_ok": false,
+        "meets_min_items": false,
+        "recommendations": [
+          "Extract at least 1 items in lightweight validation.",
+          "Ensure required fields are populated: ['name', 'downloadUrl']"
+        ],
+        "sample_records": []
+      }
+    },
+    {
+      "round": 3,
+      "step": "static_check",
+      "result": {
+        "error_count": 0,
+        "warning_count": 1,
+        "top_errors": [],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_007",
+            "message": "检测到可能保留无日期记录的逻辑"
+          }
+        ]
+      }
+    },
+    {
+      "round": 3,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": false,
+        "timed_out": true,
+        "exit_code": 1,
+        "duration_seconds": 120.012,
+        "record_count": 0,
+        "date_fill_rate": 0.0,
+        "status": "timeout",
+        "http_statuses": [],
+        "stdout_tail": "",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 3,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "unknown",
+        "backup_cause": "timeout",
+        "confidence": 0.99,
+        "classifier_summary": "脚本执行超时"
+      }
+    },
+    {
+      "round": 3,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "selector_brittleness_probe",
+        "cause": "unknown",
+        "result": {
+          "select_calls": 0,
+          "find_calls": 0,
+          "has_chained_find": false
+        }
+      }
+    },
+    {
+      "round": 3,
+      "step": "output_quality",
+      "result": {
+        "record_count": 0,
+        "required_fields": [
+          "name",
+          "downloadUrl"
+        ],
+        "field_fill_rate": {
+          "name": 0.0,
+          "downloadUrl": 0.0
+        },
+        "required_fields_ok": false,
+        "meets_min_items": false,
+        "recommendations": [
+          "Extract at least 1 items in lightweight validation.",
+          "Ensure required fields are populated: ['name', 'downloadUrl']"
+        ],
+        "sample_records": []
+      }
+    },
+    {
+      "round": 3,
+      "step": "final_targeted_repair",
+      "result": {
+        "changed": true
+      }
+    },
+    {
+      "round": 3,
+      "step": "static_check",
+      "result": {
+        "error_count": 0,
+        "warning_count": 1,
+        "top_errors": [],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_007",
+            "message": "检测到可能保留无日期记录的逻辑"
+          }
+        ]
+      }
+    },
+    {
+      "round": 3,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": false,
+        "timed_out": true,
+        "exit_code": 1,
+        "duration_seconds": 120.424,
+        "record_count": 0,
+        "date_fill_rate": 0.0,
+        "status": "timeout",
+        "http_statuses": [],
+        "stdout_tail": "",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 3,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "timeout",
+        "backup_cause": "unknown",
+        "confidence": 0.99,
+        "classifier_summary": "脚本执行超时"
+      }
+    },
+    {
+      "round": 3,
+      "step": "output_quality",
+      "result": {
+        "record_count": 0,
+        "required_fields": [
+          "name",
+          "downloadUrl"
+        ],
+        "field_fill_rate": {
+          "name": 0.0,
+          "downloadUrl": 0.0
+        },
+        "required_fields_ok": false,
+        "meets_min_items": false,
+        "recommendations": [
+          "Extract at least 1 items in lightweight validation.",
+          "Ensure required fields are populated: ['name', 'downloadUrl']"
+        ],
+        "sample_records": []
+      }
+    }
+  ],
+  "stopped_reason": "max_retries_exceeded",
+  "primary_cause": "timeout",
+  "backup_cause": "unknown"
+}

@@ -1,0 +1,104 @@
+{
+  "baseUrl": "https://www.cityam.com/news/",
+  "bestCandidate": {
+    "selector": ".content-listing__content-item",
+    "titleSelector": ".card__title a",
+    "dateSelector": "",
+    "score": 44,
+    "itemCount": 12,
+    "hasLink": 12,
+    "hasDate": 0
+  },
+  "structureHint": "Each item is a <li class='content-listing__content-item'>; title/link in <h3 class='card__title'> > <a>",
+  "sampleHtml": "<li class=\"content-listing__content-item\">\n<article class=\"card card--has-media card--has-kicker card--has-density-hd-md category__markets\">\n<div class=\"card__content\">\n<h3 class=\"card__title\"> <a cmp-ltrk=\"content-container\" cmp-ltrk-idx=\"1\" data-mrf-link=\"https://www.cityam.com/ftse-100-live-stocks-set-to-dip-after-trumps-fresh-tariffs-salvo/\" href=\"https://www.cityam.com/ftse-100-live-stocks-set-to-dip-after-trumps-fresh-tariffs-salvo/\" mrfobservableid=\"0627ea95-1bfe-4686-9d48-684a2e69e553\">\n\t\t\t\tFTSE 100 Live: Stocks set to dip after Trump’s fresh tariffs salvo\t\t\t</a>\n</h3>\n<div class=\"card...\n<li class=\"content-listing__content-item\">\n<article class=\"card card--has-media card--has-kicker card--has-density-hd-md category__business\">\n<div class=\"card__content\">\n<h3 class=\"card__title\"> <a cmp-ltrk=\"content-container\" cmp-ltrk-idx=\"2\" data-mrf-link=\"https://www.cityam.com/job-vacancies-lowest-since-2021-london-worst-affected/\" href=\"https://www.cityam.com/job-vacancies-lowest-since-2021-london-worst-affected/\" mrfobservableid=\"0a00c682-2c62-4093-b37e-3c738067371b\">\n\t\t\t\tJob vacancies at lowest level since 2021 as London worst affected\t\t\t</a>\n</h3>\n<div class=\"card__meta\">\n<span class=\"...",
+  "items": [
+    {
+      "title": "FTSE 100 Live: Stocks set to dip after Trump’s fresh tariffs salvo",
+      "url": "https://www.cityam.com/ftse-100-live-stocks-set-to-dip-after-trumps-fresh-tariffs-salvo/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Job vacancies at lowest level since 2021 as London worst affected",
+      "url": "https://www.cityam.com/job-vacancies-lowest-since-2021-london-worst-affected/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Bank to business lending growth to halve amid global tensions",
+      "url": "https://www.cityam.com/bank-to-business-lending-growth-to-halve-amid-global-tensions/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "‘Drastic’ Dave to serve up new vision for Guinness maker Diageo",
+      "url": "https://www.cityam.com/drastic-dave-to-serve-up-new-vision-for-guinness-maker-diageo/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Tories pledge to cut ‘eyewatering’ interest on some student loans",
+      "url": "https://www.cityam.com/tories-pledge-to-cut-eyewatering-interest-on-some-student-loans/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "UK and Trump in new tariff discussions as businesses sound alarm",
+      "url": "https://www.cityam.com/uk-and-trump-in-new-tariff-discussions-as-businesses-sound-alarm/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Britain must launch no-brainer 2038 Winter Olympics bid",
+      "url": "https://www.cityam.com/britain-must-launch-no-brainer-2038-winter-olympics-bid/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Trump says he is raising global tariffs after Supreme Court ruling",
+      "url": "https://www.cityam.com/trump-says-he-is-raising-global-tariffs-after-supreme-court-ruling/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Davey challenges Starmer on Trump tariffs",
+      "url": "https://www.cityam.com/davey-challenges-starmer-on-trump-tariffs/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Thousands of entrepreneurs quit the UK in the past two years, says wealth manager",
+      "url": "https://www.cityam.com/thousands-of-entrepreneurs-quit-the-uk-in-the-past-two-years-says-wealth-manager/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Brewdog co-founder to plough millons into rescue bid for the struggling brewer",
+      "url": "https://www.cityam.com/brewdog-co-founder-to-plough-millons-into-rescue-bid-for-the-struggling-brewer/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Minimum wage is  lowering standards of living, argues Wetherspoons boss",
+      "url": "https://www.cityam.com/minimum-wage-is-lowering-standards-of-living-argues-wetherspoons-boss/",
+      "date": "",
+      "dateText": ""
+    }
+  ],
+  "pagination": {
+    "next": null,
+    "prev": null,
+    "pageNums": [],
+    "totalPages": 0
+  },
+  "dateHints": {
+    "minDate": "",
+    "maxDate": "",
+    "startDate": "",
+    "endDate": "",
+    "hasInRange": false,
+    "hasOlderThanStart": false,
+    "suggestStopPaging": false
+  },
+  "otherCandidates": []
+}

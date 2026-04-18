@@ -1,0 +1,193 @@
+{
+  "dataApis": [
+    {
+      "url": "https://api.stage.bio/api/account/bundesbank/source/entry?amount=10&widgetId=63aafa2172676c874ed99cce39464264",
+      "method": "GET",
+      "queryParams": {
+        "amount": "10",
+        "widgetId": "63aafa2172676c874ed99cce39464264"
+      },
+      "postParams": {},
+      "arrayPath": "root",
+      "arrayLength": 10,
+      "itemFields": [
+        "attachments",
+        "content",
+        "duplicate_entries",
+        "hidden",
+        "link_preview",
+        "original_created_at",
+        "original_source_id",
+        "replies",
+        "source",
+        "source_entry",
+        "source_entry_filter",
+        "source_id",
+        "source_url",
+        "title",
+        "unique_short_id"
+      ],
+      "hasTitle": true,
+      "hasDate": false,
+      "sampleItem": {
+        "source_id": 1583,
+        "original_source_id": "3mfk7fub6ne2f",
+        "unique_short_id": "67516390ee8d70e0",
+        "source_url": "https://bsky.app/profile/bundesbank.de/post/3mfk7fub6ne2f",
+        "hidden": 0,
+        "content": "The Governor of the Central Bank of Montenegro, Irena Radović, visited the Bundesbank today. She met President Joachim Nagel to discuss Montenegro’s alignment with the European System of Central Banks and Board Member Burkhard Balz to talk about digital innovation.\n\n#Montenegro #EUIntegration",
+        "title": null,
+        "original_created_at": 1771868753,
+        "source": {
+          "source_type_id": 14,
+          "handle": "bundesbank.de",
+          "original_source_id": "bundesbank.de",
+          "suspend_import": 0,
+          "skip_count": 0,
+          "name": "Deutsche Bundesbank",
+          "source_photo_path": null,
+          "source_origin": "https://bsky.app/profile/bundesbank.bsky.social",
+          "account": {
+            "account_type_id": 12,
+            "platform_profile_active": 1,
+            "duplicate_check_enabled": 1,
+            "handle": "bundesbank",
+            "latitude": null,
+            "longitude": null,
+            "name": "Bundesbank",
+            "profil_photo_path": "foyer/07669bcb-cd39-4dfc-bcc7-c18ffce63fe4.jpg",
+            "profil_photo_alternative_text": null,
+            "cover_photo_path": "foyer/ec9ecae6-12be-4d78-a9d3-f9ccaefe041a.jpg",
+            "cover_photo_alternative_text": null,
+            "created_at": "2024-08-07T08:54:29.000000Z",
+            "description": "Hier finden Sie die Posts unserer offiziellen Social Media Kanäle.",
+            "phone": null,
+            "email": null,
+            "website": "https://www.bundesbank.de/de/",
+            "profil_photo_url": "https://cdn.stage.bio/foyer/07669bcb-cd39-4dfc-bcc7-c18ffce63fe4.jpg",
+            "cover_photo_url": "https://cdn.stage.bio/foyer/ec9ecae6-12be-4d78-a9d3-f9ccaefe041a.jpg",
+            "account_contact_option": [],
+            "bundle": {
+              "id": 15,
+              "fastbill_product_id": 15,
+              "name": "Trial"
+            }
+          }
+        },
+        "attachments": [
+          {
+            "active": 1,
+            "mime_type_id": 2,
+            "size": 565,
+            "width": 2000,
+            "height": 1511,
+            "filename": "source-entries/zpdRKE3Rx7nqWQqwmAh3RqPR8Ur8xfIIRspKvbJF.jpg",
+            "original_filename": "bafkreifnj7xozf3v3t4busbvmclvkxpjd7xomt2shejfsusij5u6lmjmde@jpeg",
+            "alternative_text": "Dieser Alternativtext wurde KI-generiert: Zwei Personen in formeller Kleidung stehen vor einer Fensterkulisse mit einer Stadtlandschaft und zwei Flaggen. Im Hintergrund ist ein hoher Wolkenkratzer zu sehen."
+          }
+        ],
+        "source_entry_filter": [],
+        "source_entry": null,
+        "duplicate_entries": [],
+        "replies": [],
+        "link_preview": null
+      }
+    }
+  ],
+  "bestApi": {
+    "url": "https://api.stage.bio/api/account/bundesbank/source/entry?amount=10&widgetId=63aafa2172676c874ed99cce39464264",
+    "method": "GET",
+    "queryParams": {
+      "amount": "10",
+      "widgetId": "63aafa2172676c874ed99cce39464264"
+    },
+    "postParams": {},
+    "arrayPath": "root",
+    "arrayLength": 10,
+    "itemFields": [
+      "attachments",
+      "content",
+      "duplicate_entries",
+      "hidden",
+      "link_preview",
+      "original_created_at",
+      "original_source_id",
+      "replies",
+      "source",
+      "source_entry",
+      "source_entry_filter",
+      "source_id",
+      "source_url",
+      "title",
+      "unique_short_id"
+    ],
+    "hasTitle": true,
+    "hasDate": false,
+    "sampleItem": {
+      "source_id": 1583,
+      "original_source_id": "3mfk7fub6ne2f",
+      "unique_short_id": "67516390ee8d70e0",
+      "source_url": "https://bsky.app/profile/bundesbank.de/post/3mfk7fub6ne2f",
+      "hidden": 0,
+      "content": "The Governor of the Central Bank of Montenegro, Irena Radović, visited the Bundesbank today. She met President Joachim Nagel to discuss Montenegro’s alignment with the European System of Central Banks and Board Member Burkhard Balz to talk about digital innovation.\n\n#Montenegro #EUIntegration",
+      "title": null,
+      "original_created_at": 1771868753,
+      "source": {
+        "source_type_id": 14,
+        "handle": "bundesbank.de",
+        "original_source_id": "bundesbank.de",
+        "suspend_import": 0,
+        "skip_count": 0,
+        "name": "Deutsche Bundesbank",
+        "source_photo_path": null,
+        "source_origin": "https://bsky.app/profile/bundesbank.bsky.social",
+        "account": {
+          "account_type_id": 12,
+          "platform_profile_active": 1,
+          "duplicate_check_enabled": 1,
+          "handle": "bundesbank",
+          "latitude": null,
+          "longitude": null,
+          "name": "Bundesbank",
+          "profil_photo_path": "foyer/07669bcb-cd39-4dfc-bcc7-c18ffce63fe4.jpg",
+          "profil_photo_alternative_text": null,
+          "cover_photo_path": "foyer/ec9ecae6-12be-4d78-a9d3-f9ccaefe041a.jpg",
+          "cover_photo_alternative_text": null,
+          "created_at": "2024-08-07T08:54:29.000000Z",
+          "description": "Hier finden Sie die Posts unserer offiziellen Social Media Kanäle.",
+          "phone": null,
+          "email": null,
+          "website": "https://www.bundesbank.de/de/",
+          "profil_photo_url": "https://cdn.stage.bio/foyer/07669bcb-cd39-4dfc-bcc7-c18ffce63fe4.jpg",
+          "cover_photo_url": "https://cdn.stage.bio/foyer/ec9ecae6-12be-4d78-a9d3-f9ccaefe041a.jpg",
+          "account_contact_option": [],
+          "bundle": {
+            "id": 15,
+            "fastbill_product_id": 15,
+            "name": "Trial"
+          }
+        }
+      },
+      "attachments": [
+        {
+          "active": 1,
+          "mime_type_id": 2,
+          "size": 565,
+          "width": 2000,
+          "height": 1511,
+          "filename": "source-entries/zpdRKE3Rx7nqWQqwmAh3RqPR8Ur8xfIIRspKvbJF.jpg",
+          "original_filename": "bafkreifnj7xozf3v3t4busbvmclvkxpjd7xomt2shejfsusij5u6lmjmde@jpeg",
+          "alternative_text": "Dieser Alternativtext wurde KI-generiert: Zwei Personen in formeller Kleidung stehen vor einer Fensterkulisse mit einer Stadtlandschaft und zwei Flaggen. Im Hintergrund ist ein hoher Wolkenkratzer zu sehen."
+        }
+      ],
+      "source_entry_filter": [],
+      "source_entry": null,
+      "duplicate_entries": [],
+      "replies": [],
+      "link_preview": null
+    }
+  },
+  "inferredParams": {},
+  "interactionSucceeded": false,
+  "newRequestCount": 0
+}

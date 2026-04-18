@@ -1,0 +1,83 @@
+{
+  "url": "https://www.cityam.com/lord-mandelson-arrested-what-led-to-police-action/",
+  "contentSelector": "#onetrust-consent-sdk",
+  "contentTagName": "#onetrust-consent-sdk",
+  "contentTextLength": 28342,
+  "sampleContentHtml": "<div data-nosnippet=\"true\" id=\"onetrust-consent-sdk\"><div class=\"onetrust-pc-dark-filter ot-fade-in\" style=\"z-index:2147483645;\"></div><div aria-label=\"Cookie banner\" class=\"otCenterRounded ot-iab-2 default ot-bnr-w-logo vertical-align-content\" id=\"onetrust-banner-sdk\" role=\"region\" tabindex=\"0\"><div aria-label=\"We Care About Your Privacy\" aria-modal=\"true\" class=\"ot-sdk-container\" role=\"dialog\"><div class=\"ot-sdk-row\"><div class=\"ot-sdk-twelve ot-sdk-columns\" id=\"onetrust-group-container\"><div id=\"onetrust-policy\"><div class=\"banner-header\"><div class=\"banner_logo\"></div><img alt=\"CityAM\" class=\"ot-bnr-logo\" src=\"https://cdn.cookielaw.org/logos/61500110-8816-462d-a9ab-88da93c35906/0192282e-bc7e-7e04-9122-423e4c8f728f/8c246c29-527c-469a-a4ba-80c9e3b608bb/cityam_black_blue_500x500.png\" title=\"CityAM\"/></div><h2 id=\"onetrust-policy-title\">We Care About Your Privacy</h2><div id=\"onetrust-policy-text\">We and our <span class=\"ot-tcf2-vendor-count ot-text-bold\">969</span> partners store and access personal data, like browsing data or unique identifiers, on your device. Selecting I Accept enables tracking technologies to support the purposes shown under we and our partners process data to...",
+  "contentCandidates": [
+    {
+      "selector": "#onetrust-consent-sdk",
+      "textLength": 28342,
+      "linkCount": 5,
+      "linkDensity": 0.0002,
+      "textPreview": "We Care About Your PrivacyWe and our969partners store and access personal data, "
+    },
+    {
+      "selector": "#onetrust-pc-sdk",
+      "textLength": 13693,
+      "linkCount": 2,
+      "linkDensity": 0.0001,
+      "textPreview": "About Your PrivacyAbout Your PrivacyYour PrivacyFunctional CookiesAnalytics & Pe"
+    },
+    {
+      "selector": "#ot-pc-content",
+      "textLength": 13492,
+      "linkCount": 1,
+      "linkDensity": 0.0001,
+      "textPreview": "About Your PrivacyYour PrivacyFunctional CookiesAnalytics & Performance CookiesS"
+    },
+    {
+      "selector": "div.ot-sdk-container.ot-grps-cntr.ot-sdk-column",
+      "textLength": 13492,
+      "linkCount": 1,
+      "linkDensity": 0.0001,
+      "textPreview": "About Your PrivacyYour PrivacyFunctional CookiesAnalytics & Performance CookiesS"
+    },
+    {
+      "selector": "div.ot-tab-desc.ot-sdk-eight.ot-sdk-columns",
+      "textLength": 12456,
+      "linkCount": 1,
+      "linkDensity": 0.0001,
+      "textPreview": "Your PrivacyWe process your data to deliver content or advertisements and measur"
+    },
+    {
+      "selector": "#main",
+      "textLength": 6158,
+      "linkCount": 41,
+      "linkDensity": 0.0067,
+      "textPreview": "Tuesday 24 February 2026 12:50 pmLord Mandelson arrested: What led to police act"
+    },
+    {
+      "selector": "#ot-desc-id-V2STACK42",
+      "textLength": 5717,
+      "linkCount": 0,
+      "linkDensity": 0.0,
+      "textPreview": "Personalised advertising and content, advertising and content measurement, audie"
+    },
+    {
+      "selector": "article.content-container.content-container__single",
+      "textLength": 5053,
+      "linkCount": 25,
+      "linkDensity": 0.0049,
+      "textPreview": "Tuesday 24 February 2026 12:50 pmLord Mandelson arrested: What led to police act"
+    },
+    {
+      "selector": "#onetrust-banner-sdk",
+      "textLength": 963,
+      "linkCount": 1,
+      "linkDensity": 0.001,
+      "textPreview": "We Care About Your PrivacyWe and our969partners store and access personal data, "
+    },
+    {
+      "selector": "div.ot-sdk-container",
+      "textLength": 963,
+      "linkCount": 1,
+      "linkDensity": 0.001,
+      "textPreview": "We Care About Your PrivacyWe and our969partners store and access personal data, "
+    }
+  ],
+  "titleSelector": "h1",
+  "titleTagName": "h1.article-header__title",
+  "titleText": "Lord Mandelson arrested: What led to police action?",
+  "structureHint": "10 body container candidates for LLM to choose from; title in <h1.article-header__title> (selector: 'h1')"
+}

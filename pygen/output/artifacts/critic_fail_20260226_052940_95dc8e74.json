@@ -1,0 +1,400 @@
+{
+  "final_round": 3,
+  "max_retries": 3,
+  "repaired_code": "import os\nimport json\nimport time\nimport re\nimport random\nfrom datetime import datetime\nfrom urllib.parse import urljoin, urlparse\nfrom playwright.sync_api import sync_playwright\nfrom bs4 import BeautifulSoup\nimport dateparser\n\n# ================= 配置区域 =================\nOUTPUT_DIR = \"./output\"\nTARGET_URL = \"https://www.seczambia.org.zm/resources/multimedia/news/\"\nMAX_ITEMS = 5\nHEADLESS = True\n\nos.makedirs(OUTPUT_DIR, exist_ok=True)\n\n# ================= 工具函数 =================\n\ndef clean_html_content(html_content, base_url):\n    \"\"\"\n    清洗HTML内容：\n    1. 将相对路径转换为绝对路径\n    2. 移除无用标签\n    \"\"\"\n    if not html_content:\n        return \"\"\n    try:\n        soup = BeautifulSoup(html_content, 'html.parser')\n        \n        # 修复图片链接\n        for img in soup.find_all('img'):\n            if img.get('src'):\n                img['src'] = urljoin(base_url, img['src'])\n                \n        # 修复超链接\n        for a in soup.find_all('a'):\n            if a.get('href'):\n                a['href'] = urljoin(base_url, a['href'])\n        \n        # 移除脚本和样式\n        for script in soup([\"script\", \"style\"]):\n            script.decompose()\n\n        return str(soup)\n    except Exception as e:\n        print(f\"内容清洗出错: {e}\")\n        return html_content\n\ndef extract_date_from_text(text):\n    \"\"\"\n    从文本中提取日期\n    \"\"\"\n    if not text:\n        return None\n    \n    patterns = [\n        r'(\\d{4})-(\\d{1,2})-(\\d{1,2})',  # 2025-10-14\n        r'([A-Za-z]+)\\s+(\\d{1,2})(?:st|nd|rd|th)?,?\\s+(\\d{4})',  # October 14, 2025\n        r'(\\d{1,2})\\s+([A-Za-z]+)\\s+(\\d{4})', # 14 October 2025\n        r'(\\d{1,2})[./](\\d{1,2})[./](\\d{4})', # 14/10/2025\n    ]\n    \n    for pattern in patterns:\n        match = re.search(pattern, text)\n        if match:\n            try:\n                dt = dateparser.parse(match.group(0))\n                if dt:\n                    return dt.strftime(\"%Y-%m-%d\")\n            except:\n                continue\n    return None\n\ndef save_results(articles: list, output_path: str):\n    \"\"\"保存结果为JSON\"\"\"\n    result = {\n        \"total\": len(articles),\n        \"crawlTime\": datetime.now().strftime(\"%Y-%m-%d %H:%M:%S\"),\n        \"articles\": articles\n    }\n    with open(output_path, 'w', encoding='utf-8') as f:\n        json.dump(result, f, ensure_ascii=False, indent=2)\n    print(f\"已保存 {len(articles)} 条新闻到 {output_path}\")\n\n# ================= 爬虫逻辑 =================\n\ndef crawl_detail_page(context, url):\n    \"\"\"爬取详情页内容\"\"\"\n    page = context.new_page()\n    try:\n        # 如果是PDF直接返回\n        if url.lower().endswith('.pdf'):\n            return {\"content\": f\"<p>PDF Document: <a href='{url}'>{url}</a></p>\", \"date_from_detail\": None}\n\n        print(f\"正在抓取详情页: {url}\")\n        page.goto(url, wait_until=\"domcontentloaded\", timeout=30000)\n        \n        try:\n            page.wait_for_timeout(2000)\n        except:\n            pass\n\n        content_html = \"\"\n        \n        # 增强的正文选择器列表\n        content_selectors = [\n            \"div.elementor-widget-theme-post-content\",\n            \"div.elementor-widget-text-editor\",\n            \".entry-content\",\n            \".post-content\",\n            \"article .content\",\n            \"div[class*='content']\",\n            \"main\"\n        ]\n        \n        for selector in content_selectors:\n            if page.locator(selector).count() > 0:\n                # 针对 Elementor 文本编辑器的特殊处理\n                if \"text-editor\" in selector:\n                    elements = page.locator(selector).all()\n                    # 拼接所有文本编辑器内容\n                    full_html = \"\"\n                    for el in elements:\n                        full_html += el.inner_html()\n                    content_html = full_html\n                else:\n                    content_html = page.locator(selector).first.inner_html()\n                \n                if content_html and len(content_html) > 100:\n                    break\n        \n        cleaned_content = clean_html_content(content_html, url)\n        \n        extracted_date = None\n        try:\n            # 尝试从页面元数据或时间标签提取日期\n            time_el = page.locator(\"time\").first\n            if time_el.count():\n                extracted_date = extract_date_from_text(time_el.get_attribute(\"datetime\") or time_el.inner_text())\n            \n            if not extracted_date:\n                # 扫描页面前1500个字符\n                body_text = page.locator(\"body\").inner_text()[:1500]\n                extracted_date = extract_date_from_text(body_text)\n        except:\n            pass\n\n        return {\n            \"content\": cleaned_content,\n            \"date_from_detail\": extracted_date\n        }\n\n    except Exception as e:\n        print(f\"详情页抓取失败 {url}: {e}\")\n        return {\"content\": \"\", \"date_from_detail\": None}\n    finally:\n        page.close()\n\ndef crawl_news():\n    \"\"\"主爬虫函数\"\"\"\n    with sync_playwright() as p:\n        browser = p.chromium.launch(\n            headless=HEADLESS,\n            args=[\"--disable-blink-features=AutomationControlled\", \"--no-sandbox\"]\n        )\n        context = browser.new_context(\n            viewport={'width': 1920, 'height': 1080},\n            user_agent=\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\"\n        )\n        \n        page = context.new_page()\n        articles = []\n        seen_urls = set()\n        \n        try:\n            print(f\"访问列表页: {TARGET_URL}\")\n            page.goto(TARGET_URL, wait_until=\"domcontentloaded\", timeout=60000)\n            page.wait_for_timeout(5000) # 等待动态加载\n\n            # === 策略1: 尝试标准新闻卡片 ===\n            # 扩展选择器以覆盖更多情况\n            card_selectors = [\n                \"article\", \n                \".elementor-post\", \n                \".post\", \n                \".news-item\", \n                \".blog-entry\",\n                \"div[class*='post-']\",\n                \"div.card\"\n            ]\n            \n            potential_cards = []\n            for sel in card_selectors:\n                found = page.locator(sel).all()\n                if len(found) > 0:\n                    potential_cards = found\n                    print(f\"使用选择器 '{sel}' 找到 {len(found)} 个潜在条目\")\n                    break\n            \n            for item in potential_cards:\n                if len(articles) >= MAX_ITEMS: break\n                try:\n                    # 提取标题和链接\n                    title_el = item.locator(\"h1, h2, h3, h4, h5, h6, a.title, .entry-title a\").first\n                    if not title_el.count():\n                        # 尝试直接找链接\n                        title_el = item.locator(\"a\").first\n                    \n                    if not title_el.count(): continue\n                    \n                    title = title_el.inner_text().strip()\n                    # 如果找到的是标题容器，找里面的链接\n                    link_el = title_el if title_el.get_attribute(\"href\") else title_el.locator(\"a\").first\n                    \n                    if not link_el.count():\n                        # 回溯到卡片找链接\n                        link_el = item.locator(\"a\").first\n                    \n                    if not link_el.count(): continue\n                    \n                    href = link_el.get_attribute(\"href\")\n                    if not href: continue\n                    \n                    full_url = urljoin(TARGET_URL, href)\n                    if full_url in seen_urls: continue\n                    \n                    # 提取日期\n                    date_str = None\n                    time_el = item.locator(\"time\").first\n                    if time_el.count():\n                        date_str = extract_date_from_text(time_el.get_attribute(\"datetime\") or time_el.inner_text())\n                    if not date_str:\n                        date_str = extract_date_from_text(item.inner_text())\n\n                    articles.append({\n                        \"title\": title,\n                        \"date\": date_str,\n                        \"sourceUrl\": full_url,\n                        \"summary\": \"\",\n                        \"source\": \"SEC Zambia\",\n                        \"author\": \"SEC Zambia\"\n                    })\n                    seen_urls.add(full_url)\n                except Exception as e:\n                    print(f\"卡片提取出错: {e}\")\n\n            # === 策略2: 兜底链接采集 (如果策略1未找到足够数据) ===\n            if len(articles) < MAX_ITEMS:\n                print(\"策略1未满足数量，启动兜底链接采集...\")\n                # 查找主内容区域的所有链接\n                main_area = page.locator(\"main, #content, .content, body\").first\n                links = main_area.locator(\"a\").all()\n                \n                for link in links:\n                    if len(articles) >= MAX_ITEMS: break\n                    if not link.is_visible(): continue\n                    \n                    text = link.inner_text().strip()\n                    href = link.get_attribute(\"href\")\n                    \n                    # 过滤无效链接\n                    if not text or len(text) < 15: continue # 标题太短通常不是新闻\n                    if not href or href.startswith(\"#\") or \"javascript\" in href: continue\n                    \n                    full_url = urljoin(TARGET_URL, href)\n                    if full_url in seen_urls: continue\n                    \n                    # 排除常见非新闻词汇\n                    if any(x in text.lower() for x in ['read more', 'click here', 'contact', 'home', 'about', 'privacy']):\n                        continue\n                        \n                    # 排除同一域名的非内容页 (简单启发式)\n                    path = urlparse(full_url).path\n                    if path == \"/\" or path == \"\": continue\n\n                    print(f\"兜底发现链接: {text}\")\n                    articles.append({\n                        \"title\": text,\n                        \"date\": None, # 稍后在详情页获取\n                        \"sourceUrl\": full_url,\n                        \"summary\": \"\",\n                        \"source\": \"SEC Zambia\",\n                        \"author\": \"SEC Zambia\"\n                    })\n                    seen_urls.add(full_url)\n\n            # === 详情页补全 ===\n            print(f\"开始抓取 {len(articles)} 条新闻的详情内容...\")\n            for i, article in enumerate(articles):\n                print(f\"[{i+1}/{len(articles)}] 处理: {article['title']}\")\n                detail = crawl_detail_page(context, article['sourceUrl'])\n                article['content'] = detail['content']\n                if not article['date'] and detail['date_from_detail']:\n                    article['date'] = detail['date_from_detail']\n                article['id'] = str(i + 1)\n                time.sleep(1)\n\n        except Exception as e:\n            print(f\"爬虫运行出错: {e}\")\n        finally:\n            browser.close()\n            \n        return articles\n\ndef main():\n    # 开始爬取\n    articles = crawl_news()\n    \n    # 生成文件名\n    timestamp = datetime.now().strftime(\"%Y%m%d_%H%M%S\")\n    filename = f\"seczambia_news_{timestamp}.json\"\n    output_path = os.path.join(OUTPUT_DIR, filename)\n    \n    # 保存结果\n    if articles:\n        save_results(articles, output_path)\n    else:\n        print(\"未抓取到任何新闻数据\")\n\nif __name__ == \"__main__\":\n    main()",
+  "rounds": [
+    {
+      "round": 1,
+      "passed": false,
+      "primary_cause": "empty_output",
+      "backup_cause": "schema_mismatch",
+      "uncertain": false,
+      "classifier_confidence": 0.75,
+      "record_count": 0,
+      "static_error_count": 1
+    },
+    {
+      "round": 2,
+      "passed": false,
+      "primary_cause": "empty_output",
+      "backup_cause": "schema_mismatch",
+      "uncertain": false,
+      "classifier_confidence": 0.75,
+      "record_count": 0,
+      "static_error_count": 1
+    },
+    {
+      "round": 3,
+      "passed": false,
+      "primary_cause": "schema_mismatch",
+      "backup_cause": "pagination_date_lost",
+      "uncertain": false,
+      "classifier_confidence": 0.75,
+      "record_count": 0,
+      "static_error_count": 1
+    },
+    {
+      "round": 3,
+      "passed": false,
+      "primary_cause": "empty_output",
+      "backup_cause": "schema_mismatch",
+      "uncertain": false,
+      "classifier_confidence": 0.75,
+      "record_count": 0,
+      "static_error_count": 1
+    }
+  ],
+  "evidence": [
+    {
+      "round": 1,
+      "step": "static_check",
+      "result": {
+        "error_count": 1,
+        "warning_count": 2,
+        "top_errors": [
+          {
+            "severity": "error",
+            "code": "detail_body_selector_mismatch",
+            "message": "详情页正文未使用 probe_detail_page 返回的任一候选选择器。请从 probe 的 contentCandidates 中任选一个作为正文容器，不要使用泛化的 article/main。"
+          }
+        ],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+          },
+          {
+            "severity": "warning",
+            "code": "ERR_003",
+            "message": "日期提取函数可能在分页循环外调用，可能导致只有第一页有日期"
+          }
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": false,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 0.313,
+        "record_count": 0,
+        "date_fill_rate": 0.0,
+        "status": "no_data",
+        "http_statuses": [],
+        "stdout_tail": "",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 1,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "empty_output",
+        "backup_cause": "schema_mismatch",
+        "confidence": 0.75,
+        "classifier_summary": "脚本执行完成但输出为空"
+      }
+    },
+    {
+      "round": 1,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "selector_brittleness_probe",
+        "cause": "empty_output",
+        "result": {
+          "select_calls": 0,
+          "find_calls": 0,
+          "has_chained_find": false
+        }
+      }
+    },
+    {
+      "round": 1,
+      "step": "output_quality",
+      "result": {
+        "record_count": 0,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 0.0,
+          "sourceUrl": 0.0
+        },
+        "required_fields_ok": false,
+        "meets_min_items": false,
+        "recommendations": [
+          "Extract at least 1 items in lightweight validation.",
+          "Ensure required fields are populated: ['title', 'sourceUrl']"
+        ],
+        "sample_records": []
+      }
+    },
+    {
+      "round": 2,
+      "step": "llm_repair",
+      "result": {
+        "changed": true
+      }
+    },
+    {
+      "round": 2,
+      "step": "static_check",
+      "result": {
+        "error_count": 1,
+        "warning_count": 2,
+        "top_errors": [
+          {
+            "severity": "error",
+            "code": "detail_body_selector_mismatch",
+            "message": "详情页正文未使用 probe_detail_page 返回的任一候选选择器。请从 probe 的 contentCandidates 中任选一个作为正文容器，不要使用泛化的 article/main。"
+          }
+        ],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+          },
+          {
+            "severity": "warning",
+            "code": "ERR_003",
+            "message": "日期提取函数可能在分页循环外调用，可能导致只有第一页有日期"
+          }
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": false,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 0.009,
+        "record_count": 0,
+        "date_fill_rate": 0.0,
+        "status": "no_data",
+        "http_statuses": [],
+        "stdout_tail": "",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 2,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "empty_output",
+        "backup_cause": "schema_mismatch",
+        "confidence": 0.75,
+        "classifier_summary": "脚本执行完成但输出为空"
+      }
+    },
+    {
+      "round": 2,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "selector_brittleness_probe",
+        "cause": "empty_output",
+        "result": {
+          "select_calls": 0,
+          "find_calls": 0,
+          "has_chained_find": false
+        }
+      }
+    },
+    {
+      "round": 2,
+      "step": "output_quality",
+      "result": {
+        "record_count": 0,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 0.0,
+          "sourceUrl": 0.0
+        },
+        "required_fields_ok": false,
+        "meets_min_items": false,
+        "recommendations": [
+          "Extract at least 1 items in lightweight validation.",
+          "Ensure required fields are populated: ['title', 'sourceUrl']"
+        ],
+        "sample_records": []
+      }
+    },
+    {
+      "round": 3,
+      "step": "static_check",
+      "result": {
+        "error_count": 1,
+        "warning_count": 2,
+        "top_errors": [
+          {
+            "severity": "error",
+            "code": "detail_body_selector_mismatch",
+            "message": "详情页正文未使用 probe_detail_page 返回的任一候选选择器。请从 probe 的 contentCandidates 中任选一个作为正文容器，不要使用泛化的 article/main。"
+          }
+        ],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+          },
+          {
+            "severity": "warning",
+            "code": "ERR_003",
+            "message": "日期提取函数可能在分页循环外调用，可能导致只有第一页有日期"
+          }
+        ]
+      }
+    },
+    {
+      "round": 3,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": false,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 0.008,
+        "record_count": 0,
+        "date_fill_rate": 0.0,
+        "status": "no_data",
+        "http_statuses": [],
+        "stdout_tail": "",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 3,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "schema_mismatch",
+        "backup_cause": "pagination_date_lost",
+        "confidence": 0.75,
+        "classifier_summary": "脚本执行完成但输出为空"
+      }
+    },
+    {
+      "round": 3,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "selector_brittleness_probe",
+        "cause": "schema_mismatch",
+        "result": {
+          "select_calls": 0,
+          "find_calls": 0,
+          "has_chained_find": false
+        }
+      }
+    },
+    {
+      "round": 3,
+      "step": "output_quality",
+      "result": {
+        "record_count": 0,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 0.0,
+          "sourceUrl": 0.0
+        },
+        "required_fields_ok": false,
+        "meets_min_items": false,
+        "recommendations": [
+          "Extract at least 1 items in lightweight validation.",
+          "Ensure required fields are populated: ['title', 'sourceUrl']"
+        ],
+        "sample_records": []
+      }
+    },
+    {
+      "round": 3,
+      "step": "final_targeted_repair",
+      "result": {
+        "changed": true
+      }
+    },
+    {
+      "round": 3,
+      "step": "static_check",
+      "result": {
+        "error_count": 1,
+        "warning_count": 1,
+        "top_errors": [
+          {
+            "severity": "error",
+            "code": "detail_body_selector_mismatch",
+            "message": "详情页正文未使用 probe_detail_page 返回的任一候选选择器。请从 probe 的 contentCandidates 中任选一个作为正文容器，不要使用泛化的 article/main。"
+          }
+        ],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+          }
+        ]
+      }
+    },
+    {
+      "round": 3,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": false,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 0.004,
+        "record_count": 0,
+        "date_fill_rate": 0.0,
+        "status": "no_data",
+        "http_statuses": [],
+        "stdout_tail": "",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 3,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "empty_output",
+        "backup_cause": "schema_mismatch",
+        "confidence": 0.75,
+        "classifier_summary": "脚本执行完成但输出为空"
+      }
+    },
+    {
+      "round": 3,
+      "step": "output_quality",
+      "result": {
+        "record_count": 0,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 0.0,
+          "sourceUrl": 0.0
+        },
+        "required_fields_ok": false,
+        "meets_min_items": false,
+        "recommendations": [
+          "Extract at least 1 items in lightweight validation.",
+          "Ensure required fields are populated: ['title', 'sourceUrl']"
+        ],
+        "sample_records": []
+      }
+    }
+  ],
+  "stopped_reason": "max_retries_exceeded",
+  "primary_cause": "empty_output",
+  "backup_cause": "schema_mismatch"
+}

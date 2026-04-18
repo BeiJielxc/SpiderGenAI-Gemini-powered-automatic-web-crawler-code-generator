@@ -1,0 +1,173 @@
+{
+  "passed": true,
+  "summary": "Critic passed in round 1.",
+  "confidence": 0.9,
+  "issues": [],
+  "recommendations": [
+    "检查完整的错误日志",
+    "使用调试模式运行脚本",
+    "逐步排查代码逻辑"
+  ],
+  "details": {
+    "final_round": 1,
+    "max_retries": 3,
+    "rounds": [
+      {
+        "round": 1,
+        "passed": true,
+        "primary_cause": "unknown",
+        "backup_cause": "schema_mismatch",
+        "uncertain": true,
+        "classifier_confidence": 0.3,
+        "record_count": 5,
+        "static_error_count": 0
+      }
+    ],
+    "evidence": [
+      {
+        "round": 1,
+        "step": "static_check",
+        "result": {
+          "error_count": 0,
+          "warning_count": 2,
+          "top_errors": [],
+          "top_warnings": [
+            {
+              "severity": "warning",
+              "code": "ERR_006",
+              "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+            },
+            {
+              "severity": "warning",
+              "code": "ERR_003",
+              "message": "日期提取函数可能在分页循环外调用，可能导致只有第一页有日期"
+            }
+          ]
+        }
+      },
+      {
+        "round": 1,
+        "step": "lightweight_runtime",
+        "result": {
+          "execution_success": true,
+          "timed_out": false,
+          "exit_code": 0,
+          "duration_seconds": 39.155,
+          "record_count": 5,
+          "date_fill_rate": 0.6,
+          "status": "success",
+          "http_statuses": [],
+          "stdout_tail": "=== 开始爬取赞比亚SEC新闻 ===\n访问列表页: https://www.seczambia.org.zm/resources/multimedia/news/\n当前页发现 6 条新闻\n正在解析详情页: https://www.seczambia.org.zm/latest-news/circular-1-of-2026-calendar-of-submission/\n[Got] 2026-02-20 | Circular-1-of-2026-Calendar-of-Submission\n正在解析详情页: https://www.seczambia.org.zm/latest-news/public-notice-board-appointment/\n[Got] 2026-02-20 | Public Notice – Board Appointment\n正在解析详情页: https://www.seczambia.org.zm/latest-news/steering-zambias-fight-against-illicit-gains-as-inter%e2%80%91agency-framework-convenes-its-steering-committees-quarterly-meeting/\n[Got] 2025-10-14 | STEERING ZAMBIA’S FIGHT AGAINST ILLICIT GAINS AS INTER‑AGENCY FRAMEWORK CONVENES ITS STEERING COMMITTEE’S QUARTERLY MEETING\n正在解析详情页: https://www.seczambia.org.zm/latest-news/public-censure-against-mr-george-mtonga-...(truncated)",
+          "stderr_tail": ""
+        }
+      },
+      {
+        "round": 1,
+        "step": "cause_ranking",
+        "result": {
+          "primary_cause": "unknown",
+          "backup_cause": "schema_mismatch",
+          "confidence": 0.3,
+          "classifier_summary": "未能明确分类的故障"
+        }
+      },
+      {
+        "round": 1,
+        "step": "minimal_experiment",
+        "result": {
+          "type": "sample_output_probe",
+          "cause": "unknown",
+          "result": {
+            "sample_size": 5,
+            "required_non_empty_count": {
+              "title": 5,
+              "sourceUrl": 5
+            },
+            "sample": [
+              {
+                "title": "Circular-1-of-2026-Calendar-of-Submission",
+                "date": "2026-02-20",
+                "content": "\n<div class=\"elementor-widget-container\">\n<div class=\"wp-block-file\" data-wp-interactive=\"core/file\"><object aria-label=\"Embed of Circular-1-of-2026-Calendar-of-Submission.\" class=\"wp-block-file__embed\" data=\"https://www.seczambia.org.zm/wp-content/uploads/2026/02/Circular-1-of-2026-Calendar-of-Submission.pdf\" data-wp-bind--hidden=\"!state.hasPdfPreview\" style=\"width:100%;height:600px\" type=\"applic",
+                "summary": "Circular-1-of-2026-Calendar-of-SubmissionDownload...",
+                "sourceUrl": "https://www.seczambia.org.zm/latest-news/circular-1-of-2026-calendar-of-submission/",
+                "source": "Securities and Exchange Commission (SEC) Zambia",
+                "author": "SEC Zambia",
+                "id": "1"
+              },
+              {
+                "title": "Public Notice – Board Appointment",
+                "date": "2026-02-20",
+                "content": "\n<div class=\"elementor-widget-container\">\n<div class=\"wp-block-file\" data-wp-interactive=\"core/file\"><object aria-label=\"Embed of Read More.\" class=\"wp-block-file__embed\" data=\"https://www.seczambia.org.zm/wp-content/uploads/2025/12/Public-Notice_Board-Appointments_SEC_2025-26.12.2025.pdf\" data-wp-bind--hidden=\"!state.hasPdfPreview\" style=\"width:100%;height:600px\" type=\"application/pdf\"></object><",
+                "summary": "Read MoreDownload...",
+                "sourceUrl": "https://www.seczambia.org.zm/latest-news/public-notice-board-appointment/",
+                "source": "Securities and Exchange Commission (SEC) Zambia",
+                "author": "SEC Zambia",
+                "id": "2"
+              },
+              {
+                "title": "STEERING ZAMBIA’S FIGHT AGAINST ILLICIT GAINS AS INTER‑AGENCY FRAMEWORK CONVENES ITS STEERING COMMITTEE’S QUARTERLY MEETING",
+                "date": "2025-10-14",
+                "content": "\n<div class=\"elementor-widget-container\">\n<p>Lusaka | October 14, 2025 – In a coordinated effort to enhance Zambia’s legal and institutional response to serious financial and economic crimes, the Steering Committee of the Inter-Agency Framework on Collaboration and Coordination in Asset Recovery held its quarterly meeting today at the Office of the Auditor General in Lusaka.</p>\n<p>The high-level ",
+                "summary": "Lusaka | October 14, 2025 – In a coordinated effort to enhance Zambia’s legal and institutional response to serious financial and economic crimes, the Steering Committee of the Inter-Agency Framewor...",
+                "sourceUrl": "https://www.seczambia.org.zm/latest-news/steering-zambias-fight-against-illicit-gains-as-inter%e2%80%91agency-framework-convenes-its-steering-committees-quarterly-meeting/",
+                "source": "Securities and Exchange Commission (SEC) Zambia",
+                "author": "SEC Zambia",
+                "id": "3"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "round": 1,
+        "step": "output_quality",
+        "result": {
+          "record_count": 5,
+          "required_fields": [
+            "title",
+            "sourceUrl"
+          ],
+          "field_fill_rate": {
+            "title": 1.0,
+            "sourceUrl": 1.0
+          },
+          "required_fields_ok": true,
+          "meets_min_items": true,
+          "recommendations": [],
+          "sample_records": [
+            {
+              "title": "Circular-1-of-2026-Calendar-of-Submission",
+              "date": "2026-02-20",
+              "content": "\n<div class=\"elementor-widget-container\">\n<div class=\"wp-block-file\" data-wp-interactive=\"core/file\"><object aria-label=\"Embed of Circular-1-of-2026-Calendar-of-Submission.\" class=\"wp-block-file__embed\" data=\"https://www.seczambia.org.zm/wp-content/uploads/2026/02/Circular-1-of-2026-Calendar-of-Submission.pdf\" data-wp-bind--hidden=\"!state.hasPdfPreview\" style=\"width:100%;height:600px\" type=\"applic",
+              "summary": "Circular-1-of-2026-Calendar-of-SubmissionDownload...",
+              "sourceUrl": "https://www.seczambia.org.zm/latest-news/circular-1-of-2026-calendar-of-submission/",
+              "source": "Securities and Exchange Commission (SEC) Zambia",
+              "author": "SEC Zambia",
+              "id": "1"
+            },
+            {
+              "title": "Public Notice – Board Appointment",
+              "date": "2026-02-20",
+              "content": "\n<div class=\"elementor-widget-container\">\n<div class=\"wp-block-file\" data-wp-interactive=\"core/file\"><object aria-label=\"Embed of Read More.\" class=\"wp-block-file__embed\" data=\"https://www.seczambia.org.zm/wp-content/uploads/2025/12/Public-Notice_Board-Appointments_SEC_2025-26.12.2025.pdf\" data-wp-bind--hidden=\"!state.hasPdfPreview\" style=\"width:100%;height:600px\" type=\"application/pdf\"></object><",
+              "summary": "Read MoreDownload...",
+              "sourceUrl": "https://www.seczambia.org.zm/latest-news/public-notice-board-appointment/",
+              "source": "Securities and Exchange Commission (SEC) Zambia",
+              "author": "SEC Zambia",
+              "id": "2"
+            },
+            {
+              "title": "STEERING ZAMBIA’S FIGHT AGAINST ILLICIT GAINS AS INTER‑AGENCY FRAMEWORK CONVENES ITS STEERING COMMITTEE’S QUARTERLY MEETING",
+              "date": "2025-10-14",
+              "content": "\n<div class=\"elementor-widget-container\">\n<p>Lusaka | October 14, 2025 – In a coordinated effort to enhance Zambia’s legal and institutional response to serious financial and economic crimes, the Steering Committee of the Inter-Agency Framework on Collaboration and Coordination in Asset Recovery held its quarterly meeting today at the Office of the Auditor General in Lusaka.</p>\n<p>The high-level ",
+              "summary": "Lusaka | October 14, 2025 – In a coordinated effort to enhance Zambia’s legal and institutional response to serious financial and economic crimes, the Steering Committee of the Inter-Agency Framewor...",
+              "sourceUrl": "https://www.seczambia.org.zm/latest-news/steering-zambias-fight-against-illicit-gains-as-inter%e2%80%91agency-framework-convenes-its-steering-committees-quarterly-meeting/",
+              "source": "Securities and Exchange Commission (SEC) Zambia",
+              "author": "SEC Zambia",
+              "id": "3"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

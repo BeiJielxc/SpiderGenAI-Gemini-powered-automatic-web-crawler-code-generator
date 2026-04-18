@@ -1,0 +1,149 @@
+{
+  "baseUrl": "https://supervalores.gob.pa/comunicados-avisos-y-actualidad/",
+  "bestCandidate": {
+    "selector": ".swiper-slide",
+    "titleSelector": "a.wpel-icon-right",
+    "dateSelector": "",
+    "score": 48,
+    "itemCount": 14,
+    "hasLink": 14,
+    "hasDate": 0
+  },
+  "structureHint": "Each item is a <div class='swiper-slide'>; title/link in <a class='wpel-icon-right'>",
+  "sampleHtml": "<div aria-label=\"3 / 17\" aria-roledescription=\"slide\" class=\"swiper-slide\" data-swiper-slide-index=\"2\" role=\"group\" style=\"width: 646px; margin-right: 10px;\">\n<a class=\"wpel-icon-right\" data-wpel-link=\"external\" href=\"https://www.igc-panama.org/\" rel=\"external noopener noreferrer\" target=\"_blank\"> <div aria-label=\"logo-igcp\" class=\"elementor-carousel-image\" role=\"img\" style=\"background-image: url('https://supervalores.gob.pa/wp-content/uploads/2021/03/logo-igcp.jpg')\">\n</div>\n<i aria-hidden=\"true\" class=\"wpel-icon fa fa-share-square-o\"></i></a> </div>\n<div aria-label=\"4 / 17\" aria-roledescription=\"slide\" class=\"swiper-slide\" data-swiper-slide-index=\"3\" role=\"group\" style=\"width: 646px; margin-right: 10px;\">\n<a class=\"wpel-icon-right\" data-wpel-link=\"external\" href=\"https://www.capamec.org/\" rel=\"external noopener noreferrer\" target=\"_blank\"> <div aria-label=\"logo-apamec-horizontal\" class=\"elementor-carousel-image\" role=\"img\" style=\"background-image: url('https://supervalores.gob.pa/wp-content/uploads/2023/11/logo-apamec-horizontal.jpg')\">\n</div>\n<i aria-hidden=\"true\" class=\"wpel-icon fa fa-share-square-o\"></i></a> </div>",
+  "items": [
+    {
+      "title": "",
+      "url": "https://www.igc-panama.org/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "",
+      "url": "https://www.capamec.org/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "",
+      "url": "https://www.mef.gob.pa/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "",
+      "url": "https://www.iosco.org/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "",
+      "url": "https://www.panabolsa.com/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "",
+      "url": "https://www.iadb.org/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "",
+      "url": "https://www.worldbank.org/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "",
+      "url": "https://www.imf.org/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "",
+      "url": "https://www.superbancos.gob.pa/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "",
+      "url": "https://www.asocupa.org/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "",
+      "url": "https://www.bcie.org/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "",
+      "url": "https://www.aiosfp.org/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "",
+      "url": "https://www.ccf.gob.pa/",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "",
+      "url": "https://www.casip-panama.org/",
+      "date": "",
+      "dateText": ""
+    }
+  ],
+  "pagination": {
+    "next": {
+      "tag": "a",
+      "text": "Siguiente →",
+      "href": "https://supervalores.gob.pa/comunicados-avisos-y-actualidad/page/2/",
+      "onclick": null,
+      "target": null,
+      "url": "https://supervalores.gob.pa/comunicados-avisos-y-actualidad/page/2/",
+      "class": "next page-numbers"
+    },
+    "prev": null,
+    "pageNums": [
+      {
+        "tag": "a",
+        "text": "2",
+        "href": "https://supervalores.gob.pa/comunicados-avisos-y-actualidad/page/2/",
+        "onclick": null,
+        "target": null,
+        "url": "https://supervalores.gob.pa/comunicados-avisos-y-actualidad/page/2/",
+        "class": "page-numbers"
+      },
+      {
+        "tag": "a",
+        "text": "111",
+        "href": "https://supervalores.gob.pa/comunicados-avisos-y-actualidad/page/111/",
+        "onclick": null,
+        "target": null,
+        "url": "https://supervalores.gob.pa/comunicados-avisos-y-actualidad/page/111/",
+        "class": "page-numbers"
+      }
+    ],
+    "totalPages": 111
+  },
+  "dateHints": {
+    "minDate": "",
+    "maxDate": "",
+    "startDate": "",
+    "endDate": "",
+    "hasInRange": false,
+    "hasOlderThanStart": false,
+    "suggestStopPaging": false
+  },
+  "otherCandidates": [
+    {
+      "selector": ".elementor-widget-container > h4",
+      "score": 36,
+      "count": 8
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "total": 2,
+  "crawlTime": "2026-02-06 11:13:44",
+  "reports": [
+    {
+      "name": "上海市北高新(集团)有限公司",
+      "date": "2026-01-27",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260128-1769579220597-wP7vRW-[[originalname]]-2026年度上海市北高新(集团)有限公司信用评级报告.pdf",
+      "fileType": "pdf",
+      "id": "285164"
+    },
+    {
+      "name": "四川发展(控股)有限责任公司",
+      "date": "2026-01-09",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260119-1768800248903-51b1mx-[[originalname]]-2026年度四川发展(控股)有限责任公司信用评级报告.pdf",
+      "fileType": "pdf",
+      "id": "285113"
+    }
+  ]
+}

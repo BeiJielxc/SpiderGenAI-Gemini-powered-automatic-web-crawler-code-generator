@@ -1,0 +1,91 @@
+{
+  "baseUrl": "https://www.news.bundesbank.de/news-de",
+  "shadowDOM": true,
+  "shadowHostSelector": "#stage-widget",
+  "bestCandidate": {
+    "selector": "shadow:#stage-widget",
+    "titleSelector": "",
+    "dateSelector": "",
+    "score": 0,
+    "itemCount": 10,
+    "hasLink": true,
+    "hasDate": true
+  },
+  "structureHint": "Content is inside Shadow DOM (host: #stage-widget). Use page.evaluate() with element.shadowRoot to access items. Found 10 cards. Do NOT use BeautifulSoup for shadow DOM content.",
+  "sampleHtml": "<div tabindex=\"0\" class=\"css-1qh1c7n\"><div class=\"css-rxpf3l\"><div class=\"css-6l2s1z\"><div class=\"css-zyo6ya\"><img alt=\"Profilbild von Deutsche Bundesbank\" class=\"css-1vwxd2p\" src=\"https://cdn.stage.bio/foyer/07669bcb-cd39-4dfc-bcc7-c18ffce63fe4.jpg\"></div><div class=\"css-1jblb44\"><a href=\"https://facebook.com/deutsche.bundesbank/\" class=\"css-t9rrt7\">Deutsche Bundesbank</a><div color=\"secondary\" class=\"css-8h7cib\">vor 1 Stunde</div></div><div class=\"css-1sg2lsz\"><div class=\"swiper-full-width css-1abdvnh\" role=\"region\" aria-roledescription=\"carousel\"><div class=\"swiper swiper-initialized swiper-horizontal\" role=\"list\"><div class=\"swiper-wrapper\"><div class=\"swiper-slide swiper-slide-active post-header-slide\" role=\"listitem\" style=\"width: 48px; margin-right: 8px;\"><div class=\"css-1b6b36p\"><button class=\"css-998kmr\" title=\"Zum Facebook-Kanal von Deutsche Bundesbank wechseln\" tabindex=\"0\" kind=\"round\"><div class=\"css-19y45nn\"><div class=\"css-zw12sa\"><svg aria-hidden=\"true\" focusable=\"false\" data-prefix=\"fab\" data-icon=\"facebook-f\" role=\"img\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 320 512\"><path fill=\"currentColor\" d=\"M80 299.3V512H196V299.3h86.5l18-97.8H196V166.9c0-51.7 20.3-71.5 72.7-71.5c16.3 0 29.4 .4 37 1.2V7.9C291.4 4 256.4 0 236.2 0C129.3 0 80 50.5 80 159.4v42.1H14v97.8H80z\"></path></svg></div></div></button></div></div></div></div></div></div></div></div><div class=\"css-w2pp9x\"><div class=\"css-7avdc7\"><div class=\"css-89zx61\">💶Wer besitzt wie viel? Und wie sieht d",
+  "items": [
+    {
+      "title": "💶Wer besitzt wie viel? Und wie sieht die Zukunft unseres Geldes aus?",
+      "url": "https://facebook.com/deutsche.bundesbank/",
+      "date": "vor 1 Stunde",
+      "source": "Deutsche Bundesbank",
+      "platform": "facebook"
+    },
+    {
+      "title": "Hast Du Dich schon mal gefragt, was genau der Unterschied zwischen EZB und Bundesbank ist? Beide haben ihren Sitz in Frankfurt🏙️, der Hauptstadt des Euro. Und beide sind für Geldpolitik zuständig.",
+      "url": "https://instagram.com/deutsche.bundesbank/",
+      "date": "vor 3 Stunden",
+      "source": "Deutsche Bundesbank",
+      "platform": "instagram"
+    },
+    {
+      "title": "How can we improve the quality of seasonally adjusted estimates obtained with up-to-date methods tailored to the complexities of modern daily and weekly economic data?",
+      "url": "https://bsky.app/profile/bundesbank.bsky.social",
+      "date": "vor 4 Stunden",
+      "source": "Deutsche Bundesbank",
+      "platform": "bluesky"
+    },
+    {
+      "title": "Guten Morgen aus Frankfurt! 👋",
+      "url": "https://instagram.com/deutsche.bundesbank/",
+      "date": "vor 6 Stunden",
+      "source": "Deutsche Bundesbank",
+      "platform": "instagram"
+    },
+    {
+      "title": "Studienplatz gesucht? Wir sind am Start!",
+      "url": "https://instagram.com/bundesbank.karriere/",
+      "date": "vor 7 Stunden",
+      "source": "Deutsche Bundesbank Karriere",
+      "platform": "instagram"
+    },
+    {
+      "title": "🌎Im Januar 2026 hat die EU zwei bedeutende Handelsabkommen abgeschlossen – eines mit den Mercosur-Staaten und eines mit Indien (Ratifizierung beider Abkommen steht noch aus).",
+      "url": "https://instagram.com/deutsche.bundesbank/",
+      "date": "vor 3 Tagen",
+      "source": "Deutsche Bundesbank",
+      "platform": "instagram"
+    },
+    {
+      "title": "A new Bundesbank discussion paper finds that complete trade sanctions reduce bilateral trade by around 58% – far more than traditional estimates suggest. How fast does trade recover once sanctions are",
+      "url": "https://bsky.app/profile/bundesbank.bsky.social",
+      "date": "vor 3 Tagen",
+      "source": "Deutsche Bundesbank",
+      "platform": "bluesky"
+    },
+    {
+      "title": "Im Januar 2026 schloss die EU ihre jahrelangen Verhandlungen zu zwei bedeutenden Handelsabkommen ab – mit den Mercosur-Staaten und mit Indien. Die Ratifizierung beider Abkommen steht noch aus. Im aktu",
+      "url": "https://linkedin.com/company/20884",
+      "date": "vor 3 Tagen",
+      "source": "Deutsche Bundesbank",
+      "platform": "linkedin"
+    },
+    {
+      "title": "Hallo, ich bin Karen! 👋",
+      "url": "https://instagram.com/bundesbank.karriere/",
+      "date": "vor 3 Tagen",
+      "source": "Deutsche Bundesbank Karriere",
+      "platform": "instagram"
+    },
+    {
+      "title": "Wie bezahlen wir morgen? 🤔",
+      "url": "https://facebook.com/deutsche.bundesbank/",
+      "date": "vor 3 Tagen",
+      "source": "Deutsche Bundesbank",
+      "platform": "facebook"
+    }
+  ],
+  "pagination": {},
+  "dateHints": {},
+  "otherCandidates": []
+}

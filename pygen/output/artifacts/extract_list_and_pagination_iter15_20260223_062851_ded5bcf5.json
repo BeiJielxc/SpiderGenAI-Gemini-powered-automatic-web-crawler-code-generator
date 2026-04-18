@@ -1,0 +1,175 @@
+{
+  "baseUrl": "https://www.interfax-russia.ru/moscow/news",
+  "bestCandidate": {
+    "selector": ".list-unstyled.lenta-all-news > li",
+    "titleSelector": "a",
+    "dateSelector": "",
+    "score": 60,
+    "itemCount": 22,
+    "hasLink": 20,
+    "hasDate": 0
+  },
+  "structureHint": "Each item is a <li>",
+  "sampleHtml": "<li>\n<h2 class=\"text-primary font-weight-normal mb-0\">20 февраля</h2>\n</li>\n<li>\n<span class=\"news-datetime mb-10\">\n                        21:38\n                </span>\n<a class=\"d-block mb-0\" href=\"https://www.interfax-russia.ru/moscow/news/sud-peredal-v-sobstvennost-gosudarstva-kompaniyu-razrabotchika-sistemy-bronirovaniya-leonardo\">Суд передал в собственность государства компанию-разработчика системы бронирования \"Леонардо\"</a>\n</li>",
+  "items": [
+    {
+      "title": "",
+      "url": "",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Суд передал в собственность государства компанию-разработчика системы бронирования \"Леонардо\"",
+      "url": "https://www.interfax-russia.ru/moscow/news/sud-peredal-v-sobstvennost-gosudarstva-kompaniyu-razrabotchika-sistemy-bronirovaniya-leonardo",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Строительство и реконструкцию почти 50 спортобъектов завершат в Москве в 2026 году",
+      "url": "https://www.interfax-russia.ru/moscow/news/stroitelstvo-i-rekonstrukciyu-pochti-50-sportobektov-zavershat-v-moskve-v-2026-godu",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Путин предложил назначить Владимира Давыдова первым зампредом Верховного суда РФ - Клишас",
+      "url": "https://www.interfax-russia.ru/moscow/news/putin-predlozhil-naznachit-vladimira-davydova-pervym-zampredom-verhovnogo-suda-rf-klishas",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Путин провел совещание с членами СБ РФ, доклад об итогах переговоров в Женеве представили Мединский и Костюков",
+      "url": "https://www.interfax-russia.ru/moscow/news/putin-provel-soveshchanie-s-chlenami-sb-rf-doklad-ob-itogah-peregovorov-v-zheneve-predstavili-medinskiy-i-kostyukov",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Приставы депортировали в 2025 году из РФ 64 тыс. иностранцев за нарушение законодательства - ФССП",
+      "url": "https://www.interfax-russia.ru/moscow/news/pristavy-deportirovali-v-2025-godu-iz-rf-64-tys-inostrancev-za-narushenie-zakonodatelstva-fssp",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Праздничный салют в Москве 23 февраля проводиться не будет",
+      "url": "https://www.interfax-russia.ru/moscow/news/prazdnichnyy-salyut-v-moskve-23-fevralya-provoditsya-ne-budet",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Путин продлил на год срок госслужбы замглавы МИД РФ Грушко",
+      "url": "https://www.interfax-russia.ru/moscow/news/putin-prodlil-na-god-srok-gossluzhby-zamglavy-mid-rf-grushko",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Путин накануне обсуждал рабочие вопросы с Набиуллиной, участвовавшей в переговорах президентов РФ и Мадагаскара",
+      "url": "https://www.interfax-russia.ru/moscow/news/putin-nakanune-obsuzhdal-rabochie-voprosy-s-nabiullinoy-uchastvovavshey-v-peregovorah-prezidentov-rf-i-madagaskara",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Время проезда на транспорте в ряде районов Москвы может увеличиться в 2-3 раза с 20 по 23 февраля",
+      "url": "https://www.interfax-russia.ru/moscow/news/vremya-proezda-na-transporte-v-ryade-rayonov-moskvy-mozhet-uvelichitsya-v-2-3-raza-s-20-po-23-fevralya",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Ночная \"зеленая волна\" светофоров заработает на 14 магистралях столицы - Ликсутов",
+      "url": "https://www.interfax-russia.ru/moscow/news/nochnaya-zelenaya-volna-svetoforov-zarabotaet-na-14-magistralyah-stolicy-liksutov",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Еще несколько улиц перекрыты в Москве - дептранс",
+      "url": "https://www.interfax-russia.ru/moscow/news/eshche-neskolko-ulic-perekryty-v-moskve-deptrans",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "В РФ разрабатывают препараты для терапии различных видов онкозаболеваний - главный онколог Минздрава",
+      "url": "https://www.interfax-russia.ru/moscow/news/v-rf-razrabatyvayut-preparaty-dlya-terapii-razlichnyh-vidov-onkozabolevaniy-glavnyy-onkolog-minzdrava",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Изготовление персонализированной онковакцины занимает два месяца - главный онколог Минздрава РФ",
+      "url": "https://www.interfax-russia.ru/moscow/news/izgotovlenie-personalizirovannoy-onkovakciny-zanimaet-dva-mesyaca-glavnyy-onkolog-minzdrava-rf",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Локальные корректировки движения трамваев возможны в пятницу в Москве",
+      "url": "https://www.interfax-russia.ru/moscow/news/lokalnye-korrektirovki-dvizheniya-tramvaev-vozmozhny-v-pyatnicu-v-moskve",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "В Москве задержали двух человек за попытки поджога по указанию из-за рубежа - МВД",
+      "url": "https://www.interfax-russia.ru/moscow/news/v-moskve-zaderzhali-dvuh-chelovek-za-popytki-podzhoga-po-ukazaniyu-iz-za-rubezha-mvd",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "История показала, что двухпалатный парламент - наиболее подходящий для России, заявила Матвиенко",
+      "url": "https://www.interfax-russia.ru/moscow/news/istoriya-pokazala-chto-dvuhpalatnyy-parlament-naibolee-podhodyashchiy-dlya-rossii-zayavila-matvienko",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "МЧС России укрепляет систему быстрого реагирования с соседними странами - Куренков",
+      "url": "https://www.interfax-russia.ru/moscow/news/mchs-rossii-ukreplyaet-sistemu-bystrogo-reagirovaniya-s-sosednimi-stranami-kurenkov",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "График работы ряда социальных учреждений Москвы изменится 23 февраля",
+      "url": "https://www.interfax-russia.ru/moscow/news/grafik-raboty-ryada-socialnyh-uchrezhdeniy-moskvy-izmenitsya-23-fevralya",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Генштаб: идет повышение боевых возможностей ядерной триады РФ",
+      "url": "https://www.interfax-russia.ru/moscow/news/genshtab-idet-povyshenie-boevyh-vozmozhnostey-yadernoy-triady-rf",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "",
+      "url": "",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Движение в центре Москвы восстановлено",
+      "url": "https://www.interfax-russia.ru/moscow/news/dvizhenie-v-centre-moskvy-vosstanovleno",
+      "date": "",
+      "dateText": ""
+    }
+  ],
+  "pagination": {
+    "next": null,
+    "prev": null,
+    "pageNums": [],
+    "totalPages": 0
+  },
+  "dateHints": {
+    "minDate": "",
+    "maxDate": "",
+    "startDate": "2026-02-20",
+    "endDate": "2026-02-23",
+    "hasInRange": false,
+    "hasOlderThanStart": false,
+    "suggestStopPaging": false
+  },
+  "otherCandidates": [
+    {
+      "selector": ".navbar-nav.nav-scroll-sections",
+      "score": 44,
+      "count": 12
+    },
+    {
+      "selector": ".nav-item-dropdown__holder",
+      "score": 44,
+      "count": 13
+    }
+  ]
+}

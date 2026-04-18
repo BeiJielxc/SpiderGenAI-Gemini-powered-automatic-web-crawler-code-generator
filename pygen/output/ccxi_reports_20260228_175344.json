@@ -1,0 +1,51 @@
+{
+  "total": 5,
+  "crawlTime": "2026-02-28 17:53:44",
+  "dateRange": "2026-02-01 to 2026-02-28",
+  "downloadHeaders": {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Referer": "https://www.ccxi.com.cn/"
+  },
+  "reports": [
+    {
+      "id": "285249",
+      "category": "企业评级/中期票据",
+      "name": "宁波均普智能制造股份有限公司2026年度第一期科技创新债券",
+      "date": "2026-02-04",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260213-1770964594118-6N0a08-[[originalname]]-宁波均普智能制造股份有限公司2026年度第一期科技创新债券信用评级报告.pdf",
+      "fileType": "pdf"
+    },
+    {
+      "id": "285230",
+      "category": "企业评级/中期票据",
+      "name": "陕西交通控股集团有限公司2026年度第一期中期票据",
+      "date": "2026-02-02",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260213-1770963970470-GFCp1a-[[originalname]]-陕西交通控股集团有限公司2026年度第一期中期票据信用评级报告.pdf",
+      "fileType": "pdf"
+    },
+    {
+      "id": "285263",
+      "category": "企业评级/公司债券",
+      "name": "广西北部湾投资集团有限公司2026年面向专业投资者公开发行可续期公司债券(第一期)(品种二)",
+      "date": "2026-02-09",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260228-1772267272712-4J8l20-[[originalname]]-广西北部湾投资集团有限公司2026年面向专业投资者公开发行可续期公司债券（第一期）信用评级报告.pdf",
+      "fileType": "pdf"
+    },
+    {
+      "id": "285262",
+      "category": "企业评级/公司债券",
+      "name": "广西北部湾投资集团有限公司2026年面向专业投资者公开发行可续期公司债券(第一期)(品种一)",
+      "date": "2026-02-09",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260228-1772267295294-1UFr8L-[[originalname]]-广西北部湾投资集团有限公司2026年面向专业投资者公开发行可续期公司债券（第一期）信用评级报告.pdf",
+      "fileType": "pdf"
+    },
+    {
+      "id": "285206",
+      "category": "企业评级/公司债券",
+      "name": "中电建路桥集团有限公司2026年面向专业投资者公开发行可续期公司债券(第二期)",
+      "date": "2026-02-02",
+      "downloadUrl": "https://website-oss.ccxi.com.cn/zhongchengxin//file/20260206-1770357888919-bn3568-[[originalname]]-中电建路桥集团有限公司2026年面向专业投资者公开发行可续期公司债券（第二期）信用评级报告.pdf",
+      "fileType": "pdf"
+    }
+  ]
+}

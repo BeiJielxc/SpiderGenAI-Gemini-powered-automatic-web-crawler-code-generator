@@ -1,0 +1,1465 @@
+{
+  "data_status": {
+    "hasData": false,
+    "tableRowCount": 0,
+    "listItemCount": 2,
+    "potentialMenus": [
+      {
+        "text": "Lusaka Securities Exchange",
+        "tag": "li",
+        "selector": "li.menu-item",
+        "role": ""
+      },
+      {
+        "text": "Bank of Zambia",
+        "tag": "li",
+        "selector": "li.menu-item",
+        "role": ""
+      },
+      {
+        "text": "Ministry of Finance",
+        "tag": "li",
+        "selector": "li.menu-item",
+        "role": ""
+      },
+      {
+        "text": "Skip to content",
+        "tag": "a",
+        "selector": "a.skip-link",
+        "role": ""
+      },
+      {
+        "text": "Facebook-f",
+        "tag": "a",
+        "selector": "a.elementor-icon",
+        "role": ""
+      },
+      {
+        "text": "Icon-linkedin",
+        "tag": "a",
+        "selector": "a.elementor-icon",
+        "role": ""
+      },
+      {
+        "text": "X-twitter",
+        "tag": "a",
+        "selector": "a.elementor-icon",
+        "role": ""
+      },
+      {
+        "text": "Youtube",
+        "tag": "a",
+        "selector": "a.elementor-icon",
+        "role": ""
+      },
+      {
+        "text": "Laws and Regulations",
+        "tag": "a",
+        "selector": "a.ekit-menu-nav-link",
+        "role": ""
+      },
+      {
+        "text": "Market Developments",
+        "tag": "a",
+        "selector": "a.ekit-menu-nav-link",
+        "role": ""
+      },
+      {
+        "text": "Investor Protection",
+        "tag": "a",
+        "selector": "a.ekit-menu-nav-link",
+        "role": ""
+      },
+      {
+        "text": "Investor Education",
+        "tag": "a",
+        "selector": "a.ekit-menu-nav-link",
+        "role": ""
+      },
+      {
+        "text": "Statistics",
+        "tag": "a",
+        "selector": "a.ekit-menu-nav-link",
+        "role": ""
+      },
+      {
+        "text": "Resources",
+        "tag": "a",
+        "selector": "a.ekit-menu-nav-link",
+        "role": ""
+      },
+      {
+        "text": "Commission",
+        "tag": "a",
+        "selector": "a.ekit_navSidebar-button",
+        "role": ""
+      },
+      {
+        "text": "Office Hours & Location",
+        "tag": "a",
+        "selector": null,
+        "role": ""
+      },
+      {
+        "text": "Products",
+        "tag": "a",
+        "selector": null,
+        "role": ""
+      },
+      {
+        "text": "FAQs",
+        "tag": "a",
+        "selector": null,
+        "role": ""
+      },
+      {
+        "text": "Careers",
+        "tag": "a",
+        "selector": null,
+        "role": ""
+      },
+      {
+        "text": "READ MORE",
+        "tag": "a",
+        "selector": "a.elementor-button",
+        "role": ""
+      },
+      {
+        "text": "News",
+        "tag": "a",
+        "selector": null,
+        "role": ""
+      },
+      {
+        "text": "Notices",
+        "tag": "a",
+        "selector": null,
+        "role": ""
+      },
+      {
+        "text": "Press Release",
+        "tag": "a",
+        "selector": null,
+        "role": ""
+      },
+      {
+        "text": "Reports",
+        "tag": "a",
+        "selector": null,
+        "role": ""
+      },
+      {
+        "text": "PUBLIC ALERT : FUD-FOOTBALL",
+        "tag": "a",
+        "selector": null,
+        "role": ""
+      },
+      {
+        "text": "Warnings & Alerts",
+        "tag": "a",
+        "selector": null,
+        "role": ""
+      },
+      {
+        "text": "Page2",
+        "tag": "a",
+        "selector": "a.page-numbers",
+        "role": ""
+      },
+      {
+        "text": "Page3",
+        "tag": "a",
+        "selector": "a.page-numbers",
+        "role": ""
+      },
+      {
+        "text": "Next",
+        "tag": "a",
+        "selector": "a.page-numbers",
+        "role": ""
+      },
+      {
+        "text": "Data Privacy Policy",
+        "tag": "a",
+        "selector": null,
+        "role": ""
+      },
+      {
+        "text": "Service Terms and Conditions",
+        "tag": "li",
+        "selector": "li.elementor-icon-list-item",
+        "role": ""
+      }
+    ],
+    "emptyIndicators": [],
+    "needsInteraction": true
+  },
+  "interaction_apis": {
+    "initial_apis": [
+      {
+        "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-66PZ7Z2WDT&gtm=45je62o1v9132946615za200zd9132946615&_p=1772078093628&gcd=13l3l3l3l1l1&npa=0&dma=0&gdid=dZGIzZG&cid=343130610.1771985329&ul=zh-cn&sr=800x600&uaa=&uab=&uafvl=&uamb=0&uam=&uap=Windows&uapv=&uaw=0&are=1&frm=0&pscdl=noapi&_eu=AAAAAAQ&_s=1&tag_exp=103116026~103200004~104527907~104528501~104684208~104684211~115616985~115938466~115938469~116024734~117455676~117455678&sid=1772077646&sct=2&seg=1&dl=https%3A%2F%2Fwww.seczambia.org.zm%2Fresources%2Fmultimedia%2Fnews%2F&dt=News%20%E2%80%93%20Securities%20and%20Exchange%20Commission%20(SEC)&en=page_view&_ee=1&ep.forceSSL=true&ep.link_attribution=true&tfd=2406",
+        "method": "POST",
+        "headers": {
+          "sec-ch-ua-platform": "\"Windows\"",
+          "Referer": "https://www.seczambia.org.zm/",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "sec-ch-ua": "\"Not:A-Brand\";v=\"99\", \"Google Chrome\";v=\"145\", \"Chromium\";v=\"145\"",
+          "sec-ch-ua-mobile": "?0"
+        },
+        "post_data": null,
+        "postData": null,
+        "resourceType": "Fetch",
+        "initiator": {
+          "type": "script",
+          "stack": {
+            "callFrames": [
+              {
+                "functionName": "window.fetch",
+                "scriptId": "7",
+                "url": "",
+                "lineNumber": 61,
+                "columnNumber": 26
+              },
+              {
+                "functionName": "rd",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 231,
+                "columnNumber": 390
+              },
+              {
+                "functionName": "um",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 423,
+                "columnNumber": 1253
+              },
+              {
+                "functionName": "zP",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 891,
+                "columnNumber": 107
+              },
+              {
+                "functionName": "CP",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 891,
+                "columnNumber": 387
+              },
+              {
+                "functionName": "IP.flush",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 899,
+                "columnNumber": 92
+              },
+              {
+                "functionName": "IP.N",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 897,
+                "columnNumber": 206
+              },
+              {
+                "functionName": "IP.add",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 899,
+                "columnNumber": 5
+              },
+              {
+                "functionName": "k.An",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 914,
+                "columnNumber": 196
+              },
+              {
+                "functionName": "k.Bs",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 914,
+                "columnNumber": 118
+              },
+              {
+                "functionName": "",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 912,
+                "columnNumber": 30
+              },
+              {
+                "functionName": "Om",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 434,
+                "columnNumber": 192
+              },
+              {
+                "functionName": "No",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 452,
+                "columnNumber": 157
+              },
+              {
+                "functionName": "",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 912,
+                "columnNumber": 14
+              },
+              {
+                "functionName": "c",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 842,
+                "columnNumber": 400
+              },
+              {
+                "functionName": "uL",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 842,
+                "columnNumber": 436
+              },
+              {
+                "functionName": "k.As",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 912,
+                "columnNumber": 0
+              },
+              {
+                "functionName": "b",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 921,
+                "columnNumber": 950
+              },
+              {
+                "functionName": "v",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 473,
+                "columnNumber": 191
+              },
+              {
+                "functionName": "Xm",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 436,
+                "columnNumber": 516
+              },
+              {
+                "functionName": "Gq",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 473,
+                "columnNumber": 287
+              },
+              {
+                "functionName": "Fq.flush",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 477,
+                "columnNumber": 299
+              },
+              {
+                "functionName": "Fq.push",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 475,
+                "columnNumber": 378
+              },
+              {
+                "functionName": "tq",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 469,
+                "columnNumber": 700
+              },
+              {
+                "functionName": "YB.event",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 699,
+                "columnNumber": 85
+              },
+              {
+                "functionName": "sC",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 705,
+                "columnNumber": 481
+              },
+              {
+                "functionName": "b.push",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 711,
+                "columnNumber": 304
+              },
+              {
+                "functionName": "oC",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 712,
+                "columnNumber": 35
+              },
+              {
+                "functionName": "wC",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 712,
+                "columnNumber": 59
+              },
+              {
+                "functionName": "oJ",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 814,
+                "columnNumber": 33
+              },
+              {
+                "functionName": "jJ",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 813,
+                "columnNumber": 336
+              },
+              {
+                "functionName": "",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 817,
+                "columnNumber": 137
+              }
+            ]
+          }
+        },
+        "_requestId": "28696.245",
+        "_is_api": true,
+        "response_status": 204,
+        "response_headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "pragma": "no-cache",
+          "cross-origin-resource-policy": "cross-origin",
+          "access-control-allow-credentials": "true",
+          "content-security-policy-report-only": "script-src 'none'; form-action 'none'; frame-src 'none'; report-uri https://csp.withgoogle.com/csp/scaffolding/ascnsrsggc:113:0",
+          "report-to": "{\"group\":\"ascnsrsggc:113:0\",\"max_age\":2592000,\"endpoints\":[{\"url\":\"https://csp.withgoogle.com/csp/report-to/scaffolding/ascnsrsggc:113:0\"}],}",
+          "expires": "Fri, 01 Jan 1990 00:00:00 GMT",
+          "access-control-allow-origin": "https://www.seczambia.org.zm",
+          "cross-origin-opener-policy-report-only": "same-origin; report-to=ascnsrsggc:113:0",
+          "content-length": "0",
+          "alt-svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
+          "date": "Thu, 26 Feb 2026 03:54:54 GMT",
+          "content-type": "text/plain",
+          "server": "Golfe2"
+        },
+        "_response_mime_type": "text/plain"
+      },
+      {
+        "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-SC814DFQ2H&gtm=45je62o1v9132946615za200zd9132946615&_p=1772078093628&gcd=13l3l3l3l1l1&npa=0&dma=0&gdid=dZGIzZG&cid=343130610.1771985329&ul=zh-cn&sr=800x600&uaa=&uab=&uafvl=&uamb=0&uam=&uap=Windows&uapv=&uaw=0&are=1&frm=0&pscdl=noapi&_eu=AAAAAAQ&_s=1&tag_exp=103116026~103200004~104527907~104528501~104684208~104684211~115616985~115938466~115938469~116024734~117455676~117455678&sid=1772077646&sct=2&seg=1&dl=https%3A%2F%2Fwww.seczambia.org.zm%2Fresources%2Fmultimedia%2Fnews%2F&dt=News%20%E2%80%93%20Securities%20and%20Exchange%20Commission%20(SEC)&en=page_view&_ee=1&ep.forceSSL=true&ep.link_attribution=true&tfd=7398",
+        "method": "POST",
+        "headers": {
+          "sec-ch-ua-platform": "\"Windows\"",
+          "Referer": "https://www.seczambia.org.zm/",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "sec-ch-ua": "\"Not:A-Brand\";v=\"99\", \"Google Chrome\";v=\"145\", \"Chromium\";v=\"145\"",
+          "sec-ch-ua-mobile": "?0"
+        },
+        "post_data": null,
+        "postData": null,
+        "resourceType": "Fetch",
+        "initiator": {
+          "type": "script",
+          "stack": {
+            "callFrames": [
+              {
+                "functionName": "window.fetch",
+                "scriptId": "7",
+                "url": "",
+                "lineNumber": 61,
+                "columnNumber": 26
+              },
+              {
+                "functionName": "rd",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 231,
+                "columnNumber": 390
+              },
+              {
+                "functionName": "um",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 423,
+                "columnNumber": 1253
+              },
+              {
+                "functionName": "zP",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 891,
+                "columnNumber": 107
+              },
+              {
+                "functionName": "CP",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 891,
+                "columnNumber": 387
+              },
+              {
+                "functionName": "IP.flush",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 899,
+                "columnNumber": 92
+              },
+              {
+                "functionName": "",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 897,
+                "columnNumber": 343
+              }
+            ]
+          }
+        },
+        "_requestId": "28696.476",
+        "_is_api": true,
+        "response_status": 204,
+        "response_headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "pragma": "no-cache",
+          "cross-origin-resource-policy": "cross-origin",
+          "access-control-allow-credentials": "true",
+          "content-security-policy-report-only": "script-src 'none'; form-action 'none'; frame-src 'none'; report-uri https://csp.withgoogle.com/csp/scaffolding/ascnsrsggc:113:0",
+          "report-to": "{\"group\":\"ascnsrsggc:113:0\",\"max_age\":2592000,\"endpoints\":[{\"url\":\"https://csp.withgoogle.com/csp/report-to/scaffolding/ascnsrsggc:113:0\"}],}",
+          "expires": "Fri, 01 Jan 1990 00:00:00 GMT",
+          "access-control-allow-origin": "https://www.seczambia.org.zm",
+          "cross-origin-opener-policy-report-only": "same-origin; report-to=ascnsrsggc:113:0",
+          "content-length": "0",
+          "alt-svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
+          "date": "Thu, 26 Feb 2026 03:54:59 GMT",
+          "content-type": "text/plain",
+          "server": "Golfe2"
+        },
+        "_response_mime_type": "text/plain"
+      },
+      {
+        "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-66PZ7Z2WDT&gtm=45je62o1v9132946615za200zd9132946615&_p=1772078093628&gcd=13l3l3l3l1l1&npa=0&dma=0&gdid=dZGIzZG&cid=343130610.1771985329&ul=zh-cn&sr=800x600&uaa=&uab=&uafvl=&uamb=0&uam=&uap=Windows&uapv=&uaw=0&are=1&frm=0&pscdl=noapi&_eu=AEAAAAQ&_s=2&tag_exp=103116026~103200004~104527907~104528501~104684208~104684211~115616985~115938466~115938469~116024734~117455676~117455678&sid=1772077646&sct=2&seg=1&dl=https%3A%2F%2Fwww.seczambia.org.zm%2Fresources%2Fmultimedia%2Fnews%2F&dt=News%20%E2%80%93%20Securities%20and%20Exchange%20Commission%20(SEC)&en=scroll&ep.forceSSL=true&ep.link_attribution=true&epn.percent_scrolled=90&_et=13&tfd=7414",
+        "method": "POST",
+        "headers": {
+          "sec-ch-ua-platform": "\"Windows\"",
+          "Referer": "https://www.seczambia.org.zm/",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "sec-ch-ua": "\"Not:A-Brand\";v=\"99\", \"Google Chrome\";v=\"145\", \"Chromium\";v=\"145\"",
+          "sec-ch-ua-mobile": "?0"
+        },
+        "post_data": null,
+        "postData": null,
+        "resourceType": "Fetch",
+        "initiator": {
+          "type": "script",
+          "stack": {
+            "callFrames": [
+              {
+                "functionName": "window.fetch",
+                "scriptId": "7",
+                "url": "",
+                "lineNumber": 61,
+                "columnNumber": 26
+              },
+              {
+                "functionName": "rd",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 231,
+                "columnNumber": 390
+              },
+              {
+                "functionName": "um",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 423,
+                "columnNumber": 1253
+              },
+              {
+                "functionName": "zP",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 891,
+                "columnNumber": 107
+              },
+              {
+                "functionName": "CP",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 891,
+                "columnNumber": 387
+              },
+              {
+                "functionName": "IP.flush",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 899,
+                "columnNumber": 92
+              },
+              {
+                "functionName": "",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 897,
+                "columnNumber": 343
+              }
+            ]
+          }
+        },
+        "_requestId": "28696.477",
+        "_is_api": true,
+        "response_status": 204,
+        "response_headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "pragma": "no-cache",
+          "cross-origin-resource-policy": "cross-origin",
+          "access-control-allow-credentials": "true",
+          "content-security-policy-report-only": "script-src 'none'; form-action 'none'; frame-src 'none'; report-uri https://csp.withgoogle.com/csp/scaffolding/ascnsrsggc:113:0",
+          "report-to": "{\"group\":\"ascnsrsggc:113:0\",\"max_age\":2592000,\"endpoints\":[{\"url\":\"https://csp.withgoogle.com/csp/report-to/scaffolding/ascnsrsggc:113:0\"}],}",
+          "expires": "Fri, 01 Jan 1990 00:00:00 GMT",
+          "access-control-allow-origin": "https://www.seczambia.org.zm",
+          "cross-origin-opener-policy-report-only": "same-origin; report-to=ascnsrsggc:113:0",
+          "content-length": "0",
+          "alt-svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
+          "date": "Thu, 26 Feb 2026 03:54:59 GMT",
+          "content-type": "text/plain",
+          "server": "Golfe2"
+        },
+        "_response_mime_type": "text/plain"
+      }
+    ],
+    "interaction_apis": [
+      {
+        "menu_text": "Lusaka Securities Exchange",
+        "menu_selector": "li.menu-item",
+        "apis": [
+          {
+            "url": "https://www.seczambia.org.zm/wp-admin/admin-ajax.php",
+            "method": "POST",
+            "headers": {
+              "sec-ch-ua-platform": "\"Windows\"",
+              "Referer": "https://www.seczambia.org.zm/resources/multimedia/news/",
+              "sec-ch-ua": "\"Not:A-Brand\";v=\"99\", \"Google Chrome\";v=\"145\", \"Chromium\";v=\"145\"",
+              "sec-ch-ua-mobile": "?0",
+              "X-Requested-With": "XMLHttpRequest",
+              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+              "Accept": "application/json, text/javascript, */*; q=0.01",
+              "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+            },
+            "post_data": "interval=60&action=heartbeat&screen_id=front&has_focus=true",
+            "postData": "interval=60&action=heartbeat&screen_id=front&has_focus=true",
+            "resourceType": "XHR",
+            "initiator": {
+              "type": "script",
+              "stack": {
+                "callFrames": [
+                  {
+                    "functionName": "XMLHttpRequest.send",
+                    "scriptId": "7",
+                    "url": "",
+                    "lineNumber": 33,
+                    "columnNumber": 25
+                  },
+                  {
+                    "functionName": "send",
+                    "scriptId": "11",
+                    "url": "https://www.seczambia.org.zm/wp-includes/js/jquery/jquery.min.js?ver=3.7.1",
+                    "lineNumber": 1,
+                    "columnNumber": 80624
+                  },
+                  {
+                    "functionName": "ajax",
+                    "scriptId": "11",
+                    "url": "https://www.seczambia.org.zm/wp-includes/js/jquery/jquery.min.js?ver=3.7.1",
+                    "lineNumber": 1,
+                    "columnNumber": 76166
+                  },
+                  {
+                    "functionName": "",
+                    "scriptId": "12",
+                    "url": "https://www.seczambia.org.zm/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.4.1",
+                    "lineNumber": 1,
+                    "columnNumber": 4770
+                  },
+                  {
+                    "functionName": "e.<computed>",
+                    "scriptId": "12",
+                    "url": "https://www.seczambia.org.zm/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.4.1",
+                    "lineNumber": 1,
+                    "columnNumber": 1581
+                  },
+                  {
+                    "functionName": "l",
+                    "scriptId": "42",
+                    "url": "https://www.seczambia.org.zm/wp-includes/js/heartbeat.min.js?ver=6.9.1",
+                    "lineNumber": 1,
+                    "columnNumber": 1501
+                  },
+                  {
+                    "functionName": "",
+                    "scriptId": "42",
+                    "url": "https://www.seczambia.org.zm/wp-includes/js/heartbeat.min.js?ver=6.9.1",
+                    "lineNumber": 1,
+                    "columnNumber": 2721
+                  }
+                ]
+              }
+            },
+            "_requestId": "28696.478",
+            "_is_api": true,
+            "response_status": 200,
+            "response_headers": {
+              "x-robots-tag": "noindex",
+              "content-security-policy": "frame-ancestors 'self';",
+              "cache-control": "no-cache, must-revalidate, max-age=0, no-store, private",
+              "content-encoding": "gzip",
+              "access-control-allow-credentials": "true",
+              "referrer-policy": "strict-origin-when-cross-origin",
+              "x-content-type-options": "nosniff",
+              "expires": "Wed, 11 Jan 1984 05:00:00 GMT",
+              "access-control-allow-origin": "https://www.seczambia.org.zm",
+              "content-length": "68",
+              "date": "Thu, 26 Feb 2026 03:55:57 GMT",
+              "content-type": "application/json; charset=UTF-8",
+              "vary": "Accept-Encoding",
+              "server": "Apache",
+              "x-frame-options": "SAMEORIGIN"
+            },
+            "_response_mime_type": "application/json",
+            "response_body": "{\"wp-auth-check\":false,\"server_time\":1772078158}",
+            "response_preview": "{\"wp-auth-check\":false,\"server_time\":1772078158}",
+            "response_field_structure": {
+              "wp-auth-check": {
+                "type": "bool",
+                "example": false
+              },
+              "server_time": {
+                "type": "int",
+                "likely_date": true,
+                "example": 1772078158
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "all_unique_apis": [
+      {
+        "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-66PZ7Z2WDT&gtm=45je62o1v9132946615za200zd9132946615&_p=1772078093628&gcd=13l3l3l3l1l1&npa=0&dma=0&gdid=dZGIzZG&cid=343130610.1771985329&ul=zh-cn&sr=800x600&uaa=&uab=&uafvl=&uamb=0&uam=&uap=Windows&uapv=&uaw=0&are=1&frm=0&pscdl=noapi&_eu=AAAAAAQ&_s=1&tag_exp=103116026~103200004~104527907~104528501~104684208~104684211~115616985~115938466~115938469~116024734~117455676~117455678&sid=1772077646&sct=2&seg=1&dl=https%3A%2F%2Fwww.seczambia.org.zm%2Fresources%2Fmultimedia%2Fnews%2F&dt=News%20%E2%80%93%20Securities%20and%20Exchange%20Commission%20(SEC)&en=page_view&_ee=1&ep.forceSSL=true&ep.link_attribution=true&tfd=2406",
+        "method": "POST",
+        "headers": {
+          "sec-ch-ua-platform": "\"Windows\"",
+          "Referer": "https://www.seczambia.org.zm/",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "sec-ch-ua": "\"Not:A-Brand\";v=\"99\", \"Google Chrome\";v=\"145\", \"Chromium\";v=\"145\"",
+          "sec-ch-ua-mobile": "?0"
+        },
+        "post_data": null,
+        "postData": null,
+        "resourceType": "Fetch",
+        "initiator": {
+          "type": "script",
+          "stack": {
+            "callFrames": [
+              {
+                "functionName": "window.fetch",
+                "scriptId": "7",
+                "url": "",
+                "lineNumber": 61,
+                "columnNumber": 26
+              },
+              {
+                "functionName": "rd",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 231,
+                "columnNumber": 390
+              },
+              {
+                "functionName": "um",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 423,
+                "columnNumber": 1253
+              },
+              {
+                "functionName": "zP",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 891,
+                "columnNumber": 107
+              },
+              {
+                "functionName": "CP",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 891,
+                "columnNumber": 387
+              },
+              {
+                "functionName": "IP.flush",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 899,
+                "columnNumber": 92
+              },
+              {
+                "functionName": "IP.N",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 897,
+                "columnNumber": 206
+              },
+              {
+                "functionName": "IP.add",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 899,
+                "columnNumber": 5
+              },
+              {
+                "functionName": "k.An",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 914,
+                "columnNumber": 196
+              },
+              {
+                "functionName": "k.Bs",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 914,
+                "columnNumber": 118
+              },
+              {
+                "functionName": "",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 912,
+                "columnNumber": 30
+              },
+              {
+                "functionName": "Om",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 434,
+                "columnNumber": 192
+              },
+              {
+                "functionName": "No",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 452,
+                "columnNumber": 157
+              },
+              {
+                "functionName": "",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 912,
+                "columnNumber": 14
+              },
+              {
+                "functionName": "c",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 842,
+                "columnNumber": 400
+              },
+              {
+                "functionName": "uL",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 842,
+                "columnNumber": 436
+              },
+              {
+                "functionName": "k.As",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 912,
+                "columnNumber": 0
+              },
+              {
+                "functionName": "b",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 921,
+                "columnNumber": 950
+              },
+              {
+                "functionName": "v",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 473,
+                "columnNumber": 191
+              },
+              {
+                "functionName": "Xm",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 436,
+                "columnNumber": 516
+              },
+              {
+                "functionName": "Gq",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 473,
+                "columnNumber": 287
+              },
+              {
+                "functionName": "Fq.flush",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 477,
+                "columnNumber": 299
+              },
+              {
+                "functionName": "Fq.push",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 475,
+                "columnNumber": 378
+              },
+              {
+                "functionName": "tq",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 469,
+                "columnNumber": 700
+              },
+              {
+                "functionName": "YB.event",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 699,
+                "columnNumber": 85
+              },
+              {
+                "functionName": "sC",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 705,
+                "columnNumber": 481
+              },
+              {
+                "functionName": "b.push",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 711,
+                "columnNumber": 304
+              },
+              {
+                "functionName": "oC",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 712,
+                "columnNumber": 35
+              },
+              {
+                "functionName": "wC",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 712,
+                "columnNumber": 59
+              },
+              {
+                "functionName": "oJ",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 814,
+                "columnNumber": 33
+              },
+              {
+                "functionName": "jJ",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 813,
+                "columnNumber": 336
+              },
+              {
+                "functionName": "",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 817,
+                "columnNumber": 137
+              }
+            ]
+          }
+        },
+        "_requestId": "28696.245",
+        "_is_api": true,
+        "response_status": 204,
+        "response_headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "pragma": "no-cache",
+          "cross-origin-resource-policy": "cross-origin",
+          "access-control-allow-credentials": "true",
+          "content-security-policy-report-only": "script-src 'none'; form-action 'none'; frame-src 'none'; report-uri https://csp.withgoogle.com/csp/scaffolding/ascnsrsggc:113:0",
+          "report-to": "{\"group\":\"ascnsrsggc:113:0\",\"max_age\":2592000,\"endpoints\":[{\"url\":\"https://csp.withgoogle.com/csp/report-to/scaffolding/ascnsrsggc:113:0\"}],}",
+          "expires": "Fri, 01 Jan 1990 00:00:00 GMT",
+          "access-control-allow-origin": "https://www.seczambia.org.zm",
+          "cross-origin-opener-policy-report-only": "same-origin; report-to=ascnsrsggc:113:0",
+          "content-length": "0",
+          "alt-svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
+          "date": "Thu, 26 Feb 2026 03:54:54 GMT",
+          "content-type": "text/plain",
+          "server": "Golfe2"
+        },
+        "_response_mime_type": "text/plain"
+      },
+      {
+        "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-SC814DFQ2H&gtm=45je62o1v9132946615za200zd9132946615&_p=1772078093628&gcd=13l3l3l3l1l1&npa=0&dma=0&gdid=dZGIzZG&cid=343130610.1771985329&ul=zh-cn&sr=800x600&uaa=&uab=&uafvl=&uamb=0&uam=&uap=Windows&uapv=&uaw=0&are=1&frm=0&pscdl=noapi&_eu=AAAAAAQ&_s=1&tag_exp=103116026~103200004~104527907~104528501~104684208~104684211~115616985~115938466~115938469~116024734~117455676~117455678&sid=1772077646&sct=2&seg=1&dl=https%3A%2F%2Fwww.seczambia.org.zm%2Fresources%2Fmultimedia%2Fnews%2F&dt=News%20%E2%80%93%20Securities%20and%20Exchange%20Commission%20(SEC)&en=page_view&_ee=1&ep.forceSSL=true&ep.link_attribution=true&tfd=7398",
+        "method": "POST",
+        "headers": {
+          "sec-ch-ua-platform": "\"Windows\"",
+          "Referer": "https://www.seczambia.org.zm/",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "sec-ch-ua": "\"Not:A-Brand\";v=\"99\", \"Google Chrome\";v=\"145\", \"Chromium\";v=\"145\"",
+          "sec-ch-ua-mobile": "?0"
+        },
+        "post_data": null,
+        "postData": null,
+        "resourceType": "Fetch",
+        "initiator": {
+          "type": "script",
+          "stack": {
+            "callFrames": [
+              {
+                "functionName": "window.fetch",
+                "scriptId": "7",
+                "url": "",
+                "lineNumber": 61,
+                "columnNumber": 26
+              },
+              {
+                "functionName": "rd",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 231,
+                "columnNumber": 390
+              },
+              {
+                "functionName": "um",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 423,
+                "columnNumber": 1253
+              },
+              {
+                "functionName": "zP",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 891,
+                "columnNumber": 107
+              },
+              {
+                "functionName": "CP",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 891,
+                "columnNumber": 387
+              },
+              {
+                "functionName": "IP.flush",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 899,
+                "columnNumber": 92
+              },
+              {
+                "functionName": "",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 897,
+                "columnNumber": 343
+              }
+            ]
+          }
+        },
+        "_requestId": "28696.476",
+        "_is_api": true,
+        "response_status": 204,
+        "response_headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "pragma": "no-cache",
+          "cross-origin-resource-policy": "cross-origin",
+          "access-control-allow-credentials": "true",
+          "content-security-policy-report-only": "script-src 'none'; form-action 'none'; frame-src 'none'; report-uri https://csp.withgoogle.com/csp/scaffolding/ascnsrsggc:113:0",
+          "report-to": "{\"group\":\"ascnsrsggc:113:0\",\"max_age\":2592000,\"endpoints\":[{\"url\":\"https://csp.withgoogle.com/csp/report-to/scaffolding/ascnsrsggc:113:0\"}],}",
+          "expires": "Fri, 01 Jan 1990 00:00:00 GMT",
+          "access-control-allow-origin": "https://www.seczambia.org.zm",
+          "cross-origin-opener-policy-report-only": "same-origin; report-to=ascnsrsggc:113:0",
+          "content-length": "0",
+          "alt-svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
+          "date": "Thu, 26 Feb 2026 03:54:59 GMT",
+          "content-type": "text/plain",
+          "server": "Golfe2"
+        },
+        "_response_mime_type": "text/plain"
+      },
+      {
+        "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-66PZ7Z2WDT&gtm=45je62o1v9132946615za200zd9132946615&_p=1772078093628&gcd=13l3l3l3l1l1&npa=0&dma=0&gdid=dZGIzZG&cid=343130610.1771985329&ul=zh-cn&sr=800x600&uaa=&uab=&uafvl=&uamb=0&uam=&uap=Windows&uapv=&uaw=0&are=1&frm=0&pscdl=noapi&_eu=AEAAAAQ&_s=2&tag_exp=103116026~103200004~104527907~104528501~104684208~104684211~115616985~115938466~115938469~116024734~117455676~117455678&sid=1772077646&sct=2&seg=1&dl=https%3A%2F%2Fwww.seczambia.org.zm%2Fresources%2Fmultimedia%2Fnews%2F&dt=News%20%E2%80%93%20Securities%20and%20Exchange%20Commission%20(SEC)&en=scroll&ep.forceSSL=true&ep.link_attribution=true&epn.percent_scrolled=90&_et=13&tfd=7414",
+        "method": "POST",
+        "headers": {
+          "sec-ch-ua-platform": "\"Windows\"",
+          "Referer": "https://www.seczambia.org.zm/",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "sec-ch-ua": "\"Not:A-Brand\";v=\"99\", \"Google Chrome\";v=\"145\", \"Chromium\";v=\"145\"",
+          "sec-ch-ua-mobile": "?0"
+        },
+        "post_data": null,
+        "postData": null,
+        "resourceType": "Fetch",
+        "initiator": {
+          "type": "script",
+          "stack": {
+            "callFrames": [
+              {
+                "functionName": "window.fetch",
+                "scriptId": "7",
+                "url": "",
+                "lineNumber": 61,
+                "columnNumber": 26
+              },
+              {
+                "functionName": "rd",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 231,
+                "columnNumber": 390
+              },
+              {
+                "functionName": "um",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 423,
+                "columnNumber": 1253
+              },
+              {
+                "functionName": "zP",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 891,
+                "columnNumber": 107
+              },
+              {
+                "functionName": "CP",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 891,
+                "columnNumber": 387
+              },
+              {
+                "functionName": "IP.flush",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 899,
+                "columnNumber": 92
+              },
+              {
+                "functionName": "",
+                "scriptId": "9",
+                "url": "https://www.googletagmanager.com/gtag/js?id=G-SC814DFQ2H",
+                "lineNumber": 897,
+                "columnNumber": 343
+              }
+            ]
+          }
+        },
+        "_requestId": "28696.477",
+        "_is_api": true,
+        "response_status": 204,
+        "response_headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "pragma": "no-cache",
+          "cross-origin-resource-policy": "cross-origin",
+          "access-control-allow-credentials": "true",
+          "content-security-policy-report-only": "script-src 'none'; form-action 'none'; frame-src 'none'; report-uri https://csp.withgoogle.com/csp/scaffolding/ascnsrsggc:113:0",
+          "report-to": "{\"group\":\"ascnsrsggc:113:0\",\"max_age\":2592000,\"endpoints\":[{\"url\":\"https://csp.withgoogle.com/csp/report-to/scaffolding/ascnsrsggc:113:0\"}],}",
+          "expires": "Fri, 01 Jan 1990 00:00:00 GMT",
+          "access-control-allow-origin": "https://www.seczambia.org.zm",
+          "cross-origin-opener-policy-report-only": "same-origin; report-to=ascnsrsggc:113:0",
+          "content-length": "0",
+          "alt-svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
+          "date": "Thu, 26 Feb 2026 03:54:59 GMT",
+          "content-type": "text/plain",
+          "server": "Golfe2"
+        },
+        "_response_mime_type": "text/plain"
+      },
+      {
+        "url": "https://www.seczambia.org.zm/wp-admin/admin-ajax.php",
+        "method": "POST",
+        "headers": {
+          "sec-ch-ua-platform": "\"Windows\"",
+          "Referer": "https://www.seczambia.org.zm/resources/multimedia/news/",
+          "sec-ch-ua": "\"Not:A-Brand\";v=\"99\", \"Google Chrome\";v=\"145\", \"Chromium\";v=\"145\"",
+          "sec-ch-ua-mobile": "?0",
+          "X-Requested-With": "XMLHttpRequest",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "Accept": "application/json, text/javascript, */*; q=0.01",
+          "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+        },
+        "post_data": "interval=60&action=heartbeat&screen_id=front&has_focus=true",
+        "postData": "interval=60&action=heartbeat&screen_id=front&has_focus=true",
+        "resourceType": "XHR",
+        "initiator": {
+          "type": "script",
+          "stack": {
+            "callFrames": [
+              {
+                "functionName": "XMLHttpRequest.send",
+                "scriptId": "7",
+                "url": "",
+                "lineNumber": 33,
+                "columnNumber": 25
+              },
+              {
+                "functionName": "send",
+                "scriptId": "11",
+                "url": "https://www.seczambia.org.zm/wp-includes/js/jquery/jquery.min.js?ver=3.7.1",
+                "lineNumber": 1,
+                "columnNumber": 80624
+              },
+              {
+                "functionName": "ajax",
+                "scriptId": "11",
+                "url": "https://www.seczambia.org.zm/wp-includes/js/jquery/jquery.min.js?ver=3.7.1",
+                "lineNumber": 1,
+                "columnNumber": 76166
+              },
+              {
+                "functionName": "",
+                "scriptId": "12",
+                "url": "https://www.seczambia.org.zm/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.4.1",
+                "lineNumber": 1,
+                "columnNumber": 4770
+              },
+              {
+                "functionName": "e.<computed>",
+                "scriptId": "12",
+                "url": "https://www.seczambia.org.zm/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.4.1",
+                "lineNumber": 1,
+                "columnNumber": 1581
+              },
+              {
+                "functionName": "l",
+                "scriptId": "42",
+                "url": "https://www.seczambia.org.zm/wp-includes/js/heartbeat.min.js?ver=6.9.1",
+                "lineNumber": 1,
+                "columnNumber": 1501
+              },
+              {
+                "functionName": "",
+                "scriptId": "42",
+                "url": "https://www.seczambia.org.zm/wp-includes/js/heartbeat.min.js?ver=6.9.1",
+                "lineNumber": 1,
+                "columnNumber": 2721
+              }
+            ]
+          }
+        },
+        "_requestId": "28696.478",
+        "_is_api": true,
+        "response_status": 200,
+        "response_headers": {
+          "x-robots-tag": "noindex",
+          "content-security-policy": "frame-ancestors 'self';",
+          "cache-control": "no-cache, must-revalidate, max-age=0, no-store, private",
+          "content-encoding": "gzip",
+          "access-control-allow-credentials": "true",
+          "referrer-policy": "strict-origin-when-cross-origin",
+          "x-content-type-options": "nosniff",
+          "expires": "Wed, 11 Jan 1984 05:00:00 GMT",
+          "access-control-allow-origin": "https://www.seczambia.org.zm",
+          "content-length": "68",
+          "date": "Thu, 26 Feb 2026 03:55:57 GMT",
+          "content-type": "application/json; charset=UTF-8",
+          "vary": "Accept-Encoding",
+          "server": "Apache",
+          "x-frame-options": "SAMEORIGIN"
+        },
+        "_response_mime_type": "application/json",
+        "response_body": "{\"wp-auth-check\":false,\"server_time\":1772078158}",
+        "response_preview": "{\"wp-auth-check\":false,\"server_time\":1772078158}",
+        "response_field_structure": {
+          "wp-auth-check": {
+            "type": "bool",
+            "example": false
+          },
+          "server_time": {
+            "type": "int",
+            "likely_date": true,
+            "example": 1772078158
+          }
+        }
+      }
+    ],
+    "interactions_count": 1
+  },
+  "param_analysis": {
+    "common_params": {
+      "uab": "",
+      "frm": "0",
+      "uafvl": "",
+      "cid": "343130610.1771985329",
+      "gtm": "45je62o1v9132946615za200zd9132946615",
+      "uaw": "0",
+      "sct": "2",
+      "sid": "1772077646",
+      "dl": "https://www.seczambia.org.zm/resources/multimedia/news/",
+      "uamb": "0",
+      "dt": "News – Securities and Exchange Commission (SEC)",
+      "uam": "",
+      "sr": "800x600",
+      "epn.percent_scrolled": "90",
+      "pscdl": "noapi",
+      "npa": "0",
+      "seg": "1",
+      "uaa": "",
+      "v": "2",
+      "ep.forceSSL": "true",
+      "uapv": "",
+      "ul": "zh-cn",
+      "gcd": "13l3l3l3l1l1",
+      "_ee": "1",
+      "are": "1",
+      "tag_exp": "103116026~103200004~104527907~104528501~104684208~104684211~115616985~115938466~115938469~116024734~117455676~117455678",
+      "uap": "Windows",
+      "dma": "0",
+      "_p": "1772078093628",
+      "_et": "13",
+      "gdid": "dZGIzZG",
+      "ep.link_attribution": "true"
+    },
+    "variable_params": {
+      "_s": {
+        "values": [
+          "1",
+          "2"
+        ],
+        "sources": [
+          "initial",
+          "initial",
+          "initial"
+        ],
+        "likely_category": true
+      },
+      "en": {
+        "values": [
+          "page_view",
+          "scroll"
+        ],
+        "sources": [
+          "initial",
+          "initial",
+          "initial"
+        ],
+        "likely_category": false
+      },
+      "tfd": {
+        "values": [
+          "2406",
+          "7414",
+          "7398"
+        ],
+        "sources": [
+          "initial",
+          "initial",
+          "initial"
+        ],
+        "likely_category": true
+      },
+      "_eu": {
+        "values": [
+          "AEAAAAQ",
+          "AAAAAAQ"
+        ],
+        "sources": [
+          "initial",
+          "initial",
+          "initial"
+        ],
+        "likely_category": false
+      },
+      "tid": {
+        "values": [
+          "G-66PZ7Z2WDT",
+          "G-SC814DFQ2H"
+        ],
+        "sources": [
+          "initial",
+          "initial",
+          "initial"
+        ],
+        "likely_category": true
+      }
+    },
+    "category_params": [
+      {
+        "param_name": "_s",
+        "sample_values": [
+          "1",
+          "2"
+        ],
+        "menu_mapping": {
+          "initial": "2"
+        }
+      },
+      {
+        "param_name": "tfd",
+        "sample_values": [
+          "2406",
+          "7414",
+          "7398"
+        ],
+        "menu_mapping": {
+          "initial": "7414"
+        }
+      },
+      {
+        "param_name": "tid",
+        "sample_values": [
+          "G-66PZ7Z2WDT",
+          "G-SC814DFQ2H"
+        ],
+        "menu_mapping": {
+          "initial": "G-66PZ7Z2WDT"
+        }
+      }
+    ],
+    "api_endpoints": [
+      "https://www.google-analytics.com/g/collect"
+    ],
+    "param_patterns": {},
+    "filters_diff": {}
+  },
+  "verified_category_mapping": {
+    "menu_to_filters": {},
+    "source_endpoint": "",
+    "confidence": "low"
+  },
+  "recommendations": [
+    "页面初始状态无数据，需要选择分类才能加载",
+    "未能从抓包中抽取到 filters 内的分类ID，避免让模型猜测",
+    "检测到 3 个分类参数: _s, tfd, tid",
+    "生成的爬虫应该遍历所有分类值来获取完整数据",
+    "以下参数随菜单变化: _s, en, tfd, _eu, tid"
+  ]
+}

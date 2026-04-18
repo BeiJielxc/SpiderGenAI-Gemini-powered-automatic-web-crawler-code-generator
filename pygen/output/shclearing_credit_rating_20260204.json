@@ -1,0 +1,30 @@
+{
+  "total": 4,
+  "crawlTime": "2026-02-04 15:06:24",
+  "reports": [
+    {
+      "name": "中证鹏元资信评估股份有限公司新增非金融企业债务融资工具客户名单(2026.1.26-2.1)",
+      "date": "2026-02-04",
+      "downloadUrl": "https://www.shclearing.com.cn/xxpl/xypj/plzt/202602/t20260204_1722613.html",
+      "fileType": "html"
+    },
+    {
+      "name": "东方金诚国际信用评估有限公司关于西安沣东发展集团有限公司子公司债务逾期的关注公告",
+      "date": "2026-02-04",
+      "downloadUrl": "https://www.shclearing.com.cn/xxpl/xypj/zxpl/mtn_554/202602/t20260204_1722603.html",
+      "fileType": "html"
+    },
+    {
+      "name": "新世纪评级关于杭州市临安区城市发展投资集团有限公司变更董事、财务负责人及撤销监事会...",
+      "date": "2026-02-04",
+      "downloadUrl": "https://www.shclearing.com.cn/xxpl/xypj/plzt/202602/t20260204_1722478.html",
+      "fileType": "html"
+    },
+    {
+      "name": "新世纪评级关于上海君实生物医药科技股份有限公司2025年度业绩预亏的关注公告",
+      "date": "2026-02-04",
+      "downloadUrl": "https://www.shclearing.com.cn/xxpl/xypj/plzt/202602/t20260204_1722477.html",
+      "fileType": "html"
+    }
+  ]
+}

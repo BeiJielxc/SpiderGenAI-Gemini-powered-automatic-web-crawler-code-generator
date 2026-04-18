@@ -1,0 +1,173 @@
+{
+  "baseUrl": "https://www.centralbank.org.bz/publications-search",
+  "bestCandidate": {
+    "selector": ".item-list__item",
+    "titleSelector": "a.item-list__title",
+    "dateSelector": "",
+    "score": 80,
+    "itemCount": 20,
+    "hasLink": 20,
+    "hasDate": 0
+  },
+  "structureHint": "Each item is a <li class='item-list__item'>; title/link in <a class='item-list__title'>",
+  "sampleHtml": "<li class=\"item-list__item\">\n<a class=\"item-list__title\" href=\"https://www.centralbank.org.bz/detail-pages/publication/monthly-economic-highlights---december-2025\">\n                  Monthly Economic Highlights - December 2025\n                </a>\n<p class=\"item-list__date\">26 February 2026</p>\n<div class=\"item-list__description\">\n<div>The Monthly Economic Report provides a monthly review on the performance of the Belizean economy.</div>\n</div>\n</li>\n<li class=\"item-list__item\">\n<a class=\"item-list__title\" href=\"https://www.centralbank.org.bz/detail-pages/news/2026/02/25/high-court-of-belize-affirms-decision-on-termination-of--general-manager-of-sfxcu\">\n                  High Court of Belize Affirms Decision on Termination of \nGeneral Manager of SFXCU\n                </a>\n<div class=\"item-list__description\">\n<div>The Central Bank of Belize advises that, by decision delivered on 19 February 2026, the High Court dismissed a claim brought against the Registrar of Credit Unions (Registrar) challenging the decision to terminate Mr. Rafael Domin...",
+  "items": [
+    {
+      "title": "Monthly Economic Highlights - December 2025",
+      "url": "https://www.centralbank.org.bz/detail-pages/publication/monthly-economic-highlights---december-2025",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "High Court of Belize Affirms Decision on Termination of \nGeneral Manager of SFXCU",
+      "url": "https://www.centralbank.org.bz/detail-pages/news/2026/02/25/high-court-of-belize-affirms-decision-on-termination-of--general-manager-of-sfxcu",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Weekly Monetary Aggregates 11 February 2026",
+      "url": "https://www.centralbank.org.bz/detail-pages/publication/weekly-monetary-aggregates-11-february-2026",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Treasury Bill Auction Notice #4 of 2026",
+      "url": "https://www.centralbank.org.bz/detail-pages/news/2026/02/17/treasury-bill-auction-notice--4-of-2026",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Monthly Financial Statement as of January 2026",
+      "url": "https://www.centralbank.org.bz/detail-pages/publication/monthly-financial-statement-as-of-january-2026",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Warning Notice - Belize Quick Advance LTD/ Easy Flexible Capital",
+      "url": "https://www.centralbank.org.bz/detail-pages/news/2026/02/16/warning-notice---belize-quick-advance-ltd--easy-flexible-capital",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Warning Notice - Easy Credit Belize",
+      "url": "https://www.centralbank.org.bz/detail-pages/news/2026/02/16/warning-notice---easy-credit-belize",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Monthly Financial Statement as of December 2025",
+      "url": "https://www.centralbank.org.bz/detail-pages/publication/monthly-financial-statement-as-of-december-2025",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Quarterly Financial Information of International Banks - December 2025",
+      "url": "https://www.centralbank.org.bz/detail-pages/publication/quarterly-financial-information-of-international-banks---december-2025",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Quarterly Financial Information of Credit Unions - December 2025",
+      "url": "https://www.centralbank.org.bz/detail-pages/publication/quarterly-financial-information-of-credit-unions---december-2025",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Quarterly Financial Information of Domestic Banks – December 2025",
+      "url": "https://www.centralbank.org.bz/detail-pages/publication/quarterly-financial-information-of-domestic-banks---december-2025",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Monthly Economic Highlights - November 2025",
+      "url": "https://www.centralbank.org.bz/detail-pages/publication/monthly-economic-highlights---november-2025",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Quarterly Review – September 2025",
+      "url": "https://www.centralbank.org.bz/detail-pages/publication/quarterly-review---september-2025",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Anti-Money Laundering Highlights - December 2025",
+      "url": "https://www.centralbank.org.bz/detail-pages/news/2026/01/23/anti-money-laundering-highlights---december-2025",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Anti-Money Laundering Highlights - September 2025",
+      "url": "https://www.centralbank.org.bz/detail-pages/news/2026/01/23/anti-money-laundering-highlights---september-2025",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Warning Circular - Belize USD Loans",
+      "url": "https://www.centralbank.org.bz/detail-pages/news/2026/01/23/warning-circular---belize-usd-loans",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Treasury Bill Auction Notice #3 of 2026",
+      "url": "https://www.centralbank.org.bz/detail-pages/news/2026/01/21/treasury-bill-auction-notice--3-of-2026",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Belize’s 2025 Banknotes – A Journey of Collaboration and Security",
+      "url": "https://www.centralbank.org.bz/detail-pages/news/2026/01/14/belize-s-2025-banknotes---a-journey-of-collaboration-and-security",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Anti-Money Laundering Highlights - June 2025",
+      "url": "https://www.centralbank.org.bz/detail-pages/news/2026/01/06/anti-money-laundering-highlightsjune-2025",
+      "date": "",
+      "dateText": ""
+    },
+    {
+      "title": "Anti-Money Laundering Highlights - March 2025",
+      "url": "https://www.centralbank.org.bz/detail-pages/news/2026/01/06/anti-money-laundering-highlights---march-2025",
+      "date": "",
+      "dateText": ""
+    }
+  ],
+  "pagination": {
+    "next": null,
+    "prev": null,
+    "pageNums": [],
+    "totalPages": 0
+  },
+  "dateHints": {
+    "minDate": "",
+    "maxDate": "",
+    "startDate": "",
+    "endDate": "",
+    "hasInRange": false,
+    "hasOlderThanStart": false,
+    "suggestStopPaging": false
+  },
+  "otherCandidates": [
+    {
+      "selector": "li",
+      "score": 58,
+      "count": 19
+    },
+    {
+      "selector": "li",
+      "score": 52,
+      "count": 6
+    },
+    {
+      "selector": "li",
+      "score": 50,
+      "count": 5
+    },
+    {
+      "selector": "li",
+      "score": 48,
+      "count": 4
+    }
+  ]
+}

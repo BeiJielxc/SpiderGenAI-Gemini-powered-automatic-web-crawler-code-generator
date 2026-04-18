@@ -1,0 +1,270 @@
+{
+  "final_round": 2,
+  "max_retries": 3,
+  "repaired_code": "import os\nimport json\nimport time\nimport re\nfrom datetime import datetime\nfrom urllib.parse import urljoin, urlparse\nfrom playwright.sync_api import sync_playwright\nfrom bs4 import BeautifulSoup\n\n# ==========================================\n# 配置参数\n# ==========================================\nMAX_ITEMS = 5  # 任务目标：爬取前5条\nOUTPUT_DIR = r\"d:\\llm_mcp_genpy\\pygen\\output\"\nBASE_URL = \"https://www.centralbank.org.bz\"\nSTART_URL = \"https://www.centralbank.org.bz/publications-search\"\n\ndef clean_html_content(html_content, base_url):\n    \"\"\"\n    将 HTML 中的相对路径转换为绝对路径\n    使用 BeautifulSoup 进行清洗\n    \"\"\"\n    if not html_content:\n        return \"\"\n    try:\n        soup = BeautifulSoup(html_content, 'html.parser')\n        \n        # 修复图片链接\n        for img in soup.find_all('img'):\n            if img.get('src'):\n                img['src'] = urljoin(base_url, img['src'])\n                \n        # 修复超链接\n        for a in soup.find_all('a'):\n            if a.get('href'):\n                a['href'] = urljoin(base_url, a['href'])\n                \n        return str(soup)\n    except Exception as e:\n        print(f\"[WARN] Content cleaning failed: {e}\")\n        return html_content\n\ndef extract_date(text):\n    \"\"\"从文本中提取日期并格式化为 YYYY-MM-DD\"\"\"\n    if not text:\n        return \"\"\n    text = text.strip()\n    # 常见格式: 23 February 2026\n    try:\n        dt = datetime.strptime(text, \"%d %B %Y\")\n        return dt.strftime(\"%Y-%m-%d\")\n    except ValueError:\n        pass\n    \n    # 常见格式: February 23, 2026\n    try:\n        dt = datetime.strptime(text, \"%B %d, %Y\")\n        return dt.strftime(\"%Y-%m-%d\")\n    except ValueError:\n        pass\n        \n    return text\n\ndef save_results(articles, output_path):\n    \"\"\"保存结果为 JSON\"\"\"\n    result = {\n        \"total\": len(articles),\n        \"crawlTime\": datetime.now().strftime(\"%Y-%m-%d %H:%M:%S\"),\n        \"articles\": articles\n    }\n    with open(output_path, 'w', encoding='utf-8') as f:\n        json.dump(result, f, ensure_ascii=False, indent=2)\n    print(f\"[SUCCESS] Saved {len(articles)} items to {output_path}\")\n\ndef run_crawler():\n    # 确保输出目录存在\n    os.makedirs(OUTPUT_DIR, exist_ok=True)\n    \n    with sync_playwright() as p:\n        # 启动浏览器，配置反爬参数\n        browser = p.chromium.launch(\n            headless=True,\n            args=[\"--disable-blink-features=AutomationControlled\", \"--no-sandbox\"]\n        )\n        context = browser.new_context(\n            viewport={'width': 1920, 'height': 1080},\n            user_agent=\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\",\n            extra_http_headers={\"Accept-Language\": \"en-US,en;q=0.9\"}\n        )\n        \n        page = context.new_page()\n        articles = []\n        current_page_num = 1\n        \n        print(f\"[INFO] Starting crawl on {START_URL}\")\n        \n        # 翻页循环\n        while len(articles) < MAX_ITEMS:\n            # 构造分页 URL\n            # 第一页使用纯净 URL，避免参数导致页面加载异常\n            if current_page_num == 1:\n                url = START_URL\n            else:\n                start_row = (current_page_num - 1) * 20\n                url = f\"{START_URL}?startRow={start_row}&rowsPerPage=20\"\n            \n            print(f\"[INFO] Processing page {current_page_num}: {url}\")\n            \n            try:\n                page.goto(url, wait_until=\"domcontentloaded\", timeout=30000)\n                \n                # 【修复】使用 state=\"attached\" 避免因首个元素不可见导致的超时\n                # 之前的错误显示找到了 45 个元素但超时，说明可能存在隐藏的菜单项匹配了选择器\n                page.wait_for_selector(\".item-list__item\", state=\"attached\", timeout=15000)\n                \n                # 额外等待一小段时间确保渲染\n                page.wait_for_timeout(2000)\n                \n            except Exception as e:\n                print(f\"[ERROR] Failed to load page {current_page_num}: {e}\")\n                break\n            \n            # 获取当前页的所有列表项\n            items = page.query_selector_all(\".item-list__item\")\n            if not items:\n                print(\"[INFO] No items found on this page. Stopping.\")\n                break\n                \n            print(f\"[INFO] Found {len(items)} items on page {current_page_num}\")\n            \n            # 遍历列表项\n            for item in items:\n                if len(articles) >= MAX_ITEMS:\n                    break\n                \n                # 【修复】跳过不可见的元素（如移动端隐藏菜单）\n                if not item.is_visible():\n                    continue\n                \n                try:\n                    # 提取列表页信息\n                    title_el = item.query_selector(\"a.item-list__title\")\n                    date_el = item.query_selector(\"p.item-list__date\")\n                    desc_el = item.query_selector(\".item-list__description\")\n                    \n                    if not title_el:\n                        continue\n                        \n                    title = title_el.inner_text().strip()\n                    link = title_el.get_attribute(\"href\")\n                    if link:\n                        link = urljoin(BASE_URL, link)\n                    \n                    date_str = date_el.inner_text().strip() if date_el else \"\"\n                    formatted_date = extract_date(date_str)\n                    \n                    summary = desc_el.inner_text().strip() if desc_el else \"\"\n                    \n                    # 初始化数据对象\n                    article_data = {\n                        \"id\": str(len(articles) + 1),\n                        \"title\": title,\n                        \"name\": title,  # 兼容字段\n                        \"date\": formatted_date,\n                        \"source\": \"Central Bank of Belize\",\n                        \"author\": \"\",\n                        \"sourceUrl\": link,\n                        \"summary\": summary,\n                        \"content\": \"\",\n                        \"fileType\": \"html\",\n                        \"downloadUrl\": \"\"\n                    }\n                    \n                    # 检查链接类型 (HTML 详情页 vs 文件下载)\n                    file_exts = ('.pdf', '.doc', '.docx', '.xls', '.xlsx', '.zip')\n                    is_file = False\n                    if link:\n                        path = urlparse(link).path.lower()\n                        if path.endswith(file_exts):\n                            is_file = True\n                            article_data[\"fileType\"] = os.path.splitext(path)[1][1:]\n                            article_data[\"downloadUrl\"] = link\n                    \n                    if is_file:\n                        print(f\"[INFO] File detected: {title}\")\n                        article_data[\"content\"] = f'<a href=\"{link}\" target=\"_blank\">Download File: {title}</a>'\n                    elif link:\n                        # 进入详情页抓取正文\n                        print(f\"[INFO] Crawling detail: {title}\")\n                        detail_page = context.new_page()\n                        try:\n                            detail_page.goto(link, wait_until=\"domcontentloaded\", timeout=30000)\n                            \n                            # 尝试提取正文\n                            content_sel = \"div.group.margin-large\"\n                            if not detail_page.query_selector(content_sel):\n                                content_sel = \"#top .interior-layout__container\"\n                            \n                            if detail_page.query_selector(content_sel):\n                                content_html = detail_page.inner_html(content_sel)\n                            else:\n                                content_html = detail_page.inner_html(\"body\")\n                            \n                            # 如果列表页没有日期，尝试从详情页提取\n                            if not formatted_date:\n                                detail_date_el = detail_page.query_selector(\".item-list__date.detail-page\")\n                                if detail_date_el:\n                                    formatted_date = extract_date(detail_date_el.inner_text())\n                                    article_data[\"date\"] = formatted_date\n                            \n                            # 清洗 HTML 内容\n                            article_data[\"content\"] = clean_html_content(content_html, link)\n                            \n                        except Exception as e:\n                            print(f\"[WARN] Detail page error for {link}: {e}\")\n                            article_data[\"content\"] = f'<a href=\"{link}\" target=\"_blank\">Read Original Article</a>'\n                        finally:\n                            detail_page.close()\n                    \n                    articles.append(article_data)\n                    time.sleep(1)  # 请求间隔\n                    \n                except Exception as e:\n                    print(f\"[ERROR] Error processing item: {e}\")\n                    continue\n            \n            # 检查是否还有下一页\n            if len(items) < 20:\n                print(\"[INFO] Reached last page.\")\n                break\n                \n            current_page_num += 1\n            time.sleep(2)  # 翻页间隔\n\n        browser.close()\n        \n        # 生成文件名并保存\n        timestamp = datetime.now().strftime(\"%Y%m%d_%H%M%S\")\n        filename = f\"centralbank_belize_news_{timestamp}.json\"\n        output_path = os.path.join(OUTPUT_DIR, filename)\n        \n        save_results(articles, output_path)\n\nif __name__ == \"__main__\":\n    run_crawler()",
+  "rounds": [
+    {
+      "round": 1,
+      "passed": false,
+      "primary_cause": "empty_output",
+      "backup_cause": "pagination_date_lost",
+      "uncertain": false,
+      "classifier_confidence": 0.75,
+      "record_count": 0,
+      "static_error_count": 0
+    },
+    {
+      "round": 2,
+      "passed": true,
+      "primary_cause": "unknown",
+      "backup_cause": "pagination_date_lost",
+      "uncertain": true,
+      "classifier_confidence": 0.3,
+      "record_count": 5,
+      "static_error_count": 0
+    }
+  ],
+  "evidence": [
+    {
+      "round": 1,
+      "step": "static_check",
+      "result": {
+        "error_count": 0,
+        "warning_count": 1,
+        "top_errors": [],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_003",
+            "message": "日期提取函数可能在分页循环外调用，可能导致只有第一页有日期"
+          }
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": false,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 17.937,
+        "record_count": 0,
+        "date_fill_rate": 0.0,
+        "status": "no_data",
+        "http_statuses": [],
+        "stdout_tail": "[INFO] Starting crawl on https://www.centralbank.org.bz/publications-search\n[INFO] Processing page 1: https://www.centralbank.org.bz/publications-search?startRow=0&rowsPerPage=20\n[ERROR] Failed to load page 1: Page.wait_for_selector: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\".item-list__item\") to be visible\n    24 × locator resolved to 45 elements. Proceeding with the first one: <li class=\"item-list__item\">…</li>\n\n[SUCCESS] Saved 0 items to d:\\llm_mcp_genpy\\pygen\\output\\centralbank_belize_news_20260226_175053.json",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 1,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "empty_output",
+        "backup_cause": "pagination_date_lost",
+        "confidence": 0.75,
+        "classifier_summary": "脚本执行完成但输出为空"
+      }
+    },
+    {
+      "round": 1,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "selector_brittleness_probe",
+        "cause": "empty_output",
+        "result": {
+          "select_calls": 0,
+          "find_calls": 0,
+          "has_chained_find": false
+        }
+      }
+    },
+    {
+      "round": 1,
+      "step": "output_quality",
+      "result": {
+        "record_count": 0,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 0.0,
+          "sourceUrl": 0.0
+        },
+        "required_fields_ok": false,
+        "meets_min_items": false,
+        "recommendations": [
+          "Extract at least 1 items in lightweight validation.",
+          "Ensure required fields are populated: ['title', 'sourceUrl']"
+        ],
+        "sample_records": []
+      }
+    },
+    {
+      "round": 2,
+      "step": "llm_repair",
+      "result": {
+        "changed": true
+      }
+    },
+    {
+      "round": 2,
+      "step": "static_check",
+      "result": {
+        "error_count": 0,
+        "warning_count": 1,
+        "top_errors": [],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_003",
+            "message": "日期提取函数可能在分页循环外调用，可能导致只有第一页有日期"
+          }
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": true,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 22.552,
+        "record_count": 5,
+        "date_fill_rate": 1.0,
+        "status": "success",
+        "http_statuses": [],
+        "stdout_tail": "[INFO] Starting crawl on https://www.centralbank.org.bz/publications-search\n[INFO] Processing page 1: https://www.centralbank.org.bz/publications-search\n[INFO] Found 45 items on page 1\n[INFO] Crawling detail: High Court of Belize Affirms Decision on Termination of General Manager of SFXCU\n[INFO] Crawling detail: Weekly Monetary Aggregates 11 February 2026\n[WARN] Detail page error for https://www.centralbank.org.bz/detail-pages/publication/weekly-monetary-aggregates-11-february-2026: Page.goto: Download is starting\nCall log:\n  - navigating to \"https://www.centralbank.org.bz/detail-pages/publication/weekly-monetary-aggregates-11-february-2026\", waiting until \"domcontentloaded\"\n\n[INFO] Crawling detail: Treasury Bill Auction Notice #4 of 2026\n[INFO] Crawling detail: Monthly Financial Statement...(truncated)",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 2,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "unknown",
+        "backup_cause": "pagination_date_lost",
+        "confidence": 0.3,
+        "classifier_summary": "未能明确分类的故障"
+      }
+    },
+    {
+      "round": 2,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "sample_output_probe",
+        "cause": "unknown",
+        "result": {
+          "sample_size": 5,
+          "required_non_empty_count": {
+            "title": 5,
+            "sourceUrl": 5
+          },
+          "sample": [
+            {
+              "id": "1",
+              "title": "High Court of Belize Affirms Decision on Termination of General Manager of SFXCU",
+              "name": "High Court of Belize Affirms Decision on Termination of General Manager of SFXCU",
+              "date": "2026-02-25",
+              "source": "Central Bank of Belize",
+              "author": "",
+              "sourceUrl": "https://www.centralbank.org.bz/detail-pages/news/2026/02/25/high-court-of-belize-affirms-decision-on-termination-of--general-manager-of-sfxcu",
+              "summary": "The Central Bank of Belize advises that, by decision delivered on 19 February 2026, the High Court dismissed a claim brought against the Registrar of Credit Unions (Registrar) challenging the decision to terminate Mr. Rafael Dominguez as the General Manager of Saint Francis Xavier Credit Union …",
+              "content": "<p>The Central Bank of Belize advises that, by decision delivered on 19 February 2026, the High Court dismissed a claim brought against the Registrar of Credit Unions (Registrar) challenging the decision to terminate Mr. Rafael Dominguez as the General Manager of Saint Francis Xavier Credit Union (SFXCU). The High Court upheld the Registrar’s decision as lawful and procedurally fair. <br/><br/>Fol",
+              "fileType": "html",
+              "downloadUrl": ""
+            },
+            {
+              "id": "2",
+              "title": "Weekly Monetary Aggregates 11 February 2026",
+              "name": "Weekly Monetary Aggregates 11 February 2026",
+              "date": "2026-02-23",
+              "source": "Central Bank of Belize",
+              "author": "",
+              "sourceUrl": "https://www.centralbank.org.bz/detail-pages/publication/weekly-monetary-aggregates-11-february-2026",
+              "summary": "The Weekly Monetary Aggregates summarizes the weekly activity of the banking system.",
+              "content": "<a href=\"https://www.centralbank.org.bz/detail-pages/publication/weekly-monetary-aggregates-11-february-2026\" target=\"_blank\">Read Original Article</a>",
+              "fileType": "html",
+              "downloadUrl": ""
+            },
+            {
+              "id": "3",
+              "title": "Treasury Bill Auction Notice #4 of 2026",
+              "name": "Treasury Bill Auction Notice #4 of 2026",
+              "date": "2026-02-17",
+              "source": "Central Bank of Belize",
+              "author": "",
+              "sourceUrl": "https://www.centralbank.org.bz/detail-pages/news/2026/02/17/treasury-bill-auction-notice--4-of-2026",
+              "summary": "Tenders are invited for an issue of Government of Belize Treasury Bills. The amount of the issue will be …",
+              "content": "<h6 style=\"text-align: center\">NOTICE<br/>GOVERNMENT OF BELIZE TREASURY BILLS<br/>ISSUE NUMBER 4/2026<br/></h6><p style=\"text-align: left\"> </p><p>Tenders are invited for an issue of Government of Belize Treasury Bills. The amount of the issue will be $90,000,000.00.<br/><br/>The Bills will be issued in electronic form only evidenced by an electronic book entry in the Central Securities Depository",
+              "fileType": "html",
+              "downloadUrl": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "round": 2,
+      "step": "output_quality",
+      "result": {
+        "record_count": 5,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 1.0,
+          "sourceUrl": 1.0
+        },
+        "required_fields_ok": true,
+        "meets_min_items": true,
+        "recommendations": [],
+        "sample_records": [
+          {
+            "id": "1",
+            "title": "High Court of Belize Affirms Decision on Termination of General Manager of SFXCU",
+            "name": "High Court of Belize Affirms Decision on Termination of General Manager of SFXCU",
+            "date": "2026-02-25",
+            "source": "Central Bank of Belize",
+            "author": "",
+            "sourceUrl": "https://www.centralbank.org.bz/detail-pages/news/2026/02/25/high-court-of-belize-affirms-decision-on-termination-of--general-manager-of-sfxcu",
+            "summary": "The Central Bank of Belize advises that, by decision delivered on 19 February 2026, the High Court dismissed a claim brought against the Registrar of Credit Unions (Registrar) challenging the decision to terminate Mr. Rafael Dominguez as the General Manager of Saint Francis Xavier Credit Union …",
+            "content": "<p>The Central Bank of Belize advises that, by decision delivered on 19 February 2026, the High Court dismissed a claim brought against the Registrar of Credit Unions (Registrar) challenging the decision to terminate Mr. Rafael Dominguez as the General Manager of Saint Francis Xavier Credit Union (SFXCU). The High Court upheld the Registrar’s decision as lawful and procedurally fair. <br/><br/>Fol",
+            "fileType": "html",
+            "downloadUrl": ""
+          },
+          {
+            "id": "2",
+            "title": "Weekly Monetary Aggregates 11 February 2026",
+            "name": "Weekly Monetary Aggregates 11 February 2026",
+            "date": "2026-02-23",
+            "source": "Central Bank of Belize",
+            "author": "",
+            "sourceUrl": "https://www.centralbank.org.bz/detail-pages/publication/weekly-monetary-aggregates-11-february-2026",
+            "summary": "The Weekly Monetary Aggregates summarizes the weekly activity of the banking system.",
+            "content": "<a href=\"https://www.centralbank.org.bz/detail-pages/publication/weekly-monetary-aggregates-11-february-2026\" target=\"_blank\">Read Original Article</a>",
+            "fileType": "html",
+            "downloadUrl": ""
+          },
+          {
+            "id": "3",
+            "title": "Treasury Bill Auction Notice #4 of 2026",
+            "name": "Treasury Bill Auction Notice #4 of 2026",
+            "date": "2026-02-17",
+            "source": "Central Bank of Belize",
+            "author": "",
+            "sourceUrl": "https://www.centralbank.org.bz/detail-pages/news/2026/02/17/treasury-bill-auction-notice--4-of-2026",
+            "summary": "Tenders are invited for an issue of Government of Belize Treasury Bills. The amount of the issue will be …",
+            "content": "<h6 style=\"text-align: center\">NOTICE<br/>GOVERNMENT OF BELIZE TREASURY BILLS<br/>ISSUE NUMBER 4/2026<br/></h6><p style=\"text-align: left\"> </p><p>Tenders are invited for an issue of Government of Belize Treasury Bills. The amount of the issue will be $90,000,000.00.<br/><br/>The Bills will be issued in electronic form only evidenced by an electronic book entry in the Central Securities Depository",
+            "fileType": "html",
+            "downloadUrl": ""
+          }
+        ]
+      }
+    }
+  ]
+}

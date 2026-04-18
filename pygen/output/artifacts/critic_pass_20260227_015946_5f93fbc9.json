@@ -1,0 +1,240 @@
+{
+  "final_round": 2,
+  "max_retries": 3,
+  "repaired_code": "# === PyGen 注入：HTTP/SSL 韧性层（通用） ===\n# 说明：\n# 1) 优先保持 verify=True；如确需临时绕过（不推荐），可设置环境变量 PYGEN_INSECURE_SSL=1\n# 2) 默认遇到 418/403/429 仅做一次\"预热 cookie + 浏览器化 headers\"的重试\n# 3) 若仍被拦截且本机已安装 Playwright，会自动尝试一次 request-context 兜底\n#    如需禁用：设置 PYGEN_DISABLE_PLAYWRIGHT_FALLBACK=1\nimport os as _pygen_os\nimport ssl as _pygen_ssl\nimport urllib.parse as _pygen_urlparse\n\ntry:\n    # truststore 会让 Python/requests 使用系统证书库（Windows/macOS/Linux），更贴近浏览器行为\n    import truststore as _pygen_truststore  # type: ignore\n    _pygen_truststore.inject_into_ssl()\nexcept Exception:\n    _pygen_truststore = None  # noqa: F401\n\ntry:\n    import requests as _pygen_requests\n    from requests.structures import CaseInsensitiveDict as _pygen_CaseInsensitiveDict\nexcept Exception:\n    _pygen_requests = None  # noqa: F401\n\n_PYGEN_DEFAULT_UA = (\n    \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) \"\n    \"AppleWebKit/537.36 (KHTML, like Gecko) \"\n    \"Chrome/122.0 Safari/537.36\"\n)\n\ndef _pygen_origin(url: str) -> str:\n    try:\n        p = _pygen_urlparse.urlsplit(url)\n        return f\"{p.scheme}://{p.netloc}\"\n    except Exception:\n        return \"\"\n\ndef _pygen_merge_headers(h: dict | None) -> dict:\n    base = {\n        \"User-Agent\": _PYGEN_DEFAULT_UA,\n        \"Accept\": \"application/json,text/plain,*/*\",\n        \"Accept-Language\": \"zh-CN,zh;q=0.9,en;q=0.8\",\n        \"Connection\": \"keep-alive\",\n    }\n    if h:\n        for k, v in h.items():\n            if v is not None:\n                base[k] = v\n    return base\n\ndef _pygen_make_response(status: int, url: str, headers: dict, body: bytes):\n    r = _pygen_requests.Response()\n    r.status_code = status\n    r.url = url\n    r.headers = _pygen_CaseInsensitiveDict(headers or {})\n    r._content = body or b\"\"\n    return r\n\ndef _pygen_playwright_fetch(method: str, url: str, headers: dict, data=None, json=None, timeout: int = 30):\n    \"\"\"\n    兜底：使用 Playwright 的 request context（更像浏览器/更容易过 WAF）。\n    仅当已安装 playwright 且未设置 PYGEN_DISABLE_PLAYWRIGHT_FALLBACK=1 时启用。\n    \"\"\"\n    if _pygen_os.getenv(\"PYGEN_DISABLE_PLAYWRIGHT_FALLBACK\") == \"1\":\n        return None\n    try:\n        from playwright.sync_api import sync_playwright  # type: ignore\n    except Exception:\n        return None\n\n    with sync_playwright() as p:\n        ctx = p.request.new_context(ignore_https_errors=_pygen_os.getenv(\"PYGEN_INSECURE_SSL\") == \"1\",\n                                    extra_http_headers=headers)\n        try:\n            resp = ctx.fetch(url, method=method.upper(), data=data, json=json, timeout=timeout * 1000)\n            body = resp.body()\n            return _pygen_make_response(resp.status, url, dict(resp.headers), body)\n        finally:\n            ctx.dispose()\n\ndef _pygen_install_requests_patch():\n    if _pygen_requests is None:\n        return\n    _orig = _pygen_requests.sessions.Session.request\n\n    def _patched(self, method, url, **kwargs):\n        # 默认超时，避免脚本卡死\n        kwargs.setdefault(\"timeout\", 30)\n\n        # 证书校验策略：默认开启；仅在用户明确设置时关闭\n        if _pygen_os.getenv(\"PYGEN_INSECURE_SSL\") == \"1\":\n            kwargs[\"verify\"] = False\n\n        # 合并\"更像浏览器\"的 headers（很多站会对 UA/Accept 做拦截）\n        headers = _pygen_merge_headers(kwargs.get(\"headers\"))\n        kwargs[\"headers\"] = headers\n\n        # 首次请求\n        try:\n            resp = _orig(self, method, url, **kwargs)\n        except Exception as e:\n            # 若是 SSL 校验错误：truststore 已注入则直接抛出；否则给出更友好的提示\n            msg = str(e)\n            if \"CERTIFICATE_VERIFY_FAILED\" in msg or \"certificate verify failed\" in msg:\n                # 若 playwright 可用，尝试用 request-context 兜底（有些环境下系统信任链更完整）\n                try:\n                    pw_resp = _pygen_playwright_fetch(method, url, headers=headers,\n                                                      data=kwargs.get(\"data\"),\n                                                      json=kwargs.get(\"json\"),\n                                                      timeout=int(kwargs.get(\"timeout\") or 30))\n                    if pw_resp is not None:\n                        return pw_resp\n                except Exception:\n                    pass\n                raise\n            raise\n\n        # WAF/反爬：做一次轻量重试（预热 cookie + 再请求）\n        if resp is not None and getattr(resp, \"status_code\", 0) in (418, 403, 429):\n            try:\n                origin = _pygen_origin(url)\n                if origin:\n                    # 预热：访问首页拿 cookie\n                    _ = _orig(self, \"GET\", origin + \"/\", headers=headers, timeout=15, verify=kwargs.get(\"verify\", True))\n                resp2 = _orig(self, method, url, **kwargs)\n                if resp2 is not None and getattr(resp2, \"status_code\", 0) not in (418, 403, 429):\n                    return resp2\n                # 若仍被拦截，且 playwright 可用，则再尝试一次（自动兜底）\n                pw_resp = _pygen_playwright_fetch(method, url, headers=headers,\n                                                  data=kwargs.get(\"data\"),\n                                                  json=kwargs.get(\"json\"),\n                                                  timeout=int(kwargs.get(\"timeout\") or 30))\n                if pw_resp is not None:\n                    return pw_resp\n            except Exception:\n                # 兜底失败则返回原始响应，交由上层处理\n                return resp\n\n        return resp\n\n    _pygen_requests.sessions.Session.request = _patched\n\n_pygen_install_requests_patch()\n# === PyGen 注入结束 ===\nimport os\nimport json\nimport time\nimport re\nfrom datetime import datetime\nfrom urllib.parse import urljoin\nfrom bs4 import BeautifulSoup\nfrom playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError\n\n# ==========================================\n# 配置区域\n# ==========================================\nOUTPUT_DIR = r\"d:\\llm_mcp_genpy\\pygen\\output\"\nMAX_ITEMS = 5  # 任务目标：前5条\nBASE_URL = \"https://www.centralbank.org.bz\"\nSTART_URL = \"https://www.centralbank.org.bz/publications-search\"\n\n# ==========================================\n# 辅助函数\n# ==========================================\n\ndef clean_html_content(html_content, base_url):\n    \"\"\"将 HTML 中的相对路径转换为绝对路径，并清理无用标签\"\"\"\n    if not html_content:\n        return \"\"\n    try:\n        soup = BeautifulSoup(html_content, 'html.parser')\n        \n        # 修复图片链接\n        for img in soup.find_all('img'):\n            if img.get('src'):\n                img['src'] = urljoin(base_url, img['src'])\n                \n        # 修复超链接\n        for a in soup.find_all('a'):\n            if a.get('href'):\n                a['href'] = urljoin(base_url, a['href'])\n        \n        # 移除脚本和样式\n        for script in soup([\"script\", \"style\", \"iframe\"]):\n            script.decompose()\n            \n        return str(soup)\n    except Exception as e:\n        print(f\"内容清洗出错: {e}\")\n        return html_content\n\ndef parse_date(date_str):\n    \"\"\"解析日期字符串，格式如 '26 February 2026'\"\"\"\n    if not date_str:\n        return \"\"\n    try:\n        # 清理多余空格\n        date_str = date_str.strip()\n        # 尝试解析 \"26 February 2026\"\n        dt = datetime.strptime(date_str, \"%d %B %Y\")\n        return dt.strftime(\"%Y-%m-%d\")\n    except ValueError:\n        try:\n            # 尝试其他可能格式\n            dt = datetime.strptime(date_str, \"%B %d, %Y\")\n            return dt.strftime(\"%Y-%m-%d\")\n        except:\n            return date_str\n\ndef save_results(articles: list, output_path: str):\n    \"\"\"保存结果为 JSON\"\"\"\n    result = {\n        \"total\": len(articles),\n        \"crawlTime\": datetime.now().strftime(\"%Y-%m-%d %H:%M:%S\"),\n        \"articles\": articles\n    }\n    with open(output_path, 'w', encoding='utf-8') as f:\n        json.dump(result, f, ensure_ascii=False, indent=2)\n    print(f\"已保存 {len(articles)} 条新闻到 {output_path}\")\n\n# ==========================================\n# 核心爬虫逻辑\n# ==========================================\n\ndef crawl_news():\n    os.makedirs(OUTPUT_DIR, exist_ok=True)\n    \n    with sync_playwright() as p:\n        # 启动浏览器（反爬配置）\n        browser = p.chromium.launch(\n            headless=True,\n            args=[\"--disable-blink-features=AutomationControlled\", \"--no-sandbox\"]\n        )\n        context = browser.new_context(\n            viewport={'width': 1920, 'height': 1080},\n            user_agent=\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\",\n            extra_http_headers={\"Accept-Language\": \"zh-CN,zh;q=0.9,en;q=0.8\"}\n        )\n        page = context.new_page()\n        \n        articles = []\n        current_url = START_URL\n        \n        print(f\"开始爬取: {current_url}\")\n        \n        try:\n            page.goto(current_url, wait_until=\"domcontentloaded\", timeout=60000)\n            \n            # 修复：增加网络空闲等待，确保动态内容加载\n            try:\n                page.wait_for_load_state(\"networkidle\", timeout=10000)\n            except:\n                print(\"等待网络空闲超时，继续尝试提取...\")\n\n            # 翻页循环（虽然只需要5条，但保持结构完整性）\n            while len(articles) < MAX_ITEMS:\n                # 修复：使用多重选择器策略，避免单一选择器失效导致空结果\n                # 针对 Central Bank of Belize 可能的结构进行探测\n                candidate_selectors = [\n                    \".item-list__item\",          # 原有选择器\n                    \".search-result\",            # 通用搜索结果\n                    \".sf-search-result\",         # Sitefinity CMS 常见\n                    \"div.result\",                # 通用\n                    \"li.search-result-item\",     # 列表项\n                    \"div.document-item\",         # 文档项\n                    \"table tr:has(a)\",           # 表格行\n                    \"div.row:has(a)\"             # Bootstrap 行\n                ]\n                \n                items = []\n                used_selector = \"\"\n                \n                for sel in candidate_selectors:\n                    if page.locator(sel).count() > 0:\n                        items = page.locator(sel).all()\n                        used_selector = sel\n                        print(f\"使用选择器: {sel} (发现 {len(items)} 条数据)\")\n                        break\n                \n                # 兜底：如果结构化选择器都失败，尝试提取主内容区的所有链接\n                if not items:\n                    print(\"未找到结构化列表，尝试通用链接提取...\")\n                    main_content = page.locator(\"main, #content, #main, .container\").first\n                    if main_content.count():\n                        # 提取看起来像标题的链接（长度>10）\n                        raw_links = main_content.locator(\"a[href]:visible\").all()\n                        items = [link for link in raw_links if len(link.inner_text().strip()) > 10]\n                        used_selector = \"generic_link\"\n                        print(f\"通用模式发现 {len(items)} 个潜在链接\")\n\n                if not items:\n                    print(\"未找到任何数据，停止抓取\")\n                    break\n                \n                for item in items:\n                    if len(articles) >= MAX_ITEMS:\n                        break\n                    \n                    try:\n                        # 1. 提取基础信息 (兼容多种结构)\n                        title = \"\"\n                        link_href = \"\"\n                        \n                        if used_selector == \"generic_link\":\n                            # 通用模式：item 本身就是链接\n                            title = item.inner_text().strip()\n                            link_href = item.get_attribute(\"href\")\n                        else:\n                            # 结构化模式：在 item 内部查找标题链接\n                            # 尝试多种常见的标题选择器\n                            title_candidates = [\"a.item-list__title\", \"h3 a\", \"h4 a\", \".title a\", \"a\"]\n                            for ts in title_candidates:\n                                t_el = item.locator(ts).first\n                                if t_el.count() and t_el.is_visible():\n                                    title = t_el.inner_text().strip()\n                                    link_href = t_el.get_attribute(\"href\")\n                                    if title: break\n                        \n                        if not title or not link_href:\n                            continue\n\n                        source_url = urljoin(BASE_URL, link_href)\n                        \n                        # 尝试提取日期\n                        date = \"\"\n                        if used_selector != \"generic_link\":\n                            # 尝试在 item 内部查找日期\n                            date_candidates = [\".item-list__date\", \".date\", \"time\", \"span.date\", \"p.date\"]\n                            for ds in date_candidates:\n                                d_el = item.locator(ds).first\n                                if d_el.count():\n                                    date = parse_date(d_el.inner_text().strip())\n                                    if date: break\n                        \n                        # 尝试提取摘要\n                        summary = \"\"\n                        if used_selector != \"generic_link\":\n                            summary_candidates = [\".item-list__description\", \".summary\", \".description\", \"p\"]\n                            for ss in summary_candidates:\n                                s_el = item.locator(ss).first\n                                if s_el.count():\n                                    text = s_el.inner_text().strip()\n                                    # 避免提取到日期或标题\n                                    if text and text != title and text != date:\n                                        summary = text\n                                        break\n                        \n                        print(f\"正在处理: {title} ({date})\")\n                        \n                        article_data = {\n                            \"title\": title,\n                            \"date\": date,\n                            \"source\": \"Central Bank of Belize\",\n                            \"sourceUrl\": source_url,\n                            \"summary\": summary,\n                            \"content\": \"\"\n                        }\n                        \n                        # 2. 详情页处理策略\n                        # 检查是否为文件链接 (PDF/DOC等)\n                        file_extensions = ('.pdf', '.doc', '.docx', '.xls', '.xlsx')\n                        is_file = source_url.lower().endswith(file_extensions)\n                        \n                        if is_file:\n                            print(f\"  - 检测到文件链接，跳过详情页抓取: {source_url}\")\n                            article_data[\"content\"] = f'<p>文件下载: <a href=\"{source_url}\" target=\"_blank\">{title}</a></p><p>{summary}</p>'\n                        else:\n                            # 进入 HTML 详情页\n                            new_page = context.new_page()\n                            try:\n                                new_page.goto(source_url, wait_until=\"domcontentloaded\", timeout=30000)\n                                \n                                # 尝试提取正文\n                                content_html = \"\"\n                                \n                                # 尝试定位主要内容区域\n                                if new_page.locator(\"div.group.margin-large\").count() > 0:\n                                    content_html = new_page.locator(\"div.group.margin-large\").first.inner_html()\n                                elif new_page.locator(\"#top\").count() > 0:\n                                    if new_page.locator(\".interior-layout__container\").count() > 0:\n                                        content_html = new_page.locator(\".interior-layout__container\").first.inner_html()\n                                    else:\n                                        content_html = new_page.locator(\"#top\").inner_html()\n                                else:\n                                    content_html = summary  # 兜底\n                                \n                                # 如果详情页有更精确的日期，尝试提取\n                                if not date:\n                                    detail_date = new_page.locator(\"div.item-list__date.detail-page p, .date, time\").first\n                                    if detail_date.count():\n                                        article_data[\"date\"] = parse_date(detail_date.inner_text())\n\n                                # 清洗内容\n                                article_data[\"content\"] = clean_html_content(content_html, source_url)\n                                \n                            except Exception as e:\n                                print(f\"  - 详情页抓取失败: {e}\")\n                                article_data[\"content\"] = summary\n                            finally:\n                                new_page.close()\n                        \n                        articles.append(article_data)\n                        # 礼貌性延迟\n                        time.sleep(1)\n                        \n                    except Exception as e:\n                        print(f\"处理单条数据出错: {e}\")\n                        continue\n                \n                # 检查是否达到目标数量\n                if len(articles) >= MAX_ITEMS:\n                    print(f\"已达到目标数量 {MAX_ITEMS}，停止抓取\")\n                    break\n                \n                # 翻页逻辑 (虽然本任务只取前5条，但为了代码完整性保留)\n                next_btn = page.locator(\"ul.pagination li a:has-text('»')\")\n                if next_btn.count() > 0 and next_btn.is_visible():\n                    print(\"正在翻页...\")\n                    next_btn.click()\n                    page.wait_for_load_state(\"networkidle\")\n                    time.sleep(2)\n                else:\n                    print(\"没有更多页了\")\n                    break\n                    \n        except Exception as e:\n            print(f\"爬虫运行出错: {e}\")\n        finally:\n            browser.close()\n            \n    return articles\n\ndef main():\n    # 生成文件名\n    timestamp = datetime.now().strftime(\"%Y%m%d_%H%M%S\")\n    filename = f\"centralbank_belize_news_{timestamp}.json\"\n    output_path = os.path.join(OUTPUT_DIR, filename)\n    \n    print(\"启动爬虫任务...\")\n    articles = crawl_news()\n    \n    if articles:\n        save_results(articles, output_path)\n    else:\n        print(\"未抓取到任何数据\")\n\nif __name__ == \"__main__\":\n    main()",
+  "rounds": [
+    {
+      "round": 1,
+      "passed": false,
+      "primary_cause": "empty_output",
+      "backup_cause": "schema_mismatch",
+      "uncertain": false,
+      "classifier_confidence": 0.75,
+      "record_count": 0,
+      "static_error_count": 0
+    },
+    {
+      "round": 2,
+      "passed": true,
+      "primary_cause": "unknown",
+      "backup_cause": "schema_mismatch",
+      "uncertain": true,
+      "classifier_confidence": 0.3,
+      "record_count": 5,
+      "static_error_count": 0
+    }
+  ],
+  "evidence": [
+    {
+      "round": 1,
+      "step": "static_check",
+      "result": {
+        "error_count": 0,
+        "warning_count": 1,
+        "top_errors": [],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+          }
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": false,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 25.009,
+        "record_count": 0,
+        "date_fill_rate": 0.0,
+        "status": "no_data",
+        "http_statuses": [],
+        "stdout_tail": "启动爬虫任务...\n开始爬取: https://www.centralbank.org.bz/publications-search\n未找到列表项，可能已无数据或加载失败\n未抓取到任何数据",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 1,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "empty_output",
+        "backup_cause": "schema_mismatch",
+        "confidence": 0.75,
+        "classifier_summary": "脚本执行完成但输出为空"
+      }
+    },
+    {
+      "round": 1,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "selector_brittleness_probe",
+        "cause": "empty_output",
+        "result": {
+          "select_calls": 0,
+          "find_calls": 0,
+          "has_chained_find": false
+        }
+      }
+    },
+    {
+      "round": 1,
+      "step": "output_quality",
+      "result": {
+        "record_count": 0,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 0.0,
+          "sourceUrl": 0.0
+        },
+        "required_fields_ok": false,
+        "meets_min_items": false,
+        "recommendations": [
+          "Extract at least 1 items in lightweight validation.",
+          "Ensure required fields are populated: ['title', 'sourceUrl']"
+        ],
+        "sample_records": []
+      }
+    },
+    {
+      "round": 2,
+      "step": "llm_repair",
+      "result": {
+        "changed": true
+      }
+    },
+    {
+      "round": 2,
+      "step": "static_check",
+      "result": {
+        "error_count": 0,
+        "warning_count": 1,
+        "top_errors": [],
+        "top_warnings": [
+          {
+            "severity": "warning",
+            "code": "ERR_006",
+            "message": "输出字段使用了 'title' 而不是 'name'（兼容：title 将被视为 name）"
+          }
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "step": "lightweight_runtime",
+      "result": {
+        "execution_success": true,
+        "timed_out": false,
+        "exit_code": 0,
+        "duration_seconds": 84.952,
+        "record_count": 5,
+        "date_fill_rate": 0.8,
+        "status": "partial",
+        "http_statuses": [],
+        "stdout_tail": "启动爬虫任务...\n开始爬取: https://www.centralbank.org.bz/publications-search\n使用选择器: .item-list__item (发现 45 条数据)\n正在处理: Monthly Economic Highlights - December 2025 (2026-02-26)\n  - 详情页抓取失败: Page.goto: Download is starting\nCall log:\n  - navigating to \"https://www.centralbank.org.bz/detail-pages/publication/monthly-economic-highlights---december-2025\", waiting until \"domcontentloaded\"\n\n正在处理: High Court of Belize Affirms Decision on Termination of General Manager of SFXCU ()\n  - 详情页抓取失败: Page.goto: Timeout 30000ms exceeded.\nCall log:\n  - navigating to \"https://www.centralbank.org.bz/detail-pages/news/2026/02/25/high-court-of-belize-affirms-decision-on-termination-of--general-manager-of-sfxcu\", waiting until \"domcontentloaded\"\n\n正在处理: Weekly Monetary Aggregates 11 February 2026 (2026-02-23)\n  - 详情页抓取失败: P...(truncated)",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "round": 2,
+      "step": "cause_ranking",
+      "result": {
+        "primary_cause": "unknown",
+        "backup_cause": "schema_mismatch",
+        "confidence": 0.3,
+        "classifier_summary": "未能明确分类的故障"
+      }
+    },
+    {
+      "round": 2,
+      "step": "minimal_experiment",
+      "result": {
+        "type": "sample_output_probe",
+        "cause": "unknown",
+        "result": {
+          "sample_size": 5,
+          "required_non_empty_count": {
+            "title": 5,
+            "sourceUrl": 5
+          },
+          "sample": [
+            {
+              "title": "Monthly Economic Highlights - December 2025",
+              "date": "2026-02-26",
+              "source": "Central Bank of Belize",
+              "sourceUrl": "https://www.centralbank.org.bz/detail-pages/publication/monthly-economic-highlights---december-2025",
+              "summary": "The Monthly Economic Report provides a monthly review on the performance of the Belizean economy.",
+              "content": "The Monthly Economic Report provides a monthly review on the performance of the Belizean economy."
+            },
+            {
+              "title": "High Court of Belize Affirms Decision on Termination of General Manager of SFXCU",
+              "date": "",
+              "source": "Central Bank of Belize",
+              "sourceUrl": "https://www.centralbank.org.bz/detail-pages/news/2026/02/25/high-court-of-belize-affirms-decision-on-termination-of--general-manager-of-sfxcu",
+              "summary": "The Central Bank of Belize advises that, by decision delivered on 19 February 2026, the High Court dismissed a claim brought against the Registrar of Credit Unions (Registrar) challenging the decision to terminate Mr. Rafael Dominguez as the General Manager of Saint Francis Xavier Credit Union …",
+              "content": "The Central Bank of Belize advises that, by decision delivered on 19 February 2026, the High Court dismissed a claim brought against the Registrar of Credit Unions (Registrar) challenging the decision to terminate Mr. Rafael Dominguez as the General Manager of Saint Francis Xavier Credit Union …"
+            },
+            {
+              "title": "Weekly Monetary Aggregates 11 February 2026",
+              "date": "2026-02-23",
+              "source": "Central Bank of Belize",
+              "sourceUrl": "https://www.centralbank.org.bz/detail-pages/publication/weekly-monetary-aggregates-11-february-2026",
+              "summary": "The Weekly Monetary Aggregates summarizes the weekly activity of the banking system.",
+              "content": "The Weekly Monetary Aggregates summarizes the weekly activity of the banking system."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "round": 2,
+      "step": "output_quality",
+      "result": {
+        "record_count": 5,
+        "required_fields": [
+          "title",
+          "sourceUrl"
+        ],
+        "field_fill_rate": {
+          "title": 1.0,
+          "sourceUrl": 1.0
+        },
+        "required_fields_ok": true,
+        "meets_min_items": true,
+        "recommendations": [],
+        "sample_records": [
+          {
+            "title": "Monthly Economic Highlights - December 2025",
+            "date": "2026-02-26",
+            "source": "Central Bank of Belize",
+            "sourceUrl": "https://www.centralbank.org.bz/detail-pages/publication/monthly-economic-highlights---december-2025",
+            "summary": "The Monthly Economic Report provides a monthly review on the performance of the Belizean economy.",
+            "content": "The Monthly Economic Report provides a monthly review on the performance of the Belizean economy."
+          },
+          {
+            "title": "High Court of Belize Affirms Decision on Termination of General Manager of SFXCU",
+            "date": "",
+            "source": "Central Bank of Belize",
+            "sourceUrl": "https://www.centralbank.org.bz/detail-pages/news/2026/02/25/high-court-of-belize-affirms-decision-on-termination-of--general-manager-of-sfxcu",
+            "summary": "The Central Bank of Belize advises that, by decision delivered on 19 February 2026, the High Court dismissed a claim brought against the Registrar of Credit Unions (Registrar) challenging the decision to terminate Mr. Rafael Dominguez as the General Manager of Saint Francis Xavier Credit Union …",
+            "content": "The Central Bank of Belize advises that, by decision delivered on 19 February 2026, the High Court dismissed a claim brought against the Registrar of Credit Unions (Registrar) challenging the decision to terminate Mr. Rafael Dominguez as the General Manager of Saint Francis Xavier Credit Union …"
+          },
+          {
+            "title": "Weekly Monetary Aggregates 11 February 2026",
+            "date": "2026-02-23",
+            "source": "Central Bank of Belize",
+            "sourceUrl": "https://www.centralbank.org.bz/detail-pages/publication/weekly-monetary-aggregates-11-february-2026",
+            "summary": "The Weekly Monetary Aggregates summarizes the weekly activity of the banking system.",
+            "content": "The Weekly Monetary Aggregates summarizes the weekly activity of the banking system."
+          }
+        ]
+      }
+    }
+  ]
+}

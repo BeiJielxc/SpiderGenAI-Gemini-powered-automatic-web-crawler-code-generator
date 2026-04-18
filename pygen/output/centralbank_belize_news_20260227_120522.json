@@ -1,0 +1,56 @@
+{
+  "total": 5,
+  "crawlTime": "2026-02-27 12:05:22",
+  "articles": [
+    {
+      "id": "1",
+      "title": "About the Bank",
+      "date": "",
+      "source": "Central Bank of Belize",
+      "author": "Central Bank of Belize",
+      "sourceUrl": "https://www.centralbank.org.bz/about-the-bank",
+      "summary": "About the Bank",
+      "content": "\n<div class=\"sf_colsIn interior-layout page-bounds\" data-placeholder-label=\"Full Width Content\" data-sf-element=\"Container\" id=\"ContentPlaceholder_T5E3E3FE2012_Col00\"><div class=\"grid\" data-sf-element=\"Row\">\n<div class=\"sf_colsIn grid__unit grid__unit--1-3-l\" data-placeholder-label=\"Column 1\" data-sf-element=\"Column 1\" id=\"ContentPlaceholder_C008_Col00\">\n<div class=\"careerCard blueGrey\">\n<img alt="
+    },
+    {
+      "id": "2",
+      "title": "Core Functions",
+      "date": "",
+      "source": "Central Bank of Belize",
+      "author": "Central Bank of Belize",
+      "sourceUrl": "https://www.centralbank.org.bz/home/core-functions",
+      "summary": "Core Functions",
+      "content": "\n<div class=\"sf_colsIn interior-layout page-bounds\" data-placeholder-label=\"Full Width Content\" data-sf-element=\"Container\" id=\"ContentPlaceholder_T5E3E3FE2012_Col00\"><div class=\"spacer spacer--medium\" data-editor-help=\"Invisible spacer - medium\"></div>\n<div class=\"grid\" data-sf-element=\"Row\">\n<div class=\"sf_colsIn grid__unit grid__unit--1-3-l\" data-placeholder-label=\"Column 1\" data-sf-element=\"Co"
+    },
+    {
+      "id": "3",
+      "title": "News and Publications",
+      "date": "",
+      "source": "Central Bank of Belize",
+      "author": "Central Bank of Belize",
+      "sourceUrl": "https://www.centralbank.org.bz/home/news-and-publications",
+      "summary": "News and Publications",
+      "content": "\n<div class=\"sf_colsIn interior-layout page-bounds\" data-placeholder-label=\"Full Width Content\" data-sf-element=\"Container\" id=\"ContentPlaceholder_T5E3E3FE2012_Col00\">\n</div>\n<div class=\"interior-layout page-bounds\" data-sf-element=\"Row\">\n<div class=\"sf_colsIn interior-layout__container\" data-sf-element=\"Column 1\" id=\"ContentPlaceholder_T5E3E3FE2005_Col00\"><div class=\"sf_colsIn interior-layout__na"
+    },
+    {
+      "id": "4",
+      "title": "Monthly Economic Highlights - December 2025",
+      "date": "2026-02-26",
+      "source": "Central Bank of Belize",
+      "author": "Central Bank of Belize",
+      "sourceUrl": "https://www.centralbank.org.bz/detail-pages/publication/monthly-economic-highlights---december-2025",
+      "summary": "Monthly Economic Highlights - December 2025",
+      "content": "<a href=\"https://www.centralbank.org.bz/detail-pages/publication/monthly-economic-highlights---december-2025\" target=\"_blank\">https://www.centralbank.org.bz/detail-pages/publication/monthly-economic-highlights---december-2025</a>"
+    },
+    {
+      "id": "5",
+      "title": "High Court of Belize Affirms Decision on Termination of General Manager of SFXCU",
+      "date": "2026-02-19",
+      "source": "Central Bank of Belize",
+      "author": "Central Bank of Belize",
+      "sourceUrl": "https://www.centralbank.org.bz/detail-pages/news/2026/02/25/high-court-of-belize-affirms-decision-on-termination-of--general-manager-of-sfxcu",
+      "summary": "High Court of Belize Affirms Decision on Termination of General Manager of SFXCU",
+      "content": "<p>The Central Bank of Belize advises that, by decision delivered on 19 February 2026, the High Court dismissed a claim brought against the Registrar of Credit Unions (Registrar) challenging the decision to terminate Mr. Rafael Dominguez as the General Manager of Saint Francis Xavier Credit Union (SFXCU). The High Court upheld the Registrar’s decision as lawful and procedurally fair. <br/><br/>Fol"
+    }
+  ]
+}
