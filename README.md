@@ -2,6 +2,7 @@
 
 > v2 版本核心升级：**LangGraph 多智能体编排** + **Prompt 资产化** + **会话/持久记忆** + **用户反馈闭环** + **总结复盘 Agent**。
 > v2 highlights: **LangGraph multi-agent orchestration**, **prompt asset externalization**, **session + persistent memory**, **user-feedback loop**, **self-reflection summary agent**.
+### 注：该agent是用于生成爬虫代码，便于日后代码入库跑批，是生成爬虫代码的agent，不建议您当成直接帮您爬东西的agent的使用。
 
 ## 目录 (Table of Contents)
 
