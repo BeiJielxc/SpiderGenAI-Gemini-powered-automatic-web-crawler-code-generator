@@ -68,6 +68,8 @@ class GenerateRequest(BaseModel):
     downloadReport: Optional[str] = "yes"  # 'yes' | 'no'
     selectedPaths: Optional[List[str]] = None  # 用户选中的目录路径（保留兼容）
     attachments: Optional[List[AttachmentData]] = None  # 图片/文件附件
+    # 持久化记忆 — 重新运行场景：上一次任务 ID（用于注入 feedback_replay_hint）
+    prevTaskId: Optional[str] = None
 
 class ReportFile(BaseModel):
     id: str
@@ -117,6 +119,12 @@ class TaskStatusResponse(BaseModel):
     queueWaitingCount: Optional[int] = None   # 当前队列等待数
     queueRunningCount: Optional[int] = None   # 当前正在运行数
     estimatedWaitSeconds: Optional[int] = None  # 预估等待秒数
+    # 持久化记忆 / 任务评价
+    pendingFeedback: Optional[bool] = None    # True 时前端应弹出"任务评价" Modal
+    autoFindings: Optional[Dict[str, Any]] = None  # Stage-1 启发式扫描结果
+    htmlFingerprint: Optional[str] = None     # 列表页结构指纹
+    userVerdict: Optional[str] = None         # 用户评价后回填: correct | wrong
+    userSuggestion: Optional[str] = None      # 用户建议（已提交时回填）
 
 # ============ 全局状态 ============
 
@@ -141,6 +149,12 @@ config: Optional[Config] = None
 # ── 队列 & SSE（仅 config 开启时才实例化，见 lifespan） ──
 _task_queue = None       # type: ignore  # Optional[TaskQueue]
 _event_broadcaster = None  # type: ignore  # Optional[EventBroadcaster]
+# FastAPI 主事件循环（lifespan 启动时捕获）。LangGraph 的同步节点会被
+# run_in_executor 丢到线程池里执行；这些线程没有自己的事件循环，所以
+# 像 ``asyncio.ensure_future`` 这种依赖 "current loop" 的 API 在 Py3.14+ 会抛
+# RuntimeError。捕获主循环后我们用 ``run_coroutine_threadsafe`` 在工作
+# 线程里安全地把协程派回主循环执行。
+_main_loop: Optional[asyncio.AbstractEventLoop] = None
 
 
 def _is_cancelled(task_id: str) -> bool:
@@ -152,7 +166,13 @@ def _is_cancelled(task_id: str) -> bool:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """应用生命周期管理"""
-    global config, _task_queue, _event_broadcaster
+    global config, _task_queue, _event_broadcaster, _main_loop
+    # 捕获 FastAPI / uvicorn 主事件循环；后续工作线程里的回调要用它做
+    # 跨线程协程派发。
+    try:
+        _main_loop = asyncio.get_running_loop()
+    except RuntimeError:
+        _main_loop = None
     try:
         config = Config()
         print("✓ 配置加载成功")
@@ -179,6 +199,26 @@ async def lifespan(app: FastAPI):
         from realtime import EventBroadcaster
         _event_broadcaster = EventBroadcaster()
         print("✓ SSE 事件广播已启用")
+
+    # Module A: bring up the URL-keyed PageCache (used by the planner
+    # tools' write-through path and by the rerun-validator). The cache
+    # is a *singleton* shared across all task runs in this process, so
+    # configure it once at startup. ``build_default_page_cache`` is a
+    # no-op when ``page_cache.enabled = false``.
+    if config:
+        try:
+            from page_cache import build_default_page_cache
+            cache = build_default_page_cache(config)
+            if cache is not None:
+                print(
+                    f"✓ PageCache 启用 (root={cache.root}, "
+                    f"ttl={config.page_cache_ttl_sec}s, "
+                    f"max={config.page_cache_max_total_mb}MB)"
+                )
+            else:
+                print("ℹ PageCache 未启用 (page_cache.enabled=false)")
+        except Exception as exc:
+            print(f"⚠ PageCache 初始化失败 (非致命，将退化为无缓存): {exc}")
 
     yield
 
@@ -208,6 +248,45 @@ app.add_middleware(
 
 # ============ 辅助函数 ============
 
+def _schedule_publish(coro) -> None:
+    """线程安全地把广播协程丢回主事件循环。
+
+    LangGraph 的同步节点 (例如 ``summarize_node``) 会被
+    ``run_in_executor`` 丢到 worker 线程里执行；那个线程没有自己的事件
+    循环，因此 ``asyncio.ensure_future`` / ``get_event_loop`` 会在 Py3.14+
+    抛 ``RuntimeError``。这里统一兜底：
+
+    1. 当前线程有运行中的 loop → 直接 ``ensure_future``。
+    2. 没有，但我们启动时捕获了主 loop → ``run_coroutine_threadsafe``。
+    3. 都没有 → 关闭协程，静默放弃 SSE 推送（日志已经写进内存任务，
+       前端走轮询仍能拿到）。
+    """
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = None
+
+    if loop is not None:
+        try:
+            asyncio.ensure_future(coro, loop=loop)
+            return
+        except Exception:
+            pass
+
+    if _main_loop is not None and not _main_loop.is_closed():
+        try:
+            asyncio.run_coroutine_threadsafe(coro, _main_loop)
+            return
+        except Exception:
+            pass
+
+    # 兜底：避免协程被 GC 时抛 "coroutine was never awaited" 警告
+    try:
+        coro.close()
+    except Exception:
+        pass
+
+
 def _add_log(task_id: str, message: str):
     """添加日志到任务"""
     if task_id in tasks:
@@ -216,7 +295,7 @@ def _add_log(task_id: str, message: str):
         tasks[task_id]["logs"].append(log_line)
         # SSE 推送日志（如果启用）
         if _event_broadcaster is not None:
-            asyncio.ensure_future(
+            _schedule_publish(
                 _event_broadcaster.publish(task_id, "log", {"message": log_line})
             )
 
@@ -227,7 +306,7 @@ def _update_step(task_id: str, step: int, label: str):
         tasks[task_id]["stepLabel"] = label
         # SSE 推送步骤变化
         if _event_broadcaster is not None:
-            asyncio.ensure_future(
+            _schedule_publish(
                 _event_broadcaster.publish(task_id, "step", {"currentStep": step, "stepLabel": label})
             )
 
@@ -389,9 +468,7 @@ async def _run_generation_task(task_id: str, request: GenerateRequest):
             raise RuntimeError("任务已被用户取消")
 
         _update_step(task_id, 2, "正在启动 Agent 智能决策")
-        _add_log(task_id, "[INFO] Agent 模式：Planner 将自主探测网站并生成代码")
-
-        from planner import AgentPlanner
+        _add_log(task_id, "[INFO] Agent 模式 (LangGraph)：Planner 将自主探测网站并生成代码")
 
         task_objective = (request.taskObjective or request.extraRequirements or "").strip()
         supplemental_lines: List[str] = []
@@ -429,18 +506,37 @@ async def _run_generation_task(task_id: str, request: GenerateRequest):
             enable_auto_repair=auto_repair_enabled,
         )
 
-        planner = AgentPlanner(
+        _update_step(task_id, 5, "Agent 正在自主探测和分析网站")
+
+        from agents.runner import run_agent as langgraph_run_agent
+
+        planner_result = await langgraph_run_agent(
             browser=browser, config=config, llm_agent=llm,
             url=request.url, run_mode=request.runMode,
             start_date=request.startDate, end_date=request.endDate,
             extra_requirements=user_requirements, task_id=task_id,
             log_callback=lambda msg: _add_log(task_id, msg),
-            attachments=llm_attachments, max_iterations=config.agent_max_iterations if config else 20,
+            attachments=llm_attachments,
+            max_iterations=config.agent_max_iterations if config else 20,
             cancel_check=lambda: _is_cancelled(task_id),
+            prev_task_id=request.prevTaskId or None,
+            # Allow the Stage-1 Summary Agent (running as the last node of
+            # planner_graph) to advance the side-bar UI to "🧠 Agent 正在
+            # 自我复盘" the moment it actually starts. Without this the
+            # phase runs invisibly inside step 6 ("正在调用LLM生成爬虫脚本")
+            # and the user perceives a sudden jump straight to "task done".
+            step_callback=lambda step, label: _update_step(task_id, step, label),
         )
 
-        _update_step(task_id, 5, "Agent 正在自主探测和分析网站")
-        planner_result = await planner.run()
+        # Surface Stage-1 summary outputs onto the task record so the
+        # frontend feedback Modal can read them via /api/status.
+        try:
+            tasks[task_id]["autoFindings"] = planner_result.auto_findings
+            tasks[task_id]["summaryDraftPath"] = planner_result.summary_draft_path
+            tasks[task_id]["htmlFingerprint"] = planner_result.html_fingerprint
+            tasks[task_id]["pendingFeedback"] = bool(planner_result.summary_draft_path)
+        except Exception:
+            pass
 
         if not planner_result.success or not planner_result.script_code:
             error_msg = planner_result.error or "Agent 未能生成有效代码"
@@ -478,7 +574,7 @@ async def _run_generation_task(task_id: str, request: GenerateRequest):
 
         # Step 8: 验证代码（可选）
         if auto_repair_enabled:
-            _update_step(task_id, 7, "正在验证生成的代码")
+            _update_step(task_id, 8, "正在验证生成的代码")
             _add_log(task_id, "[INFO] 正在进行静态代码检查...")
             try:
                 from validator import StaticCodeValidator
@@ -504,11 +600,11 @@ async def _run_generation_task(task_id: str, request: GenerateRequest):
             except Exception as val_err:
                 _add_log(task_id, f"[WARNING] 验证时出现问题: {val_err}")
         else:
-            _update_step(task_id, 7, "已跳过（auto_repair=false）")
+            _update_step(task_id, 8, "已跳过（auto_repair=false）")
 
         # Step 9: 保存脚本
         print(f"[DEBUG][task={task_id}] === 进入 Step 9: 保存脚本 ===")
-        _update_step(task_id, 8, "爬虫脚本已生成")
+        _update_step(task_id, 9, "爬虫脚本已生成")
         
         output_dir = config.output_dir if config else Path("./py")
         print(f"[DEBUG][task={task_id}] output_dir = {output_dir}")
@@ -533,7 +629,7 @@ async def _run_generation_task(task_id: str, request: GenerateRequest):
             raise RuntimeError("任务已被用户取消")
             
         print(f"[DEBUG][task={task_id}] === 进入 Step 10: 运行爬虫脚本 ===")
-        _update_step(task_id, 9, "正在运行爬虫脚本")
+        _update_step(task_id, 10, "正在运行爬虫脚本")
         _add_log(task_id, f"[INFO] 正在运行: python {output_path}")
         
         import subprocess
@@ -597,7 +693,7 @@ async def _run_generation_task(task_id: str, request: GenerateRequest):
             _add_log(task_id, f"[WARNING] 运行脚本时出错: {run_err}")
         
         # Step 11: 验证爬取结果
-        _update_step(task_id, 10, "📊 正在验证爬取结果")
+        _update_step(task_id, 11, "📊 正在验证爬取结果")
         
         # 查找输出的文件（在 output 目录）
         # 兼容两种路径：pygen/output 和 pygen/py/output
@@ -981,7 +1077,7 @@ async def _run_generation_task(task_id: str, request: GenerateRequest):
             _add_log(task_id, f"[SUCCESS] Markdown 已保存: {md_filepath}")
         
         # Step 12: 任务完成
-        _update_step(task_id, 11, "🎉 任务完成")
+        _update_step(task_id, 13, "🎉 任务完成")
         
         # 根据运行模式保存不同的结果
         if request.runMode == "news_sentiment":
@@ -1169,21 +1265,34 @@ async def get_menu_tree(request: MenuTreeRequest):
         raise HTTPException(status_code=500, detail=f"获取目录树失败: {str(e)}")
 
 @app.post("/api/rerun/{task_id}")
-async def rerun_task(task_id: str):
+async def rerun_task(task_id: str, body: Optional[Dict[str, Any]] = None):
+    """重新运行指定任务。
+
+    可选 body 字段（用于持久化记忆 + 反馈回放）::
+
+        {
+          "verdict":    "correct" | "wrong",  # 用户对原任务的评价
+          "suggestion": "...",                # 用户建议（verdict=wrong 时必填）
+          "skipFeedback": false,              # true 表示纯重跑、不写记忆
+        }
+
+    传入 ``verdict`` 时，先调用 :func:`commit_episode` 把上一次的草稿
+    晋升为正式记录并更新站点画像；接着把 ``prev_task_id = task_id``
+    透传给新任务，使 ``feedback_replay_hint`` 能注入到 planner 提示词
+    最顶端。
     """
-    重新运行指定任务
-    
-    复用原任务的请求参数，创建一个新任务加入队列
-    """
+    body = body or {}
+    verdict = (body.get("verdict") or "").strip().lower() or None
+    suggestion = (body.get("suggestion") or "").strip()
+    skip_feedback = bool(body.get("skipFeedback") or False)
+
     req_data = None
-    
-    # 1. 尝试从活跃任务中获取
+
     if task_id in tasks:
         task = tasks[task_id]
         if "request" in task:
             req_data = task["request"]
-            
-    # 2. 如果未找到，尝试从历史记录获取
+
     if not req_data:
         try:
             history_item = await asyncio.to_thread(get_history_detail, task_id)
@@ -1191,17 +1300,263 @@ async def rerun_task(task_id: str):
                 req_data = history_item["config"]
         except Exception as e:
             print(f"从历史记录获取任务配置失败: {e}")
-            
+
     if not req_data:
         raise HTTPException(status_code=404, detail="原任务不存在或已失效")
-        
+
+    if verdict and not skip_feedback:
+        try:
+            commit_result = await _commit_feedback_async(
+                task_id=task_id,
+                verdict=verdict,
+                suggestion=suggestion,
+            )
+            print(f"[MEMORY] rerun pre-commit: stage={commit_result.get('stage')} "
+                  f"warnings={commit_result.get('warnings')}")
+        except HTTPException:
+            raise
+        except Exception as commit_err:
+            print(f"[MEMORY] commit before rerun failed (continuing): {commit_err}")
+
     try:
-        # 重建请求对象
         request = GenerateRequest(**req_data)
-        # 调用生成接口（复用逻辑）
+        if not skip_feedback:
+            request.prevTaskId = task_id
         return await start_generation(request)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"重试失败: {str(e)}")
+
+
+# ============ 持久化记忆 / 任务评价 ============
+
+class FeedbackRequest(BaseModel):
+    """前端"任务评价"提交体。"""
+
+    verdict: str  # "correct" | "wrong"
+    suggestion: Optional[str] = ""
+
+
+def _build_memory_store():
+    """Lazy import + 实例化 MemoryStore（与 runner.py 行为一致）。"""
+    if config is None:
+        raise HTTPException(status_code=503, detail="config not initialized")
+    try:
+        from memory import MemoryStore  # type: ignore
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"memory module unavailable: {e}")
+    try:
+        return MemoryStore(config.memory_root)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"failed to init MemoryStore: {e}")
+
+
+async def _commit_feedback_async(*, task_id: str, verdict: str, suggestion: str) -> Dict[str, Any]:
+    """把 commit_episode 放到线程池，避免 LLM 调用阻塞事件循环。"""
+    from memory import commit_episode  # type: ignore
+
+    store = _build_memory_store()
+
+    def _logger(msg: str):
+        try:
+            _add_log(task_id, msg)
+        except Exception:
+            print(msg)
+
+    def _do_commit():
+        return commit_episode(
+            task_id=task_id,
+            verdict=verdict,
+            suggestion=suggestion,
+            store=store,
+            config=config,
+            log_callback=_logger,
+        )
+
+    return await asyncio.to_thread(_do_commit)
+
+
+@app.get("/api/tasks/{task_id}/draft")
+async def get_task_draft(task_id: str):
+    """读取草稿 episode，供前端"任务评价" Modal 展示 auto_findings。
+
+    **重要**：此接口直接基于磁盘上的 ``episode/pending/<task_id>.json``，
+    与内存里的 ``tasks`` 字典解耦——后端重启后、任务从内存里失效后，
+    甚至业务方第二天回头评价，都能正常返回 draft。
+
+    返回字段：
+        - ``exists``           : 是否存在
+        - ``auto_findings``    : 启发式扫描结果
+        - ``facts``            : 任务事实摘要（成功率、工具调用次数等）
+        - ``url`` / ``domain`` : 任务对应站点
+        - ``html_fingerprint`` : 用于站点画像漂移检测
+        - ``user_verdict``     : 已存在的评价（如有），用来判断 pending 状态
+    """
+    store = _build_memory_store()
+    try:
+        draft = await asyncio.to_thread(store.read_draft, task_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"failed to read draft: {e}")
+
+    if draft is None:
+        return {
+            "exists": False,
+            "task_id": task_id,
+            "auto_findings": None,
+            "facts": None,
+            "url": None,
+            "domain": None,
+            "html_fingerprint": None,
+            "user_verdict": None,
+        }
+
+    # `pending` 反映"是否仍在等待用户评价"。draft 上有 user_verdict 时
+    # 说明用户已提交（理论上提交后 commit_episode 会删 draft，但失败时
+    # 可能残留），前端据此可决定是否再弹窗。
+    pending = not bool(draft.get("user_verdict"))
+
+    return {
+        "exists": True,
+        "task_id": task_id,
+        "pending": pending,
+        "auto_findings": draft.get("auto_findings"),
+        "facts": draft.get("facts"),
+        "url": draft.get("url"),
+        "domain": draft.get("domain"),
+        "html_fingerprint": draft.get("html_fingerprint"),
+        "user_verdict": draft.get("user_verdict"),
+        "user_suggestion": draft.get("user_suggestion"),
+        "started_at": draft.get("started_at"),
+        "ended_at": draft.get("ended_at"),
+        "verified_selectors_count": draft.get("verified_selectors_count"),
+    }
+
+
+@app.post("/api/tasks/{task_id}/feedback")
+async def submit_task_feedback(task_id: str, body: FeedbackRequest):
+    """提交"任务评价"，触发 Stage-2 LLM 总结 + 站点画像更新。
+
+    前端流程：
+        1. 任务跑完后弹出"任务评价" Modal（必填）。
+        2. 用户选择 ``correct`` / ``wrong``，``wrong`` 时必填 ``suggestion``。
+        3. 调用本接口 → commit_episode → episode/episodes.jsonl + site/<domain>.json。
+        4. 如需重跑，前端再调用 ``POST /api/rerun/{task_id}``，已写入的
+           draft 不会重复 commit（draft 已被删除）。
+    """
+    verdict = (body.verdict or "").strip().lower()
+    suggestion = (body.suggestion or "").strip()
+
+    if verdict not in {"correct", "wrong"}:
+        raise HTTPException(status_code=400, detail="verdict must be 'correct' or 'wrong'")
+    if verdict == "wrong" and not suggestion:
+        raise HTTPException(
+            status_code=400,
+            detail="suggestion is required when verdict='wrong'",
+        )
+
+    # ---- Stage-2 复盘开场白 ----
+    # 让用户在前端日志面板里能看到「Agent 正在根据反馈做深度复盘」这件事，
+    # 而不是一个静默的 spinner。下面 commit_episode 在线程池里跑期间，
+    # 它内部的 [COMMIT] / [MEMORY] 日志会通过 _logger -> _add_log 持续 push
+    # 进 tasks[task_id]["logs"]，前端在收到本接口响应后会再 poll 一次
+    # /api/status 把这批日志拉回来。
+    _add_log(task_id, "🧠 [SUMMARY/Stage-2] 收到用户反馈，开始 LLM 深度复盘…")
+    _add_log(
+        task_id,
+        f"🧠 [SUMMARY/Stage-2] verdict={verdict}"
+        + (
+            f" | 用户原话: {suggestion if len(suggestion) <= 120 else suggestion[:120] + '…'}"
+            if suggestion
+            else ""
+        ),
+    )
+    # 同步更新侧边步骤标签为「正在根据反馈复盘」（不推进 step 索引，避免
+    # 把进度条往前拽；只是把当前格的 label 换成更贴当前动作的话术）。
+    if task_id in tasks:
+        try:
+            current_step = int(tasks[task_id].get("currentStep") or 0)
+        except Exception:
+            current_step = 12
+        _update_step(task_id, current_step, "🧠 Agent 正在根据反馈做 LLM 深度复盘…")
+
+    try:
+        result = await _commit_feedback_async(
+            task_id=task_id,
+            verdict=verdict,
+            suggestion=suggestion,
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        _add_log(task_id, f"❌ [SUMMARY/Stage-2] 复盘失败: {e}（draft 不会被删，可重新提交评价）")
+        raise HTTPException(status_code=500, detail=f"commit_episode failed: {e}")
+
+    # ---- Stage-2 收尾 ----
+    # commit_episode 返回里同时挂了 ``stage``（旧 key）和我们后面加的 ``enrichment_stage``，
+    # 谁有就用谁，避免 commit.py 内部字段重命名时这里失声。
+    enrichment_stage = result.get("enrichment_stage") or result.get("stage") or "unknown"
+    if result.get("ok"):
+        _add_log(
+            task_id,
+            f"✅ [SUMMARY/Stage-2] 复盘完成 (enrichment={enrichment_stage}) → 经验已写入 episode/episodes.jsonl + site/<domain>.json",
+        )
+        # 把"复盘那一格"的 label 切到 Stage-2 完成态。前端 pollStatus 在
+        # status=completed 分支下也会把这个 stepLabel 透传到 SUMMARIZE_STEP_INDEX
+        # （见 ExecutionView.tsx），所以用户能看见 Stage-1 → Stage-2 的真实切换。
+        if task_id in tasks:
+            try:
+                final_step = int(tasks[task_id].get("currentStep") or 12)
+            except Exception:
+                final_step = 12
+            _update_step(
+                task_id,
+                final_step,
+                f"✅ Stage-2 LLM 复盘完成 ({enrichment_stage})",
+            )
+    else:
+        warns = result.get("warnings") or []
+        _add_log(
+            task_id,
+            f"⚠️ [SUMMARY/Stage-2] 复盘部分失败 (enrichment={enrichment_stage}) warnings={warns}",
+        )
+        if task_id in tasks:
+            try:
+                final_step = int(tasks[task_id].get("currentStep") or 12)
+            except Exception:
+                final_step = 12
+            _update_step(
+                task_id,
+                final_step,
+                f"⚠️ Stage-2 复盘部分失败 ({enrichment_stage})",
+            )
+
+    # 同步把 verdict 写到内存任务字段，便于 /api/status 即时反映
+    if task_id in tasks:
+        tasks[task_id]["userVerdict"] = verdict
+        tasks[task_id]["userSuggestion"] = suggestion
+        tasks[task_id]["pendingFeedback"] = False
+
+    # 同步更新历史记录的"成功/失败"标签（若可用）
+    try:
+        new_status = "success" if verdict == "correct" else "failed"
+        await asyncio.to_thread(update_history_status, task_id, new_status)
+    except Exception as e:
+        print(f"update_history_status after feedback failed: {e}")
+
+    episode = result.get("episode") or {}
+    profile = result.get("profile") or {}
+    return {
+        "ok": bool(result.get("ok")),
+        "stage": result.get("stage"),
+        "warnings": result.get("warnings", []),
+        "lessons": (episode.get("lessons") if isinstance(episode, dict) else None),
+        "domain": (episode.get("domain") if isinstance(episode, dict) else None),
+        "profile_confidence": (
+            profile.get("confidence") if isinstance(profile, dict) else None
+        ),
+        "profile_quarantined": (
+            profile.get("quarantined") if isinstance(profile, dict) else None
+        ),
+    }
 
 @app.post("/api/generate")
 async def start_generation(request: GenerateRequest):
@@ -1226,7 +1581,7 @@ async def start_generation(request: GenerateRequest):
         "request": request.model_dump(),
         "status": initial_status,
         "currentStep": 0,
-        "totalSteps": 12,  # 增加了代码验证和结果验证步骤
+        "totalSteps": 14,  # 0..13: 启动 → 连接 → 打开 → 滚动 → 分析 → 增强分析 → LLM 生成 → 验证代码 → 已生成 → 运行 → 验证结果 → 🧠 自我复盘 → 完成
         "stepLabel": "排队等待中..." if use_queue else "准备中...",
         "logs": [],
         "resultFile": None,
@@ -1268,6 +1623,27 @@ async def start_generation(request: GenerateRequest):
         task_asyncio_tasks[task_id] = asyncio_task
         return {"taskId": task_id, "message": "任务已创建"}
 
+def _read_draft_for_status(task_id: str) -> Optional[Dict[str, Any]]:
+    """同步读取磁盘 draft（如有）；失败时静默返回 None，不影响 /api/status 主流程。
+
+    用于 ``/api/status/{task_id}`` 兜底：当任务已不在内存（重启后 / 走历史）
+    时，仍能从 ``episode/pending/<task_id>.json`` 推断出 ``pendingFeedback``
+    与 ``autoFindings``，让前端"待评价"徽章在任意时间都能回填。
+    """
+    if config is None:
+        return None
+    try:
+        from memory import MemoryStore  # type: ignore
+    except Exception:
+        return None
+    try:
+        store = MemoryStore(config.memory_root)
+        d = store.read_draft(task_id)
+        return dict(d) if d else None
+    except Exception:
+        return None
+
+
 @app.get("/api/status/{task_id}", response_model=TaskStatusResponse)
 async def get_task_status(task_id: str):
     """
@@ -1275,6 +1651,20 @@ async def get_task_status(task_id: str):
     
     前端轮询此接口以更新进度和日志
     """
+    # 0. 不论走哪条路径都先尝试拉一次磁盘 draft，作为 pendingFeedback 的兜底数据源
+    draft_disk = await asyncio.to_thread(_read_draft_for_status, task_id)
+    draft_pending_feedback: Optional[bool] = None
+    draft_auto_findings: Optional[Dict[str, Any]] = None
+    draft_html_fingerprint: Optional[str] = None
+    draft_user_verdict: Optional[str] = None
+    draft_user_suggestion: Optional[str] = None
+    if draft_disk is not None:
+        draft_user_verdict = draft_disk.get("user_verdict")
+        draft_user_suggestion = draft_disk.get("user_suggestion") or None
+        draft_pending_feedback = not bool(draft_user_verdict)
+        draft_auto_findings = draft_disk.get("auto_findings")
+        draft_html_fingerprint = draft_disk.get("html_fingerprint")
+
     # 1. 优先从内存中获取（活跃任务）
     if task_id in tasks:
         task = tasks[task_id]
@@ -1293,6 +1683,15 @@ async def get_task_status(task_id: str):
             # 更新排队中任务的 stepLabel（实时位置）
             if task["status"] == "queued" and queue_position > 0:
                 task["stepLabel"] = f"排队等待中...（第 {queue_position} 位，预计 {estimated_wait}s）"
+
+        # pendingFeedback / autoFindings：内存值优先，磁盘 draft 兜底
+        pending_feedback = task.get("pendingFeedback")
+        if pending_feedback is None:
+            pending_feedback = draft_pending_feedback
+        auto_findings = task.get("autoFindings") or draft_auto_findings
+        html_fingerprint = task.get("htmlFingerprint") or draft_html_fingerprint
+        user_verdict = task.get("userVerdict") or draft_user_verdict
+        user_suggestion = task.get("userSuggestion") or draft_user_suggestion
 
         return TaskStatusResponse(
             taskId=task["taskId"],
@@ -1314,6 +1713,11 @@ async def get_task_status(task_id: str):
             queueWaitingCount=queue_waiting,
             queueRunningCount=queue_running,
             estimatedWaitSeconds=estimated_wait,
+            pendingFeedback=pending_feedback,
+            autoFindings=auto_findings,
+            htmlFingerprint=html_fingerprint,
+            userVerdict=user_verdict,
+            userSuggestion=user_suggestion,
         )
     
     # 2. 如果内存中没有，尝试从数据库获取（历史任务）
@@ -1325,8 +1729,8 @@ async def get_task_status(task_id: str):
             return TaskStatusResponse(
                 taskId=history_item["id"],
                 status=history_item["status"],
-                currentStep=12 if history_item["status"] == "completed" else 0, # 假定完成
-                totalSteps=12,
+                currentStep=13 if history_item["status"] == "completed" else 0, # 假定完成
+                totalSteps=14,
                 stepLabel="任务已归档",
                 logs=history_item.get("logs", []),
                 resultFile=result.get("resultFile"),
@@ -1338,9 +1742,34 @@ async def get_task_status(task_id: str):
                 newsArticles=result.get("newsArticles"),
                 markdownFile=result.get("markdownFile"),
                 totalCount=result.get("totalCount"),
+                # 即使任务已归档，只要磁盘 draft 还在 → 业务方依旧可以补评价
+                pendingFeedback=draft_pending_feedback,
+                autoFindings=draft_auto_findings,
+                htmlFingerprint=draft_html_fingerprint,
+                userVerdict=draft_user_verdict,
+                userSuggestion=draft_user_suggestion,
             )
     except Exception as e:
         print(f"从数据库恢复任务状态失败: {e}")
+
+    # 3. 内存 + 历史都没有，但磁盘 draft 还在：返回最简响应让前端能补评价
+    if draft_disk is not None:
+        url_in_draft = draft_disk.get("url") or ""
+        return TaskStatusResponse(
+            taskId=task_id,
+            status="completed" if not draft_disk.get("user_verdict") else "completed",
+            currentStep=13,
+            totalSteps=14,
+            stepLabel="任务已归档（仅 draft 仍可用）",
+            logs=[],
+            resultFile=None,
+            error=None,
+            pendingFeedback=draft_pending_feedback,
+            autoFindings=draft_auto_findings,
+            htmlFingerprint=draft_html_fingerprint,
+            userVerdict=draft_user_verdict,
+            userSuggestion=draft_user_suggestion,
+        )
 
     raise HTTPException(status_code=404, detail="任务不存在")
 

@@ -23,3 +23,11 @@ rich>=13.0.0              # 终端美化
 
 # 生成的爬虫脚本常用依赖（Docker 沙箱内也需要）
 lxml>=4.9.0               # 快速 XML/HTML 解析器（BeautifulSoup lxml 引擎）
+
+# LangGraph / LangChain 编排层（Agent engine = langgraph）
+langgraph>=0.2.40          # 状态图 / create_react_agent / ToolNode
+langchain>=0.3.7           # init_chat_model 统一 provider 入口
+langchain-core>=0.3.15     # @tool / BaseChatModel / messages
+langchain-openai>=0.2.0    # OpenAI / Qwen / DeepSeek 等 OpenAI 兼容 provider
+langchain-google-genai>=2.0.0  # Gemini (function calling)
+langchain-anthropic>=0.2.0 # Claude

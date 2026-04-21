@@ -31,6 +31,10 @@ export interface BatchJob extends CrawlerFormData {
   status: BatchStatus;
   logs: string[];
   taskId?: string;
+  // Hole-2.B: 当用户在批量页面里点"重新运行"，新克隆出的 job 会带上原 job 的
+  // taskId 作为 prevTaskId，runSingleJob 把它一并提交给 /api/generate，
+  // 后端再做 domain 校验（Hole-2.A）。仅在用户显式重跑时设置；新增 job 不带。
+  prevTaskId?: string;
   resultFile?: string;
   error?: string;
   selectedPaths?: string[];
@@ -123,6 +127,7 @@ export interface GenerateRequest {
   downloadReport?: string;
   selectedPaths?: string[];
   attachments?: AttachmentData[];  // 图片/文件附件（base64 编码）
+  prevTaskId?: string;  // 重新运行场景：上一次任务 ID（用于 feedback_replay_hint）
 }
 
 export interface GenerateResponse {
@@ -158,6 +163,54 @@ export interface TaskStatusResponse {
   queueWaitingCount?: number;     // 当前队列等待数
   queueRunningCount?: number;     // 当前正在运行数
   estimatedWaitSeconds?: number;  // 预估等待秒数
+  // 持久化记忆 / 任务评价
+  pendingFeedback?: boolean;      // True 时前端应弹出 "任务评价" Modal
+  autoFindings?: AutoFindings;    // Stage-1 启发式扫描结果
+  htmlFingerprint?: string;       // 列表页结构指纹
+  userVerdict?: 'correct' | 'wrong' | string;  // 已提交的评价
+  userSuggestion?: string;        // 已提交的用户建议
+}
+
+// ============ 持久化记忆 / 任务评价 ============
+
+export interface AutoFindings {
+  // 后端 (pygen/memory/auto_findings.py) 返回每个桶都是 string[]：
+  //   - redundant_tool_calls : 重复或重叠的工具调用描述
+  //   - suspected_failures   : 隐蔽失败信号（如 sourceUrl 全部回退到 baseUrl）
+  //   - redundant_code_blocks: 重复出现的代码块描述
+  // 仍然保留 any 兼容未来字段升级（例如对象形式的结构化项）
+  redundant_tool_calls?: string[] | Array<Record<string, any>>;
+  suspected_failures?: string[] | Array<Record<string, any>>;
+  redundant_code_blocks?: string[] | Array<Record<string, any>>;
+  [k: string]: any;
+}
+
+export interface FeedbackRequest {
+  verdict: 'correct' | 'wrong';
+  suggestion?: string;
+}
+
+export interface FeedbackResponse {
+  ok: boolean;
+  stage?: string;
+  warnings?: string[];
+  lessons?: any;
+  domain?: string;
+  profile_confidence?: number | null;
+  profile_quarantined?: boolean | null;
+}
+
+export interface DraftEpisodeResponse {
+  exists: boolean;
+  task_id: string;
+  auto_findings?: AutoFindings | null;
+  facts?: Record<string, any> | null;
+  url?: string | null;
+  domain?: string | null;
+  html_fingerprint?: string | null;
+  started_at?: string | null;
+  ended_at?: string | null;
+  verified_selectors_count?: number | null;
 }
 
 // ============ 队列全局信息 ============

@@ -23,7 +23,10 @@ import { API_BASE_URL, HistoryItem, CrawlerFormData, BatchJob } from '../types';
 
 interface HistoryViewProps {
   onBack: () => void;
-  onRerun: (config: CrawlerFormData) => void;
+  // Hole-2.B: 第二参数 sourceTaskId 让父级 App 把它存为 prevTaskIdForRerun，
+  // 透传到 ExecutionView 的 /api/generate 调用，让 planner 拿到上次的复盘 +
+  // 用户反馈。可选——后端会按 domain 二次校验，传错也只会被静默丢弃。
+  onRerun: (config: CrawlerFormData, sourceTaskId?: string) => void;
   onViewResult: (item: HistoryItem) => void;
 }
 
@@ -544,7 +547,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ onBack, onRerun, onViewResult
 
                     {!isBatch && (
                       <button
-                        onClick={() => onRerun(config)}
+                        onClick={() => onRerun(config, item.id)}
                         className="flex items-center justify-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-lg hover:bg-indigo-100 transition-colors text-xs font-medium"
                       >
                         <RefreshCw size={14} />

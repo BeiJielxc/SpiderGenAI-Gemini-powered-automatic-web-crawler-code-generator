@@ -1,0 +1,87 @@
+{
+  "domain": "seczambia.org.zm",
+  "version": 1,
+  "first_seen_at": "2026-04-21T03:05:44.216165+00:00",
+  "last_updated_at": "2026-04-21T03:05:44.216188+00:00",
+  "last_success_at": "2026-04-21T03:05:44.216188+00:00",
+  "last_failure_at": null,
+  "consecutive_failures": 0,
+  "quarantined": false,
+  "html_fingerprints": [
+    "sha256:b7bc7779f19d52856350a0625fc092d71d511c8ca4c9fae1bb2b9e43a4921f22"
+  ],
+  "has_drift": false,
+  "confidence": 0.6,
+  "wins": 1,
+  "losses": 0,
+  "stable_selectors": {},
+  "candidate_selectors": {
+    "list.container::div.elementor-element.elementor-element-ecfb4e2.e-con-full.e-flex.e-con.e-child > .elementor-element.elementor-element-35ac47c.e-con-full.e-flex.e-con.e-child": {
+      "slot": "list.container",
+      "selector": "div.elementor-element.elementor-element-ecfb4e2.e-con-full.e-flex.e-con.e-child > .elementor-element.elementor-element-35ac47c.e-con-full.e-flex.e-con.e-child",
+      "wins": 1,
+      "losses": 0,
+      "consecutive_losses": 0,
+      "last_verdict": "correct"
+    },
+    "list.title_link::.elementor-button-link": {
+      "slot": "list.title_link",
+      "selector": ".elementor-button-link",
+      "wins": 1,
+      "losses": 0,
+      "consecutive_losses": 0,
+      "last_verdict": "correct"
+    },
+    "list.title::h1": {
+      "slot": "list.title",
+      "selector": "h1",
+      "wins": 1,
+      "losses": 0,
+      "consecutive_losses": 0,
+      "last_verdict": "correct"
+    },
+    "list.date::.elementor-element-35ac47c": {
+      "slot": "list.date",
+      "selector": ".elementor-element-35ac47c",
+      "wins": 0,
+      "losses": 1,
+      "consecutive_losses": 1,
+      "last_verdict": "wrong"
+    },
+    "list.next_page::a.page-numbers.next": {
+      "slot": "list.next_page",
+      "selector": "a.page-numbers.next",
+      "wins": 1,
+      "losses": 0,
+      "consecutive_losses": 0,
+      "last_verdict": "correct"
+    },
+    "detail.content::.elementor-widget-theme-post-content": {
+      "slot": "detail.content",
+      "selector": ".elementor-widget-theme-post-content",
+      "wins": 1,
+      "losses": 0,
+      "consecutive_losses": 0,
+      "last_verdict": "correct"
+    },
+    "detail.title::h1": {
+      "slot": "detail.title",
+      "selector": "h1",
+      "wins": 1,
+      "losses": 0,
+      "consecutive_losses": 0,
+      "last_verdict": "correct"
+    }
+  },
+  "site_traits": {
+    "platform": "WordPress + Elementor",
+    "needs_playwright": true,
+    "pagination_pattern": "a.page-numbers.next",
+    "has_ld_json": true
+  },
+  "known_pitfalls": [
+    "重复调用 get_page_html、open_page 等工具可省略，复用首次获取的 HTML 内容",
+    "验证过的 selector 无需重复 verify_selector，避免冗余请求",
+    "代码中存在两处完全重复的 playwright_fetch 逻辑，应合并为公共函数"
+  ]
+}

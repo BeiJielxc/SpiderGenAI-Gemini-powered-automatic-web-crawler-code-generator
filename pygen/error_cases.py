@@ -536,14 +536,13 @@ def get_error_cases_prompt(
     
     if not filtered_cases:
         return ""
-    
-    lines = [
-        "",
-        "## 【重要】历史错误案例要点（请勿重复这些错误）",
-        "",
-        "以下仅保留“错在哪里 / 应该怎么写”的要点（不含示例代码）：",
-        ""
-    ]
+
+    try:
+        from prompts import load as load_prompt
+    except ImportError:
+        from .prompts import load as load_prompt  # type: ignore
+
+    lines = [load_prompt("errors/cases_header.md").rstrip("\n")]
     
     for i, case in enumerate(filtered_cases, 1):
         severity_emoji = {

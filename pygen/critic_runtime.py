@@ -19,10 +19,12 @@ try:
     from failure_classifier import FailureClassifier, FailureType
     from signals_collector import ExecutionSignals, ExecutionStatus, SignalsCollector
     from validator import StaticCodeValidator
+    from prompts import load as load_prompt
 except ImportError:
     from .failure_classifier import FailureClassifier, FailureType  # type: ignore
     from .signals_collector import ExecutionSignals, ExecutionStatus, SignalsCollector  # type: ignore
     from .validator import StaticCodeValidator  # type: ignore
+    from .prompts import load as load_prompt  # type: ignore
 
 
 NETWORK_LIKE_CAUSES = {
@@ -1011,22 +1013,20 @@ print(json.dumps(out, ensure_ascii=False))
             return None
         allowed_causes = [item.value for item in FailureType]
         evidence_preview = json.dumps(evidence[-6:], ensure_ascii=False, default=str)
-        prompt = (
-            "You are diagnosing a crawler failure.\n"
-            "Choose one most likely cause from allowed values.\n"
-            f"Allowed causes: {allowed_causes}\n"
-            f"Current primary cause: {primary_cause}\n"
-            f"Current backup cause: {backup_cause}\n"
-            f"Run mode: {run_mode}\n"
-            f"Objective: {objective}\n"
-            f"Evidence: {evidence_preview}\n\n"
-            "Return JSON only:\n"
-            '{"cause":"...", "confidence":0.0, "reason":"..."}'
+        prompt = load_prompt(
+            "critic/fault_adjudicate.md",
+            allowed_causes=allowed_causes,
+            primary_cause=primary_cause,
+            backup_cause=backup_cause,
+            run_mode=run_mode,
+            objective=objective,
+            evidence_preview=evidence_preview,
         )
+        adjudicate_system_prompt = load_prompt("critic/fault_adjudicate_system.md").strip()
         try:
             response = await asyncio.to_thread(
                 self.llm_agent._call_llm,  # type: ignore[attr-defined]
-                "You are a strict crawler failure classifier. Return JSON only.",
+                adjudicate_system_prompt,
                 prompt,
                 None,
                 0.1,
@@ -1060,28 +1060,21 @@ print(json.dumps(out, ensure_ascii=False))
         if not self.llm_agent:
             return None
         evidence_preview = json.dumps(evidence[-8:], ensure_ascii=False, default=str)
-        repair_prompt = (
-            f"Round {round_index} repair task.\n"
-            f"Primary cause: {primary_cause}\n"
-            f"Backup cause: {backup_cause}\n"
-            f"Run mode: {run_mode}\n"
-            f"Objective: {objective}\n"
-            f"Strategy: {strategy_hint}\n"
-            "Requirements:\n"
-            "1) Keep original script structure as much as possible.\n"
-            "2) Apply one focused fix for the primary cause.\n"
-            "3) Keep JSON output schema stable.\n"
-            "4) Return complete Python code only.\n\n"
-            f"Structured evidence:\n{evidence_preview}\n\n"
-            "Current code:\n"
-            "```python\n"
-            f"{code}\n"
-            "```"
+        repair_prompt = load_prompt(
+            "critic/repair_round.md",
+            round_index=round_index,
+            primary_cause=primary_cause,
+            backup_cause=backup_cause,
+            run_mode=run_mode,
+            objective=objective,
+            strategy_hint=strategy_hint,
+            evidence_preview=evidence_preview,
+            code=code,
         )
         try:
             system_prompt = self.llm_agent._build_system_prompt(run_mode=run_mode)  # type: ignore[attr-defined]
         except Exception:
-            system_prompt = "You are an expert Python crawler engineer. Return only valid Python code."
+            system_prompt = load_prompt("critic/repair_fallback_system.md").strip()
         try:
             response = await asyncio.to_thread(
                 self.llm_agent._call_llm,  # type: ignore[attr-defined]

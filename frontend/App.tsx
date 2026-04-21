@@ -153,6 +153,11 @@ const App: React.FC = () => {
   const [batchJobs, setBatchJobs] = useState<BatchJob[]>([]);
   const [isFromBatchExecution, setIsFromBatchExecution] = useState(false);
   const [batchExecutionPrefill, setBatchExecutionPrefill] = useState<BatchExecutionPrefill | null>(null);
+  // Hole-2.B: 当用户从历史页点"重新运行"时，把原任务 ID 暂存到这里。
+  // ExecutionView 在调用 /api/generate 时会读这个值并传给后端，让 planner
+  // 拿到 feedback_replay_hint。一次性使用：任务真正启动后由 ExecutionView
+  // 通过 onTaskIdChange / 父级 reset 清空，避免脏数据带到下一次新建任务。
+  const [prevTaskIdForRerun, setPrevTaskIdForRerun] = useState<string | undefined>(undefined);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -251,6 +256,9 @@ const App: React.FC = () => {
     setSelectedPaths([]);
     setIsFromBatchExecution(false);
     setBatchExecutionPrefill(null);
+    // 用户主动回到表单 = 放弃当前的 rerun 上下文。下次 /api/generate 必须
+    // 是真正的"新任务"，不应继续夹带旧 prev_task_id。
+    setPrevTaskIdForRerun(undefined);
   };
 
   // TreeSelectionView 完成选择后回调
@@ -269,6 +277,10 @@ const App: React.FC = () => {
     setTaskId(newTaskId);
     setIsFromBatchExecution(false);
     setBatchExecutionPrefill(null);
+    // Hole-2.B: 一次性消费 prevTaskIdForRerun。任务真正启动后立刻清掉，
+    // 防止接下来用户在同一个 ExecutionView 里点 "新建任务" 时把上一次的
+    // prev_task_id 又夹带进去。
+    setPrevTaskIdForRerun(undefined);
   };
 
   const handleBatchSubmit = (data: BatchConfigData) => {
@@ -367,12 +379,15 @@ const App: React.FC = () => {
     setView('execution');
   };
 
-  const handleRerunFromHistory = (config: CrawlerFormData) => {
+  const handleRerunFromHistory = (config: CrawlerFormData, sourceTaskId?: string) => {
     setFormData(normalizeFormData(config));
     setTaskId('');
     setSelectedPaths([]);
     setIsFromBatchExecution(false);
     setBatchExecutionPrefill(null);
+    // Hole-2.B: 历史页"重新运行"路径也带 prev_task_id。后端 (runner.py)
+    // 会按 domain 二次校验，确保 LLM 不被跨域名 prev_task_id 误导。
+    setPrevTaskIdForRerun(sourceTaskId || undefined);
     setView('form');
   };
 
@@ -419,6 +434,9 @@ const App: React.FC = () => {
           initialNewsArticles={isFromBatchExecution ? batchExecutionPrefill?.newsArticles : undefined}
           initialRawStatus={isFromBatchExecution ? batchExecutionPrefill?.rawStatus : undefined}
           disableAutoStart={isFromBatchExecution}
+          // Hole-2.B: 当用户从历史页"重新运行"进入时，把原任务 ID 传下去；
+          // ExecutionView 在 /api/generate 时把它放进 prevTaskId 字段。
+          prevTaskId={prevTaskIdForRerun}
           onTaskIdChange={handleExecutionStart}
           onBack={() => {
             if (executionBackTarget === 'history') {

@@ -156,7 +156,11 @@ const BatchExecutionView: React.FC<BatchExecutionViewProps> = ({
           crawlMode: job.crawlMode,
           downloadReport: job.downloadReport,
           selectedPaths: job.selectedPaths,
-          attachments: attachments.length ? attachments : undefined
+          attachments: attachments.length ? attachments : undefined,
+          // Hole-2.B: 仅在用户显式重跑时透传 prevTaskId。后端会做 domain 校验
+          // (Hole-2.A)，跨域名的 prev_task_id 会被自动丢弃，所以这里不需要
+          // 在前端再次校验。
+          prevTaskId: job.prevTaskId || undefined,
         };
 
         const generateResp = await fetch(`${API_BASE_URL}/api/generate`, {
@@ -326,7 +330,7 @@ const BatchExecutionView: React.FC<BatchExecutionViewProps> = ({
 
   const handleRerun = async (job: BatchJob) => {
     if (!job.taskId) return;
-    
+
     try {
       // 创建新任务（克隆）
       const newJob: BatchJob = {
@@ -336,6 +340,10 @@ const BatchExecutionView: React.FC<BatchExecutionViewProps> = ({
         rawStatus: 'pending',
         logs: [],
         taskId: undefined, // 清空 taskId，等待分配新的
+        // Hole-2.B: 把原 job 的 taskId 当作 prevTaskId 传给新任务，让 planner
+        // 通过 feedback_replay_hint 拿到上次的复盘 + 用户反馈。后端 (runner.py)
+        // 会按 domain 二次校验，跨域名的 prev_task_id 会被丢弃。
+        prevTaskId: job.taskId,
         error: undefined,
         resultFile: undefined
       };

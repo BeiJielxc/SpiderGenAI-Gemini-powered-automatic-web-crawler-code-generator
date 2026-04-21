@@ -1,8 +1,9 @@
 """
 Tool implementations and shared tool models.
 
-This module intentionally contains no registration logic.
-Tool registration/discovery/execution lives in tool_registry.py.
+This module intentionally contains no registration logic. Tool
+registration/dispatch is handled by the LangChain ``@tool`` wrappers in
+``agents/tools_lc.py``.
 """
 
 from __future__ import annotations
@@ -16,6 +17,42 @@ from typing import Any, Dict, List, Optional
 from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
+
+try:  # rule-based artifact summarizers (zero-LLM, optional)
+    from summarizers import (
+        summarize_analyze_page,
+        summarize_html,
+        summarize_json_payload,
+        enrich_summary_via_llm,
+        is_weak_summary,
+    )
+except ImportError:  # pragma: no cover - package-style import fallback
+    try:
+        from .summarizers import (  # type: ignore
+            summarize_analyze_page,
+            summarize_html,
+            summarize_json_payload,
+            enrich_summary_via_llm,
+            is_weak_summary,
+        )
+    except ImportError:
+        summarize_html = None  # type: ignore
+        summarize_json_payload = None  # type: ignore
+        summarize_analyze_page = None  # type: ignore
+        enrich_summary_via_llm = None  # type: ignore
+        is_weak_summary = None  # type: ignore
+
+# PageCache (Module A) — process-wide singleton populated by api.py /
+# runner.py. Imported lazily-style: every cache access goes through
+# ``get_default_page_cache()`` so unit tests / standalone scripts that
+# never configure it continue to behave exactly as before.
+try:
+    from page_cache import get_default_page_cache
+except ImportError:  # pragma: no cover - package-style import fallback
+    try:
+        from .page_cache import get_default_page_cache  # type: ignore
+    except ImportError:
+        get_default_page_cache = lambda: None  # type: ignore
 
 DEFAULT_ALLOWED_PACKAGES = [
     "playwright",
@@ -94,6 +131,13 @@ class ToolContext:
         self.menu_tree: Optional[Dict[str, Any]] = None
         self.date_api_result = None
         self.verified_mapping: Optional[Dict[str, Any]] = None
+        # Verified-selector ledger: structured record of selectors proven to
+        # work on the live page (populated by extract_list / probe_detail /
+        # verify_selector hooks). Travels into codegen as a hard "MUST USE"
+        # block so the LLM can't fall back to generic guesses. ``None`` until
+        # the first probe writes; helpers in pygen.verified_selectors handle
+        # the empty/None case gracefully.
+        self.verified_selectors: Optional[Dict[str, Any]] = None
         self.screenshots: List[str] = []
         self.enhanced_analysis: Dict[str, Any] = {}
 
@@ -112,18 +156,137 @@ def _safe_data_preview(data: Any, limit: int = 1200) -> str:
     return text
 
 
-def _persist_artifact_if_large(ctx: ToolContext, payload: Any, prefix: str, threshold: int = 3500) -> Dict[str, Any]:
-    """Store large payloads out-of-band when artifact_store is available."""
+def _wrap_summarizer_with_llm_fallback(
+    ctx: ToolContext,
+    rule_summarizer,
+    *,
+    kind: str,
+):
+    """If ``artifacts.small_model.enabled``, return a summarizer that runs
+    the rule one first and only invokes the small LLM when the result is
+    *weak* (see :func:`is_weak_summary`).
+
+    The returned function has the same shape as the rule summarizer:
+    ``payload -> dict``. On any LLM error / disabled config, the rule
+    output is returned untouched. The model is built lazily (per call)
+    so we don't pay construction cost on every artifact, and so missing
+    config keys only fail the fallback, not the artifact write.
+    """
+    if rule_summarizer is None or enrich_summary_via_llm is None or is_weak_summary is None:
+        return rule_summarizer
+
+    cfg = getattr(ctx, "config", None)
+    if cfg is None or not bool(getattr(cfg, "artifacts_small_model_enabled", False)):
+        return rule_summarizer
+
+    raw_excerpt_chars = int(getattr(cfg, "artifacts_small_model_raw_excerpt_chars", 6000))
+    max_tokens = int(getattr(cfg, "artifacts_small_model_max_tokens", 800))
+    timeout_sec = int(getattr(cfg, "artifacts_small_model_timeout_sec", 15))
+
+    def _factory():
+        try:
+            from agents.llm import build_small_model  # local import keeps tools.py light
+        except ImportError:  # pragma: no cover
+            from .agents.llm import build_small_model  # type: ignore
+        return build_small_model(cfg, max_tokens=max_tokens, timeout=timeout_sec)
+
+    def _wrapped(payload):
+        try:
+            rule_summary = rule_summarizer(payload) or {}
+            if not isinstance(rule_summary, dict):
+                rule_summary = {"_invalid_summary_type": type(rule_summary).__name__}
+        except Exception as exc:
+            rule_summary = {"_summary_error": f"{type(exc).__name__}: {exc}"}
+
+        if not is_weak_summary(rule_summary, kind=kind):
+            rule_summary.setdefault("_summary_provenance", "rule")
+            return rule_summary
+
+        try:
+            enriched = enrich_summary_via_llm(
+                payload,
+                rule_summary,
+                kind=kind,
+                model_factory=_factory,
+                raw_excerpt_chars=raw_excerpt_chars,
+                max_tokens=max_tokens,
+                timeout_sec=timeout_sec,
+                log=getattr(ctx, "log", None),
+            )
+            return enriched if isinstance(enriched, dict) else rule_summary
+        except Exception as exc:
+            try:
+                ctx.log(f"[SUMMARIZER-LLM] fallback unexpected error: {exc}")
+            except Exception:
+                pass
+            rule_summary.setdefault("_summary_provenance", "rule")
+            rule_summary.setdefault("_fallback_skipped", f"unexpected: {type(exc).__name__}")
+            return rule_summary
+
+    return _wrapped
+
+
+def _persist_artifact_if_large(
+    ctx: ToolContext,
+    payload: Any,
+    prefix: str,
+    threshold: int = 3500,
+    summarizer=None,
+    summarizer_kind: str = "html",
+) -> Dict[str, Any]:
+    """Store large payloads out-of-band when artifact_store is available.
+
+    When ``summarizer`` is provided AND the store supports
+    ``put_with_summary``, the returned ``artifact_ref`` will include a
+    structured ``summary`` dict (via ``ArtifactRef.to_prompt_dict``) so
+    the planner LLM gets candidate signals instead of raw HTML/JSON.
+
+    ``summarizer_kind`` is forwarded to the optional small-model fallback
+    (``"html"`` / ``"json"`` / ``"analyze"``) and is otherwise ignored.
+
+    Per-task subdirectories: ``ctx.task_id`` is forwarded to the store so
+    artifacts land under ``<root>/<task_id>/`` for easy cleanup and
+    isolation across concurrent tasks.
+    """
     try:
         serialized = json.dumps(payload, ensure_ascii=False, default=str)
     except Exception:
         serialized = str(payload)
 
+    cfg = getattr(ctx, "config", None)
+    cfg_threshold = getattr(cfg, "artifacts_summary_threshold", None)
+    if isinstance(cfg_threshold, int) and cfg_threshold > 0:
+        threshold = cfg_threshold
+    summary_enabled = True
+    if cfg is not None:
+        summary_enabled = bool(getattr(cfg, "artifacts_enable_summary", True))
+
     if len(serialized) <= threshold or not ctx.artifact_store:
         return {}
 
+    task_id = getattr(ctx, "task_id", None) or None
+
+    effective_summarizer = summarizer
+    if summary_enabled and summarizer is not None:
+        effective_summarizer = _wrap_summarizer_with_llm_fallback(
+            ctx, summarizer, kind=summarizer_kind
+        )
+
     try:
-        ref = ctx.artifact_store.put_json(payload, prefix=prefix)
+        store = ctx.artifact_store
+        put_with_summary = getattr(store, "put_with_summary", None)
+        if summary_enabled and effective_summarizer is not None and callable(put_with_summary):
+            ref = put_with_summary(
+                payload,
+                prefix=prefix,
+                summarizer=effective_summarizer,
+                task_id=task_id,
+            )
+        else:
+            try:
+                ref = store.put_json(payload, prefix=prefix, task_id=task_id)
+            except TypeError:
+                ref = store.put_json(payload, prefix=prefix)
         return {"artifact_ref": ref.to_prompt_dict()}
     except Exception as exc:
         ctx.log(f"[TOOL] Failed to persist artifact: {exc}")
@@ -219,11 +382,39 @@ async def tool_get_page_html(ctx: ToolContext) -> ToolResult:
             ctx.enhanced_analysis["_last_html_sig"] = sig
         except Exception:
             pass
+
+        # Module A: write-through to the URL-keyed PageCache so a future
+        # rerun's pre-validator (and ``tool_get_page_html`` on the same
+        # URL) can short-circuit the browser. Use the resolved URL from
+        # page_info — it reflects the post-redirect address; falling
+        # back to ctx.url only when page_info hasn't been populated yet.
+        try:
+            cache = get_default_page_cache()
+            if cache is not None:
+                cache_url = (ctx.page_info or {}).get("url") or ctx.url or ""
+                if cache_url:
+                    cache.put_html(cache_url, html)
+        except Exception as cache_exc:
+            # Cache failures are NEVER fatal — the live HTML capture
+            # already succeeded and is what the planner actually needs.
+            ctx.log(f"[PAGE_CACHE] put_html failed (non-fatal): {cache_exc}")
+
         data = {
             "length": len(html),
             "preview": html[:2000] + "..." if len(html) > 2000 else html,
         }
-        artifacts = _persist_artifact_if_large(ctx, {"html": html}, prefix="page_html")
+        _html_summarizer = (
+            (lambda payload: summarize_html(payload, url=(ctx.page_info or {}).get("url") or ctx.url or ""))
+            if summarize_html is not None
+            else None
+        )
+        artifacts = _persist_artifact_if_large(
+            ctx,
+            {"html": html},
+            prefix="page_html",
+            summarizer=_html_summarizer,
+            summarizer_kind="html",
+        )
         if last_sig == sig:
             summary = f"[REPLAN_REQUIRED] HTML unchanged ({len(html):,} chars); avoid repeating get_page_html/analyze_page"
             ctx.log(f"[TOOL] {summary}")
@@ -240,6 +431,61 @@ async def tool_get_page_html(ctx: ToolContext) -> ToolResult:
         return ToolResult(success=True, data=data, summary=f"HTML captured: {len(html):,} chars", artifacts=artifacts)
     except Exception as exc:
         return ToolResult(success=False, error=str(exc), summary=f"Failed to get HTML: {exc}", error_code="html_failed")
+
+
+async def tool_invalidate_page_cache(
+    ctx: ToolContext,
+    *,
+    url: str = "",
+    domain: str = "",
+) -> ToolResult:
+    """Drop cached HTML rows so the next ``open_page`` / ``get_page_html``
+    fetches the live page instead of replaying a stale snapshot.
+
+    Escape hatch for the planner: if the LLM suspects the cache row is
+    out of date (e.g. site reskin not yet picked up by fingerprint
+    drift), it can call this to force a fresh fetch.
+
+    Pass exactly one of ``url`` (drop a single row) or ``domain``
+    (drop every row under a host). Passing both is fine — both apply.
+    Passing neither is a no-op (we refuse to nuke the entire cache
+    from a single tool call).
+    """
+    cache = get_default_page_cache()
+    if cache is None:
+        return ToolResult(
+            success=True,
+            summary="page cache not configured — nothing to invalidate",
+            data={"removed": 0},
+        )
+    target_url = (url or "").strip() or None
+    target_domain = (domain or "").strip().lower() or None
+    if not target_url and not target_domain:
+        return ToolResult(
+            success=False,
+            error="must specify url or domain",
+            summary="invalidate_page_cache requires url or domain",
+            error_code="missing_param",
+            recoverable=True,
+        )
+    try:
+        removed = cache.invalidate(url=target_url, domain=target_domain)
+        ctx.log(
+            f"[TOOL] invalidate_page_cache: dropped {removed} row(s) "
+            f"(url={target_url or '-'}, domain={target_domain or '-'})"
+        )
+        return ToolResult(
+            success=True,
+            summary=f"invalidated {removed} cache row(s)",
+            data={"removed": removed, "url": target_url, "domain": target_domain},
+        )
+    except Exception as exc:
+        return ToolResult(
+            success=False,
+            error=str(exc),
+            summary=f"invalidate_page_cache failed: {exc}",
+            error_code="invalidate_failed",
+        )
 
 
 async def tool_extract_list_items_from_ctx_html(
@@ -496,6 +742,8 @@ async def tool_analyze_page(ctx: ToolContext) -> ToolResult:
                 "network_requests": network_requests,
             },
             prefix="analyze_page",
+            summarizer=summarize_analyze_page if summarize_analyze_page is not None else None,
+            summarizer_kind="analyze",
         )
 
         ctx.log(f"[TOOL] Page analysis complete: {summary}")
@@ -542,7 +790,13 @@ async def tool_get_network_requests(ctx: ToolContext) -> ToolResult:
             ],
             "total_requests": len(reqs.get("all_requests", [])),
         }
-        artifacts = _persist_artifact_if_large(ctx, reqs, prefix="network_requests")
+        artifacts = _persist_artifact_if_large(
+            ctx,
+            reqs,
+            prefix="network_requests",
+            summarizer=summarize_json_payload if summarize_json_payload is not None else None,
+            summarizer_kind="json",
+        )
         summary = f"Captured {len(api_reqs)} API requests"
         ctx.log(f"[TOOL] {summary}")
         return ToolResult(success=True, data=data, summary=summary, artifacts=artifacts)

@@ -24,8 +24,9 @@ import {
   Clock,
   Users
 } from 'lucide-react';
-import { ProcessStep, StepStatus, CrawlerFormData, API_BASE_URL, TaskStatusResponse, GenerateRequest, ReportFile, NewsArticle, QueueInfo } from '../types';
+import { ProcessStep, StepStatus, CrawlerFormData, API_BASE_URL, TaskStatusResponse, GenerateRequest, ReportFile, NewsArticle, QueueInfo, AutoFindings } from '../types';
 import { explainError } from '../utils/errorExplain';
+import TaskFeedbackModal from './TaskFeedbackModal';
 
 interface ExecutionViewProps {
   mode: string;
@@ -37,6 +38,11 @@ interface ExecutionViewProps {
   initialNewsArticles?: NewsArticle[];
   initialRawStatus?: TaskStatusResponse['status'];
   disableAutoStart?: boolean;
+  // Hole-2.B: 用户从历史页/批量页"重新运行"进入时，把原任务 ID 透传到这里。
+  // 第一次 /api/generate 会把它放进 prevTaskId 字段，让后端 planner 拿到
+  // feedback_replay_hint。后端 (runner.py) 会按 domain 二次校验，跨域名时
+  // 自动丢弃。仅在第一次自动启动时使用，后续 startGeneration 不会再带。
+  prevTaskId?: string;
   onTaskIdChange: (taskId: string) => void;
   onBack: () => void;
 }
@@ -53,8 +59,19 @@ const STEPS_TEMPLATE = [
   "爬虫脚本已生成",
   "正在运行爬虫脚本",
   "📊 正在验证爬取结果",
+  // ⚠️ 实际执行顺序 = critic / 跑爬虫 / 验证结果都跑完之后，summarize_node 才会
+  // 跑（它是 planner_graph 的最后一个节点）。所以这一格放在"验证爬取结果"之后、
+  // "任务完成"之前才与真实时序对应；之前画在 7 号位是因为代码 hard-code 错了 index。
+  "🧠 Agent 正在自我复盘 (Stage-1)",
   "🎉 任务完成"
 ];
+
+// 必须与 pygen/agents/summarize_node.py 里的 SUMMARIZE_STEP_INDEX 同步。
+// 后端在用户提交反馈、Stage-2 LLM 复盘开始时会调用 _update_step(task_id,
+// SUMMARIZE_STEP_INDEX, "🧠 Agent 正在根据反馈做 LLM 深度复盘…")，前端依靠
+// 这个常量识别"应该把后端的临时 stepLabel 透传到哪一格"——即使任务整体
+// status 已经是 completed 也要透传，否则那格永远显示模板里写死的 Stage-1。
+const SUMMARIZE_STEP_INDEX = 12;
 
 const MOCK_NEWS_CONTENT = `[2026-05-12] 行业动态：在最新发布的季度财报中，该公司展示了强劲的增长势头，营收同比增长25%。
 [2026-05-10] 政策解读：新的环保法规出台，对制造业提出了更高的碳排放要求。
@@ -71,6 +88,7 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({
   initialNewsArticles,
   initialRawStatus,
   disableAutoStart = false,
+  prevTaskId,
   onTaskIdChange,
   onBack 
 }) => {
@@ -132,6 +150,14 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({
   const [queueWaiting, setQueueWaiting] = useState(0);
   const [queueRunning, setQueueRunning] = useState(0);
   const [estimatedWait, setEstimatedWait] = useState(0);
+
+  // 任务评价 / 持久化记忆
+  const [pendingFeedback, setPendingFeedback] = useState(false);
+  const [autoFindings, setAutoFindings] = useState<AutoFindings | undefined>(undefined);
+  const [userVerdict, setUserVerdict] = useState<'correct' | 'wrong' | undefined>(undefined);
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  // 用户对每个 task_id 已经手动关闭过的状态（防止反复弹出）
+  const dismissedFeedbackRef = useRef<Set<string>>(new Set());
   
   const logScrollRef = useRef<HTMLDivElement>(null);
   const rightPanelRef = useRef<HTMLDivElement>(null);
@@ -175,6 +201,10 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({
     setQueueWaiting(0);
     setQueueRunning(0);
     setEstimatedWait(0);
+    setPendingFeedback(false);
+    setAutoFindings(undefined);
+    setUserVerdict(undefined);
+    setFeedbackModalOpen(false);
     setSteps(
       STEPS_TEMPLATE.map((label, index) => ({
         id: index,
@@ -218,7 +248,11 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({
         crawlMode: formData.crawlMode,
         downloadReport: formData.downloadReport,
         selectedPaths: selectedPaths.length > 0 ? selectedPaths : undefined,
-        attachments: attachmentData.length > 0 ? attachmentData : undefined
+        attachments: attachmentData.length > 0 ? attachmentData : undefined,
+        // Hole-2.B: 历史"重新运行"路径会通过 prevTaskId prop 传入原任务 ID。
+        // 后端 (runner.py) 会按 domain 二次校验，跨域名时丢弃，所以这里
+        // 不需要在前端再做 URL 比对。
+        prevTaskId: prevTaskId || undefined,
       };
       
       const response = await fetch(`${API_BASE_URL}/api/generate`, {
@@ -240,7 +274,7 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({
       setErrorMsg(err.message || '启动任务失败');
       setTaskStatus('failed');
     }
-  }, [taskId, formData, selectedPaths, onTaskIdChange]);
+  }, [taskId, formData, selectedPaths, onTaskIdChange, prevTaskId]);
 
   // 轮询任务状态
   const pollStatus = useCallback(async () => {
@@ -268,6 +302,17 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({
       if (data.queueWaitingCount !== undefined) setQueueWaiting(data.queueWaitingCount);
       if (data.queueRunningCount !== undefined) setQueueRunning(data.queueRunningCount);
       if (data.estimatedWaitSeconds !== undefined) setEstimatedWait(data.estimatedWaitSeconds);
+
+      // 任务评价 / 持久化记忆字段
+      if (data.autoFindings !== undefined) {
+        setAutoFindings(data.autoFindings || undefined);
+      }
+      if (data.userVerdict) {
+        setUserVerdict(data.userVerdict as 'correct' | 'wrong');
+      }
+      if (data.pendingFeedback !== undefined) {
+        setPendingFeedback(Boolean(data.pendingFeedback));
+      }
       
       if (data.resultFile) {
         setResultFile(data.resultFile);
@@ -319,6 +364,14 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({
         }
         // 如果任务已完成，所有步骤都应该是 completed
         if (data.status === 'completed' && idx < prev.length) {
+          // 例外：Stage-2 LLM 复盘只在「任务已完成 + 用户提交反馈」之后才发生，
+          // 此时后端会把 stepLabel 改成「🧠 Agent 正在根据反馈做 LLM 深度复盘…」
+          // 或「✅ Stage-2 复盘完成 …」之类。这里把后端的 stepLabel 透传到
+          // 复盘那一格，让用户看见 Stage-1 → Stage-2 的真实切换；其他格保持
+          // STEPS_TEMPLATE 里写死的原文不动。
+          if (idx === SUMMARIZE_STEP_INDEX && data.stepLabel) {
+            return { ...step, status: 'completed', label: data.stepLabel };
+          }
           return { ...step, status: 'completed' };
         }
         // 如果任务失败，当前步骤及之前的应该是 completed，失败步骤标记为 failed
@@ -403,6 +456,85 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({
       logScrollRef.current.scrollTop = logScrollRef.current.scrollHeight;
     }
   }, [logContent]);
+
+  // 自动弹出 "任务评价" Modal —
+  //   触发条件：任务终态(completed|failed) + 后端标记 pendingFeedback + 用户尚未提交过 + 用户未在本次会话主动关闭
+  useEffect(() => {
+    if (!taskId) return;
+    const isTerminal = taskStatus === 'completed' || taskStatus === 'failed';
+    if (!isTerminal) return;
+    if (userVerdict) return; // 已评价过
+    if (!pendingFeedback) return; // 后端未生成草稿（如非 agent 模式）
+    if (dismissedFeedbackRef.current.has(taskId)) return;
+    setFeedbackModalOpen(true);
+  }, [taskId, taskStatus, pendingFeedback, userVerdict]);
+
+  const handleFeedbackClose = useCallback(() => {
+    setFeedbackModalOpen(false);
+    if (taskId) dismissedFeedbackRef.current.add(taskId);
+  }, [taskId]);
+
+  const handleFeedbackSubmitted = useCallback(
+    (verdict: 'correct' | 'wrong') => {
+      setUserVerdict(verdict);
+      setPendingFeedback(false);
+
+      // 反馈触发的是 Stage-2 LLM 复盘，commit_episode 在后端线程池里跑期间
+      // 会把 [SUMMARY/Stage-2] / [COMMIT] / [MEMORY] 日志 push 到
+      // tasks[task_id]["logs"]。但前端在任务 status=completed 后已经停掉了
+      // 轮询（见上面 pollStatus 里的 clearInterval 分支），所以这里需要
+      // 重新拉一次状态，把这些刚 append 的日志补回来，让用户能看到
+      // 「Agent 正在根据反馈做深度复盘」的全过程。
+      pollStatus();
+      // 兜底：再开一个短窗口轮询，覆盖「响应已经回来但 SSE/落盘日志稍微
+      // 滞后」的窗口（一般不会发生，但保险起见）。
+      const burstTimer = setInterval(pollStatus, 1000);
+      setTimeout(() => clearInterval(burstTimer), 8000);
+    },
+    [pollStatus]
+  );
+
+  // 重新运行（带反馈）：调用 /api/rerun/{taskId}，使用同样表单参数 + prevTaskId
+  const handleRerunWithFeedback = useCallback(
+    async (verdict: 'correct' | 'wrong', suggestion: string) => {
+      if (!taskId) return;
+      try {
+        const resp = await fetch(`${API_BASE_URL}/api/rerun/${taskId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          // verdict 已通过 /feedback 提交并 commit 过；这里再传一次让后端
+          // 走 commit-or-skip 的幂等逻辑（draft 已删除时会自然跳过）。
+          body: JSON.stringify({ verdict, suggestion, skipFeedback: true }),
+        });
+        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok || !data?.taskId) {
+          throw new Error(data?.detail || `HTTP ${resp.status}`);
+        }
+        // 切换到新任务：重置 UI 状态，让父组件持有新 task_id
+        setLogContent('');
+        setErrorMsg('');
+        setResultFile('');
+        setNewsArticles([]);
+        setReports([]);
+        setSelectedReportIds(new Set());
+        setUserVerdict(undefined);
+        setAutoFindings(undefined);
+        setPendingFeedback(false);
+        setSteps(
+          STEPS_TEMPLATE.map((label, index) => ({
+            id: index,
+            label,
+            status: 'pending',
+          }))
+        );
+        setTaskId(data.taskId);
+        onTaskIdChange(data.taskId);
+      } catch (err: any) {
+        setErrorMsg(`重新运行失败：${err?.message || err}`);
+      }
+    },
+    [taskId, onTaskIdChange]
+  );
 
   // Filter and Pagination Logic
   const filteredReports = useMemo(() => {
@@ -643,6 +775,38 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({
               <Download size={14} />
               下载脚本
             </button>
+          )}
+
+          {/* 任务评价状态徽章 */}
+          {(taskStatus === 'completed' || taskStatus === 'failed') && (
+            userVerdict ? (
+              <span
+                className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm ${
+                  userVerdict === 'correct'
+                    ? 'bg-emerald-50 text-emerald-600'
+                    : 'bg-red-50 text-red-600'
+                }`}
+                title="本次任务已评价"
+              >
+                {userVerdict === 'correct' ? (
+                  <CheckCircle2 size={14} />
+                ) : (
+                  <XCircle size={14} />
+                )}
+                已{userVerdict === 'correct' ? '通过' : '反馈'}
+              </span>
+            ) : (
+              pendingFeedback && (
+                <button
+                  onClick={() => setFeedbackModalOpen(true)}
+                  className="flex items-center gap-1 px-3 py-1 bg-amber-50 text-amber-600 rounded-full text-sm hover:bg-amber-100"
+                  title="点击填写任务评价（写入持久化记忆）"
+                >
+                  <AlertCircle size={14} />
+                  待评价
+                </button>
+              )
+            )
           )}
         </div>
       </div>
@@ -1139,6 +1303,19 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({
           </div>
         </div>
       </div>
+
+      {/* 任务评价 Modal — 任务结束后必填，提交后才能解锁 "已评价" 徽章 */}
+      {taskId && (
+        <TaskFeedbackModal
+          taskId={taskId}
+          open={feedbackModalOpen}
+          initialAutoFindings={autoFindings}
+          initialUrl={formData.reportUrl}
+          onClose={handleFeedbackClose}
+          onFeedbackSubmitted={handleFeedbackSubmitted}
+          onRerun={handleRerunWithFeedback}
+        />
+      )}
     </div>
   );
 };

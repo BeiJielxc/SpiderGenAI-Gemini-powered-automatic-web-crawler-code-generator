@@ -26,6 +26,32 @@ try:
 except ImportError:
     from .tools import ToolContext, ToolResult  # type: ignore
 
+try:
+    from node_semantics import (
+        aggregate_node_stats,
+        collect_node_stats_from_bs4,
+        compute_icon_likelihood,
+    )
+except ImportError:  # pragma: no cover - package-style import fallback
+    from .node_semantics import (  # type: ignore
+        aggregate_node_stats,
+        collect_node_stats_from_bs4,
+        compute_icon_likelihood,
+    )
+
+try:
+    from verified_selectors import (
+        merge_from_extract_list,
+        merge_from_probe_detail,
+        merge_from_verify_selector,
+    )
+except ImportError:  # pragma: no cover - package-style import fallback
+    from .verified_selectors import (  # type: ignore
+        merge_from_extract_list,
+        merge_from_probe_detail,
+        merge_from_verify_selector,
+    )
+
 
 # =====================================================================
 # Shared helpers
@@ -903,6 +929,12 @@ async def tool_extract_list_and_pagination(ctx: ToolContext) -> ToolResult:
             next_tools = ["turn_page_and_verify_change", "generate_crawler_code"]
 
         ctx.log(f"[TOOL] extract_list_and_pagination: {'; '.join(summary_parts)}")
+        try:
+            ctx.verified_selectors = merge_from_extract_list(
+                ctx.verified_selectors, payload
+            )
+        except Exception as merge_exc:  # never fail the tool because of a bookkeeping bug
+            ctx.log(f"[TOOL] verified_selectors merge (extract_list) failed: {merge_exc}")
         return ToolResult(
             success=True,
             data=payload,
@@ -1571,6 +1603,27 @@ async def tool_probe_detail_page(ctx: ToolContext, url: str = "") -> ToolResult:
             # 常见文件扩展名
             FILE_EXTS = {".pdf", ".doc", ".docx", ".xls", ".xlsx", ".csv", ".zip", ".rar", ".7z"}
 
+            def _icon_payload_for(el: Tag) -> Optional[Dict[str, Any]]:
+                """Compute icon-likelihood for a single candidate.
+
+                We feed the *element itself* as a one-element list to
+                ``collect_node_stats_from_bs4`` so the aggregator's
+                signals (icon class hit, child tag ratio, short text,
+                aria) collapse to "is this single container icon-y?".
+                Geometry signals are unavailable in BS4 mode and the
+                helper handles that automatically.
+                """
+                try:
+                    stats = aggregate_node_stats(collect_node_stats_from_bs4([el]))
+                    ilk = compute_icon_likelihood(stats)
+                    return {
+                        "score": ilk.score,
+                        "verdict": ilk.verdict,
+                        "evidence": list(ilk.evidence),
+                    }
+                except Exception:
+                    return None
+
             for sel in _DETAIL_CONTENT_SELECTORS:
                 try:
                     elements = soup.select(sel)
@@ -1586,13 +1639,17 @@ async def tool_probe_detail_page(ctx: ToolContext, url: str = "") -> ToolResult:
                     seen_selectors.add(selector)
                     link_density = link_count / (text_len + 1)
                     text_preview = (el.get_text(strip=True) or "")[:80].replace("\n", " ")
-                    content_candidates.append({
+                    cand = {
                         "selector": selector,
                         "textLength": text_len,
                         "linkCount": link_count,
                         "linkDensity": round(link_density, 4),
                         "textPreview": text_preview,
-                    })
+                    }
+                    icon_info = _icon_payload_for(el)
+                    if icon_info is not None:
+                        cand["iconLikelihood"] = icon_info
+                    content_candidates.append(cand)
 
             # Fallback: 正文最长、链接密度低的块
             for div in soup.find_all(["div", "td", "section", "article", "main"]):
@@ -1610,13 +1667,17 @@ async def tool_probe_detail_page(ctx: ToolContext, url: str = "") -> ToolResult:
                 if selector in seen_selectors:
                     continue
                 seen_selectors.add(selector)
-                content_candidates.append({
+                cand = {
                     "selector": selector,
                     "textLength": text_len,
                     "linkCount": link_count,
                     "linkDensity": round(link_density, 4),
                     "textPreview": (div.get_text(strip=True) or "")[:80].replace("\n", " "),
-                })
+                }
+                icon_info = _icon_payload_for(div)
+                if icon_info is not None:
+                    cand["iconLikelihood"] = icon_info
+                content_candidates.append(cand)
 
             # --- 兜底：搜索显著的文件下载链接 ---
             # 如果正文区域很短或者未找到，尝试寻找是否直接提供了 PDF/表格下载
@@ -1661,13 +1722,24 @@ async def tool_probe_detail_page(ctx: ToolContext, url: str = "") -> ToolResult:
             # 按“是否为文件容器优先、正文长度优先、链接密度低优先”排序
             # isFileContainer=True 的给予极大加权，确保如果没找到长文，文件链接能排前面
             # 但如果已经找到了很长的正文（textLength > 500），文件链接排在次席作为补充
+            #
+            # NEW: 同时根据 iconLikelihood.verdict 做软惩罚。
+            #   - icon_container：扣 5000，几乎一定沉底
+            #   - ambiguous：扣 1500，仅在没有更好选择时才会被推荐
+            # 我们 *不* 直接 drop 这些候选，因为：
+            #   (1) BS4 缺少 geometry 信号，scorer 偶尔会误判；
+            #   (2) 留在列表里 LLM 也能看到 evidence，自己判断；
+            #   (3) 真的没找到正文时，ambiguous 仍可作为最后兜底。
             def _candidate_score(c):
                 is_file = c.get("isFileContainer", False)
                 length = c["textLength"]
-                # 策略：如果找到了长文(>2000字)，优先长文；否则优先文件链接
-                # 这里的逻辑是：文件容器通常很短，如果按长度排会沉底。
-                # 所以我们给文件容器一个“虚拟基础分”，相当于 2000 字的权重。
                 base_score = 2000 if is_file else 0
+                ilk = c.get("iconLikelihood") or {}
+                verdict = ilk.get("verdict") or "content"
+                if verdict == "icon_container":
+                    base_score -= 5000
+                elif verdict == "ambiguous":
+                    base_score -= 1500
                 return (length + base_score, -c["linkDensity"])
 
             content_candidates.sort(key=_candidate_score, reverse=True)
@@ -1745,6 +1817,12 @@ async def tool_probe_detail_page(ctx: ToolContext, url: str = "") -> ToolResult:
 
             summary = f"Detail page probed: {structure_hint}"
             ctx.log(f"[TOOL] probe_detail_page: {summary}")
+            try:
+                ctx.verified_selectors = merge_from_probe_detail(
+                    ctx.verified_selectors, payload
+                )
+            except Exception as merge_exc:
+                ctx.log(f"[TOOL] verified_selectors merge (probe_detail) failed: {merge_exc}")
 
             return ToolResult(
                 success=bool(content_selector),
@@ -1805,11 +1883,20 @@ async def tool_verify_selector(ctx: ToolContext, selector: str, description: str
         )
 
     try:
+        # The JS now also collects lightweight per-node "semantic stats"
+        # (capped at first 50 nodes to keep payload small) so the
+        # Python side can compute an icon-likelihood verdict and surface
+        # it both in the tool summary log and in the JSON returned to
+        # the LLM. Without this signal an icon-list selector that
+        # happens to wrap 25 short text labels looks identical to a
+        # real news list.
         js_code = """
         (sel) => {
             const els = document.querySelectorAll(sel);
             let visible = 0;
             const previews = [];
+            const nodeStats = [];
+            const STATS_CAP = 50;
             els.forEach((el, idx) => {
                 const style = window.getComputedStyle(el);
                 const rect = el.getBoundingClientRect();
@@ -1834,8 +1921,41 @@ async def tool_verify_selector(ctx: ToolContext, selector: str, description: str
                         index: idx
                     });
                 }
+                if (nodeStats.length < STATS_CAP) {
+                    const childTags = {};
+                    for (let i = 0; i < el.children.length; i++) {
+                        const cn = el.children[i].tagName.toLowerCase();
+                        childTags[cn] = (childTags[cn] || 0) + 1;
+                    }
+                    let svgNoText = false;
+                    for (let i = 0; i < el.children.length; i++) {
+                        const ch = el.children[i];
+                        if (ch.tagName.toLowerCase() === 'svg' &&
+                            ch.querySelector('text') === null) {
+                            svgNoText = true;
+                            break;
+                        }
+                    }
+                    const cls = el.className
+                        ? (typeof el.className === 'string' ? el.className : '')
+                        : '';
+                    nodeStats.push({
+                        class_str: cls,
+                        child_tags: childTags,
+                        text_len: (el.textContent || '').trim().length,
+                        width: rect.width,
+                        height: rect.height,
+                        has_aria_hidden: el.getAttribute('aria-hidden') === 'true',
+                        has_svg_no_text: svgNoText
+                    });
+                }
             });
-            return { total: els.length, visible: visible, previews: previews };
+            return {
+                total: els.length,
+                visible: visible,
+                previews: previews,
+                nodeStats: nodeStats
+            };
         }
         """
         result = await ctx.browser.page.evaluate(js_code, selector)
@@ -1843,23 +1963,64 @@ async def tool_verify_selector(ctx: ToolContext, selector: str, description: str
         total = result.get("total", 0)
         visible = result.get("visible", 0)
         previews = result.get("previews", [])
+        node_stats_raw = result.get("nodeStats", []) or []
+
+        # Multi-signal "is this an icon container?" scoring. Helper is
+        # pure Python so it never raises on partial input; we still
+        # guard with try/except to keep verify_selector itself bullet-
+        # proof — if scoring blows up the tool must still return its
+        # original count/preview payload.
+        icon_payload: Optional[Dict[str, Any]] = None
+        try:
+            agg = aggregate_node_stats(node_stats_raw)
+            ilk = compute_icon_likelihood(agg)
+            icon_payload = {
+                "score": ilk.score,
+                "verdict": ilk.verdict,
+                "evidence": list(ilk.evidence),
+                "sampledNodes": agg.node_count,
+                "medianTextLen": int(agg.median_text_len),
+                "iconTagRatio": round(agg.icon_tag_ratio, 3),
+                "ariaHiddenRatio": round(agg.aria_hidden_ratio, 3),
+            }
+        except Exception as score_exc:  # pragma: no cover - defensive
+            ctx.log(f"[TOOL] verify_selector icon-likelihood scoring failed: {score_exc}")
 
         desc_label = f" ({description})" if description else ""
         summary = (
             f"selector '{selector}'{desc_label}: "
             f"{total} total, {visible} visible"
         )
+        # Surface icon verdicts in the log line so that even without
+        # reading JSON the user/LLM sees the warning. We only emit when
+        # the verdict isn't plain "content" to keep logs quiet for the
+        # 99% of selectors that are obviously fine.
+        if icon_payload and icon_payload["verdict"] != "content":
+            summary += (
+                f" | icon_likelihood={icon_payload['score']:.2f}"
+                f" verdict={icon_payload['verdict']}"
+            )
         ctx.log(f"[TOOL] verify_selector: {summary}")
+
+        verify_payload = {
+            "selector": selector,
+            "description": description,
+            "totalMatches": total,
+            "visibleMatches": visible,
+            "previews": previews,
+        }
+        if icon_payload is not None:
+            verify_payload["iconLikelihood"] = icon_payload
+        try:
+            ctx.verified_selectors = merge_from_verify_selector(
+                ctx.verified_selectors, verify_payload
+            )
+        except Exception as merge_exc:
+            ctx.log(f"[TOOL] verified_selectors merge (verify_selector) failed: {merge_exc}")
 
         return ToolResult(
             success=True,
-            data={
-                "selector": selector,
-                "description": description,
-                "totalMatches": total,
-                "visibleMatches": visible,
-                "previews": previews,
-            },
+            data=verify_payload,
             summary=summary,
             suggested_next_tools=["generate_crawler_code", "verify_selector"],
         )
