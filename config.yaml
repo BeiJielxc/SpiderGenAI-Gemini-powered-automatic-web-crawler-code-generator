@@ -96,6 +96,118 @@ cdp:
 # =============================================================================
 agent:
   max_iterations: 30  # Agent 模式最大迭代轮次
+  engine: langgraph   # 新增：legacy | langgraph
+
+# =============================================================================
+# Artifact 工作记忆配置
+# 控制大型工具载荷（HTML、抓包、analyze_page 等）的持久化与摘要
+# =============================================================================
+artifacts:
+  ttl_days: 7                  # 启动时清理超过该天数的 artifact 文件（0 = 不清理）
+  per_task_subdir: true        # 按 task_id 分子目录，便于隔离与整体清除
+  summary_threshold_chars: 3500  # 超过该大小才落盘+生成摘要（小于则直接走 messages）
+  enable_summary: true         # 关闭后退化为旧行为（仅 put_json，不生成 summary）
+
+  # ---- 小模型 fallback ----
+  # 当规则摘要"弱"时（_summary_error 或 list_candidates/candidate_endpoints 全空）
+  # 用一个轻量 LLM 兜底补全。**不会**对每次写入都调用，只在规则失败时触发。
+  # alias 必须指向 llm: 段下的某个键（独立于 llm.active，可单独配置）。
+  small_model:
+    enabled: false             # 默认关闭；先观察规则摘要够不够用，确有需要再开
+    alias: qwen-next            # 引用 llm: 段下的别名（如 qwen-next、deepseek、kimi-k2.5）
+    max_tokens: 5000             # 兜底输出字符上限，避免被 LLM 撑爆
+    timeout_sec: 15             # 单次调用超时；超时即放弃 fallback，仍返回规则摘要
+    raw_excerpt_chars: 20000     # 喂给 LLM 的原始内容截断（防止超长 HTML/JSON）
+
+# =============================================================================
+# 持久化记忆 (情景 + 网站画像)
+# =============================================================================
+memory:
+  enabled: true
+  root: pygen/output/memory       # 相对仓库根目录
+
+  episodes:
+    max_keep: 1000                # episodes记忆存储条数上限，超出滚动覆盖
+    pending_gc_days: 30           # 草稿未提交保留天数（默认 30 天，给业务方充足回填窗口）
+
+  site_profile:
+    enabled: true
+    inject_into_planner: true     # 总开关：是否把 site_memory_hint 注入到 prompt
+    require_user_verdict: true    # 仅在 user_verdict 非 null 时才更新画像（核心防误导）
+    confidence_decay_per_30d: 0.1
+    confidence_penalty_on_fail: 0.3   # user_verdict=wrong 时
+    confidence_bonus_on_success: 0.1
+    min_inject_confidence: 0.3
+    quarantine_after: 2           # 连续 N 次 user_verdict=wrong 后隔离
+    promote_min_wins: 3           # stable_selectors 晋升门槛
+    promote_min_winrate: 0.8
+    drift_check: true             # html_fingerprint 漂移检测
+    # 失败选择器黑名单（直接渲染进 [过往经验提示]，告诉模型"不要再试"）。
+    # min_losses 从 2 降到 1（Module C）：错一次就拉黑符合直觉。
+    # 安全网由其他两层兜底：
+    #   1) Stage-2 LLM 默认输出 slot_verdicts="unknown"，只有明确判错才计 loss
+    #   2) require_consecutive=true 要求 consecutive_losses 也 >= min_losses，
+    #      只要中间用户给过一次 correct，consecutive_losses 立即重置为 0
+    blacklist_min_losses: 1       # 至少被 user_verdict=wrong 标定 N 次才进黑名单
+    blacklist_max_winrate: 0.2    # winrate 超过此值视作"偶有翻车"，不拉黑
+    # 是否要求"连续失败"（true 时还要 consecutive_losses >= min_losses）。
+    # Stage-2 LLM 给 slot_verdicts 时偶尔会误判某个 slot=wrong，把无辜
+    # selector 计 -1。开了这个开关后，只要中间出现过一次 verdict=correct
+    # （把 consecutive_losses 重置为 0），那条 selector 就不会进黑名单——
+    # 给"被误判过 1 次的好 selector"一条复活路。强烈建议保持 true。
+    blacklist_require_consecutive: true
+
+  summary_agent:
+    use_llm: true                 # false → 永远走降级（仅 auto_findings 转写）
+    skip_llm_when_correct: false  # true → verdict=correct 时不调 LLM 省 token
+                                  # 默认 false：用户希望 verdict=correct 也总结冗余优化
+    # 复盘用哪个 LLM：
+    #   task_model   → 使用 llm.active（"做任务的同一个模型"，复盘最贴合，token 成本最高）
+    #   draft_alias  → 使用 draft.model_alias（任务运行时记下的 alias，旋转模型时各任务各自归属）
+    #   small_model  → 使用下面的 small_model_alias（最省钱，会引入轻微模型偏差）
+    #   <任意 alias> → 直接当作 llm.<alias> 使用
+    model_strategy: task_model
+    small_model_alias: qwen-next  # 兜底用的小模型（model_strategy=small_model 或 task model 不可用时）
+    max_tokens: 800               # small model 的 max_tokens
+    timeout_sec: 25               # small model 的 timeout
+    summary_max_tokens: 0         # 任务模型复盘的 max_tokens（0 = 复用 max_tokens）
+    summary_timeout_sec: 60       # 任务模型复盘的 timeout（0 = 复用 timeout_sec）
+    enable_auto_findings: true
+
+  rerun:
+    feedback_replay_priority: highest   # 反馈块插入位置（最高优先级 / 普通）
+    feedback_replay_hops: 3              # 沿 rerun_of 链回看几跳（最近一跳详写，更老的简写）
+    # ---- Hole-2.A：跨域名防污染 + 域名兜底查找 ----
+    # 当前端没传 prev_task_id（批量、新建表单等场景）时，是否按当前 URL 的 domain
+    # 自动从 episode/pending + episode/episodes.jsonl 里挑最近一条同站记录当起点。
+    # 关掉它就退回老行为：必须前端显式传 prev_task_id 才注入回放。
+    feedback_replay_domain_fallback: true
+    # 兜底回看的最大年龄（天）。超过这个时长的 pending draft 会被忽略，避免把
+    # 上个月的旧故障当成新经验注入。设为 0 / 负数 = 不限制（仅测试用）。
+    feedback_replay_fallback_age_days: 14
+    # ---- Module B：重跑前的离线预验证 ----
+    # 借助 page_cache 里上次抓到的 HTML，把上一轮 fix_direction 中提到的
+    # selector 在本地 BeautifulSoup 里跑一遍 soup.select(...)，把结果分成
+    #   ✅ 命中 → 优先尝试    ❌ 未命中 → 不要再试    ⏭ 缓存 miss/drift → 暂不可判
+    # 然后把这块 hint 拼到 feedback_replay_hint 顶部送给 planner。
+    pre_validate:
+      enabled: true
+      max_selectors: 5     # 单次 rerun 最多预验证的候选 selector 数
+
+# =============================================================================
+# 页面缓存（PageCache，Module A）
+#   - URL 为键，存全量 HTML（不做结构/正文分类，省心）
+#   - 命中 → tool_get_page_html 直接复用、rerun_validate_node 离线验证旧选择器
+#   - 失败时静默退化为 miss，绝不阻塞主流程
+# =============================================================================
+page_cache:
+  enabled: true
+  root: pygen/output/page_cache
+  ttl_sec: 86400                # 24 小时；过期 → 视为 miss（不会自动重抓）
+  max_total_mb: 500             # 总占用上限，超出按 mtime 最旧先删（LRU）
+  # 旧/新两次抓取的 html_fingerprint 不一致时，把新行标 last_drift=true，
+  # rerun_validate_node 会拒绝相信被标 drift 的缓存（避免拿过期结构骗自己）。
+  invalidate_on_fingerprint_mismatch: true
 
 # =============================================================================
 # 服务端配置（多人在线 / 队列 / SSE）

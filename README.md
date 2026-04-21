@@ -1,7 +1,11 @@
-# SpiderGenAI  基于 LLM Agent 的自动网站分析与爬虫脚本生成系统
+# SpiderGenAI-v2  基于 LangGraph 多智能体的自动网站分析与爬虫脚本生成系统
+
+> v2 版本核心升级：**LangGraph 多智能体编排** + **Prompt 资产化** + **会话/持久记忆** + **用户反馈闭环** + **总结复盘 Agent**。
+> v2 highlights: **LangGraph multi-agent orchestration**, **prompt asset externalization**, **session + persistent memory**, **user-feedback loop**, **self-reflection summary agent**.
 
 ## 目录 (Table of Contents)
 
+- [v2 重要改动 / What's new in v2](#whats-new)
 - [简介 / Overview](#overview)
 - [功能 / Key features](#features)
 - [快速开始 / Quickstart](#quickstart)
@@ -13,15 +17,12 @@
   - [启动前端 / Run frontend](#run-frontend)
 - [前端界面使用说明 / UI Guide](#ui-guide)
 - [输出位置 / Outputs](#outputs)
-- [Agent 架构 / Agent Architecture](#agent-architecture)
-  - [端到端流程 / End-to-end flow](#e2e-flow)
-  - [Planner（ReAct 自主决策循环） / Planner (ReAct Loop)](#planner)
-  - [Tool Registry（agent skills注册与路由） / Tool Registry & Routing](#tool-registry)
-  - [Agent skills/工具体系介绍](#tool-ecosystem)
-  - [Critic（质量评估与自动修复） / Critic (Quality Gate)](#critic)
-  - [Executor Session（沙箱执行） / Executor Session (Sandbox)](#executor-session)
-  - [Artifact Store（大载荷存储） / Artifact Store](#artifact-store)
-- [日期控件检测与 API 提取 / Date Detection & API Extraction](#date-detection)
+- [v2 架构 / v2 Architecture](#v2-architecture)
+  - [LangGraph 多智能体总览](#multi-agent-overview)
+  - [Prompt 资产化](#prompt-assets)
+  - [会话记忆 + 持久记忆](#memory)
+  - [用户反馈闭环](#feedback-loop)
+  - [总结复盘 Agent](#summary-agent)
 - [目录结构与核心文件说明 / Structure & Key files](#structure-files)
 - [常见问题 / Troubleshooting](#troubleshooting)
 
@@ -29,36 +30,52 @@
 
 ## 🦹🏻Authors作者: Liu， Jack Xingchen — Deloitte Shanghai
 
+<a id="whats-new"></a>
+## v2 重要改动 (What's new in v2)
+
+| 改动 | 精简描述 | 收益 / 好处 |
+|------|---------|-------------|
+| **1. 架构升级：LangGraph + Multi-Agent** | 用 LangGraph 的 `StateGraph` + `create_react_agent` 取代手写 ReAct 循环，Planner / Codegen / Critic / Summarize 各自成为可独立编排的子图，由 `Supervisor` 统一路由。 | 消息通道、工具调用、重试、取消原生支持，不再维护脆弱的自写循环；每个 Agent 可独立迭代/替换/并行扩展（例如新增 date-api-specialist 只需注册工厂，不改主流程）。 |
+| **2. Prompt 资产化** | 所有长 prompt 从代码里抽出，按 `planner/`、`codegen/`、`critic/`、`browser/`、`summarize/`、`errors/` 分目录落盘为 `.md`，通过 `PromptLoader`（带 `lru_cache` + debug dump + 热重载）按需加载与变量渲染。 | Prompt 迭代不再需要改 Python 代码、写 diff 也更清晰；支持 A/B 切换、`PYGEN_DEBUG_DUMP_PROMPT` 一键产出渲染后版本供回归；非技术同事也能直接维护提示词。 |
+| **3. 会话记忆 + 持久记忆** | 单次运行内：`AgentState` 在 LangGraph 节点间共享（messages/工具结果/选择器/HTML 指纹等全链路）。跨运行：`pygen/output/memory/` 落盘 **情景记忆 (episodes.jsonl)** + **网站画像 (site/<domain>.json)**，启动时按 URL domain 自动注入 `site_memory_hint` 与 `feedback_replay_hint`。 | 同一站点多次运行越跑越稳——稳定选择器被晋升进 `stable_selectors`，被用户标过 wrong 的选择器进黑名单；HTML 指纹漂移自动检测；同站重跑时 Planner 第一轮就带着"✅ 试这些 / ❌ 别再试 / ⏭ 暂不判"。 |
+| **4. 用户反馈功能** | 任务结束后前端弹出 `TaskFeedbackModal`，用户打标签 (correct/wrong) + 填写自然语言建议。后端 `POST /api/tasks/{task_id}/feedback` 把反馈注入 `commit_episode`，并可一键"提交并重新运行"。 | 人在回路 (Human-in-the-loop)：用户的业务语言吐槽（"只爬到一堆图标"）被 LLM 翻译成技术根因并写入记忆；重跑时这段诊断作为最高优先级提示直接喂给 Planner，错过一次的坑不会再踩。 |
+| **5. 总结复盘 Agent** | Planner 图的最后一个节点 `summarize_node`：零 LLM 调用跑 `auto_findings`（冗余工具调用 / 疑似静默失败 / 重复代码块）并落盘 draft episode；用户提交反馈后 Stage-2 由 `commit_episode` 用 LLM 把 auto_findings + 用户吐槽蒸馏成可复用 `lessons`。 | 运行完立刻产出"模型自检报告"展示给用户，降低评估成本；LLM 只在"有用户吐槽"时才调用，token 成本可控；`lessons` 作为经验沉淀进网站画像，下一次同站任务直接受益。 |
+
+---
+
 <a id="overview"></a>
 ## 简介 (Overview)
 
-这是一个**基于 LLM Agent 自主决策的"智能分析网站 → 生成爬虫脚本 → 执行 → 前端可视化"**完整工程：
+这是一个**基于 LangGraph 多智能体编排的"智能分析网站 → 生成爬虫脚本 → 执行 → 复盘 → 前端可视化"**完整工程：
 
-- **后端**：`pygen/api.py`（FastAPI）负责启动任务，通过 **Agent Planner** 自主驱动浏览器分析网站、选择策略、调用工具链、生成代码、质量验证，最终执行脚本并汇总结果
-- **前端**：`frontend/`（Vite + React + TS）负责表单配置、展示日志与结果
+- **后端**：`pygen/api.py`（FastAPI）启动任务，调用 `pygen/agents/runner.py` 进入 **LangGraph 图**（Supervisor → Planner/ReAct → Codegen → Critic → Summarize），自主驱动浏览器分析 → 生成代码 → 质量验证 → 写入记忆
+- **前端**：`frontend/`（Vite + React + TS）负责表单配置、展示日志与结果，并在任务结束时弹出**反馈 Modal** 收集用户评价
 - **浏览器自动化**：通过 **Chrome DevTools Protocol (CDP)** 连接到 Chrome，并用 Playwright 做页面交互与网络请求捕获
+- **记忆层**：`pygen/output/memory/` 落盘 episodes（情景）+ site profile（网站画像），支撑跨任务经验复用
 
-This repo provides an end-to-end **agent-driven** workflow:
+This repo provides an end-to-end **LangGraph multi-agent** workflow:
 
-- **Backend**: `pygen/api.py` (FastAPI) orchestrates tasks via an **Agent Planner** that autonomously explores websites, selects strategies, invokes tools, generates code, validates quality, and executes results
-- **Frontend**: `frontend/` (Vite + React + TS) provides UI for configuration/logs/results
-- **Browser automation**: Playwright connects to Chrome via **CDP** to interact & capture network requests
+- **Backend**: `pygen/api.py` (FastAPI) orchestrates via `pygen/agents/runner.py`, driving a LangGraph state machine (Supervisor → Planner/ReAct → Codegen → Critic → Summarize)
+- **Frontend**: `frontend/` (Vite + React + TS) provides UI + a post-run feedback Modal for human-in-the-loop supervision
+- **Browser automation**: Playwright over CDP
+- **Memory**: JSONL episodes + per-site profiles persisted under `pygen/output/memory/`
 
 ---
 
 <a id="features"></a>
 ## 功能 (Key features)
 
-- **Agent 自主决策**：基于 ReAct 循环的 Planner 自动分析网站结构、选择最佳爬取策略，无需人工干预
-- **动态工具生态**：20+ 工具通过 Tool Registry 动态注册与路由，Planner 根据上下文自动选择最合适的工具
-- **Critic 质量关卡**：生成代码后经过 3 轮"诊断→修复"循环，确保输出脚本可运行、数据有效
-- **沙箱执行**：通过 Executor Session（支持 Docker / 本地）安全运行代码片段与验证
+- **LangGraph 多智能体**：Supervisor 统一路由，Planner/Codegen/Critic/Summarize 子图各司其职，天生支持取消、重试、条件跳转
+- **Prompt 资产化**：静态 prompt 全部 `.md` 化、目录分层、支持热重载/A-B 切换/变量校验
+- **动态工具生态**：20+ 工具通过 `tools_lc` 路由成 LangChain Tool，按 run_mode / 可用性动态过滤
+- **Critic 质量关卡**：独立子图，3 轮"诊断 → 修复 → 重新验证"循环
+- **沙箱执行**：Docker / 本地两种后端，ExecutorSession 持久化命名空间
+- **会话记忆**：`AgentState` 在 LangGraph 节点间共享 messages / 工具调用日志 / 选择器 / 指纹
+- **持久记忆**：episodes.jsonl（情景）+ site/<domain>.json（画像），带时间衰减 / 黑名单 / stable 晋升
+- **用户反馈闭环**：前端 Feedback Modal → commit_episode → LLM 蒸馏 lessons → 下次同站自动注入
+- **总结复盘 Agent**：零 LLM 跑 auto_findings，+ 用户反馈驱动的 LLM 蒸馏
 - **多板块爬取**：支持手动选择目录树（多板块）与自动探测板块
-- **结果可视化**：前端实时查看日志、下载脚本、查看报告/新闻列表（支持来源板块标记）
-- **可复用登录态**：使用 `cdp.user_data_dir` 保存 Chrome Profile，支持需要登录的网站
-- **批量任务管理**：支持批量导入任务、队列并发控制与实时状态监控（SSE）
-
-Agent-driven autonomous website analysis and crawler generation, with dynamic tool ecosystem, 3-round critic quality gate, sandbox execution, multi-category crawling, and real-time visualization.
+- **结果可视化 + 批量任务**：实时日志、下载脚本、报告/新闻列表、批量队列与 SSE 状态
 
 ---
 
@@ -96,7 +113,7 @@ python -m pip install -r pygen/requirements.txt
 python -m playwright install chromium
 ```
 
-> 说明：即便使用 CDP 连接本机 Chrome，也需要安装 Playwright 运行时依赖。
+> 说明：即便使用 CDP 连接本机 Chrome，也需要安装 Playwright 运行时依赖。`pygen/requirements.txt` 已包含 `langgraph` / `langchain-core` 等 v2 依赖。
 
 ---
 
@@ -155,36 +172,6 @@ docker build -t pygen-sandbox .
 
 > 首次构建需要下载基础镜像（约 2 GB）+ 安装依赖，预计 3-10 分钟（取决于网络）。后续重建利用缓存会很快。
 
-##### Dockerfile 内部流程（无需手动操作，`docker build` 会自动执行）
-
-```text
-步骤 1  拉取基础镜像 mcr.microsoft.com/playwright/python:v1.41.0-jammy
-        → 内含 Python 3 + Playwright + Chromium 浏览器
-
-步骤 2  COPY pygen/requirements.txt → 容器内
-        RUN pip install -r requirements.txt
-        → 安装以下所有库：
-        ┌──────────────────────────────────────────────────┐
-        │  playwright          # 浏览器自动化               │
-        │  playwright-stealth  # 反爬特征隐藏               │
-        │  openai              # LLM API 客户端            │
-        │  pyyaml              # YAML 配置解析              │
-        │  requests            # HTTP 请求                  │
-        │  pydantic            # 数据验证                   │
-        │  fastapi             # API 服务框架               │
-        │  uvicorn             # ASGI Server               │
-        │  httpx               # 异步 HTTP 客户端           │
-        │  beautifulsoup4      # HTML 解析                  │
-        │  lxml                # 快速 XML/HTML 解析引擎      │
-        │  rich                # 终端美化输出               │
-        └──────────────────────────────────────────────────┘
-
-步骤 3  RUN playwright install chromium
-        → 确保浏览器二进制可用
-
-步骤 4  COPY . . → 将项目代码拷入镜像
-```
-
 ##### 构建完成后：配置 `config.yaml`
 
 在 `config.yaml` 中添加 `sandbox` 段，指向你构建的镜像：
@@ -214,7 +201,6 @@ docker build -t pygen-sandbox .
 如果不想手动构建，系统首次运行时会**自动拉取**微软官方 Playwright 镜像：
 
 ```bash
-# 也可手动预拉取（可选）
 docker pull mcr.microsoft.com/playwright/python:v1.41.0-jammy
 ```
 
@@ -247,13 +233,8 @@ docker pull mcr.microsoft.com/playwright/python:v1.41.0-jammy
 #### 2.5) 验证 Docker 沙箱环境
 
 ```bash
-# 1. 验证 Docker 守护进程正常
 docker run --rm hello-world
-
-# 2. 验证沙箱镜像中所有关键库已安装（若使用 2.2 构建方式）
 docker run --rm pygen-sandbox python -c "import requests; import bs4; import httpx; import lxml; import pydantic; print('All dependencies OK')"
-
-# 3. 验证 Playwright 可用
 docker run --rm pygen-sandbox python -c "from playwright.sync_api import sync_playwright; print('Playwright OK')"
 ```
 
@@ -267,11 +248,7 @@ docker run --rm pygen-sandbox python -c "from playwright.sync_api import sync_pl
 2. **首次拉取/构建较慢**：Playwright 基础镜像约 2 GB，请确保网络通畅；后续构建利用缓存会很快
 3. **镜像与 requirements.txt 同步**：每次修改 `pygen/requirements.txt` 后，务必重新 `docker build -t pygen-sandbox .`，否则沙箱中会缺少新增的库
 4. **磁盘清理**：长时间使用后可运行 `docker system prune -f` 清理悬空镜像和停止的容器
-5. **网络代理**：如果你在公司代理环境下，Docker 构建时可能需要配置代理。在 Docker Desktop → Settings → Resources → Proxies 中设置，或在构建时传入：
-   ```bash
-   docker build --build-arg HTTP_PROXY=http://proxy:port --build-arg HTTPS_PROXY=http://proxy:port -t pygen-sandbox .
-   ```
-6. **多任务并发**：每个任务会启动独立的沙箱容器（容器名格式 `pygen-exec-<session_id>`），任务结束后自动销毁（`--rm`）
+5. **多任务并发**：每个任务会启动独立的沙箱容器（容器名格式 `pygen-exec-<session_id>`），任务结束后自动销毁（`--rm`）
 
 ---
 
@@ -288,7 +265,7 @@ docker run --rm pygen-sandbox python -c "from playwright.sync_api import sync_pl
 - 复制模板：`config_copy.yaml` → `config.yaml`
 - 填入你的 **LLM API Key** 与 **CDP 配置**
 
-关键配置示例（节选）：
+关键配置示例（节选，v2 新增 `memory:` / `page_cache:` 段）：
 
 ```yaml
 llm:
@@ -304,19 +281,38 @@ cdp:
   user_data_dir: "D:/llm_mcp_genpy_runtime/chrome-profile"
   timeout: 60
 
-# Docker 沙箱配置（如已按上一步构建镜像）
 sandbox:
   enabled: true
   backend: auto               # docker / local / auto
   docker_image: "pygen-sandbox"
-  docker_auto_pull: false      # 本地构建的镜像无需拉取
+  docker_auto_pull: false
   docker_mount_workdir: true
   docker_disable_network: false
+
+# v2 新增：持久化记忆 (episodes + site profile)
+memory:
+  enabled: true
+  root: pygen/output/memory
+  episodes:
+    max_keep: 1000
+    pending_gc_days: 30
+  site_profile:
+    enabled: true
+    inject_into_planner: true
+    confidence_decay_per_30d: 0.1
+    blacklist_min_losses: 1
+  summary_agent:
+    use_llm: true
+    model_strategy: task_model   # 复盘用 LLM：task_model / small_model / draft_alias
+    enable_auto_findings: true
+  rerun:
+    feedback_replay_priority: highest
+    feedback_replay_hops: 3
+    feedback_replay_domain_fallback: true
 ```
 
-> macOS 提示：`cdp.user_data_dir` 建议使用类似 `"/Users/<you>/llm_mcp_genpy_runtime/chrome-profile"` 或 `"$HOME/llm_mcp_genpy_runtime/chrome-profile"`（YAML 中可直接写绝对路径字符串）。
-
-> 如果没有构建自定义镜像，可省略 `sandbox` 段或将 `docker_image` 设为默认值 `"mcr.microsoft.com/playwright/python:v1.41.0-jammy"`，并将 `docker_auto_pull` 设为 `true`。
+> macOS 提示：`cdp.user_data_dir` 建议使用类似 `"/Users/<you>/llm_mcp_genpy_runtime/chrome-profile"` 或 `"$HOME/llm_mcp_genpy_runtime/chrome-profile"`。
+> 更多 memory 配置项（黑名单/隔离/漂移检测/回放跳数等）见 `config.yaml` 内的详细注释。
 
 ---
 
@@ -352,8 +348,6 @@ macOS 下可执行（注意应用路径中包含空格）：
   --user-data-dir="$HOME/llm_mcp_genpy_runtime/chrome-profile" \
   --no-first-run --no-default-browser-check
 ```
-
-然后启动后端即可复用该实例。
 
 #### 登录态说明 (Login persistence)
 
@@ -407,8 +401,9 @@ npm run dev
 
 1. 选择**运行模式**（企业报告下载 / 新闻报告下载 / 新闻舆情爬取）
 2. 填写 URL、日期范围、是否下载文件等
-3. 点击执行后，Agent Planner 将自主完成网站分析 → 策略选择 → 代码生成 → 质量验证 → 执行
+3. 点击执行后，LangGraph 多智能体将自主完成网站分析 → 策略选择 → 代码生成 → 质量验证 → 执行 → 自我复盘
 4. 在执行页查看日志与结果，必要时下载生成脚本
+5. 任务结束后**弹出反馈 Modal**：打 correct/wrong 标签 + 填写自然语言建议，可选择"提交并重新运行"让 Agent 按你的反馈二次尝试
 
 ### 额外需求与附件 (Extra requirements & attachments)
 
@@ -460,12 +455,13 @@ npm run dev
 - **说明**：支持手动配置批量任务，实时监控队列状态、查看任务日志与结果（成功/失败/重试）。
 - **Note**: Configure batch tasks, monitor queue status, logs, and results (success/failure/retry).
 
-#### 6) 历史记录界面 (Batch Crawling Interface)
+#### 6) 历史记录界面 (History Interface)
 
 ![历史记录界面 / history view Interface](pic/history.gif)
 
-- **说明**：历史记录界面可以支持查看跑过的历史记录日志，并且提供导出每个任务的配置信息（csv格式）和下载脚本以及任务的重新运行操作，并且都支持批量处理。也支持对不想要的历史记录的删除以及批量删除操作。
+- **说明**：历史记录界面可以支持查看跑过的历史记录日志，并且提供导出每个任务的配置信息（csv 格式）和下载脚本以及任务的重新运行操作，并且都支持批量处理。也支持对不想要的历史记录的删除以及批量删除操作。
 - **Note**: The history interface allows users to view past task logs and provides options to export configuration information for each task (CSV format), download scripts, and rerun tasks, all with batch processing support. It also supports deleting unwanted history entries and performing batch deletion.
+
 ---
 
 <a id="outputs"></a>
@@ -476,316 +472,257 @@ npm run dev
 - **生成的脚本**：`pygen/py/`
 - **执行结果 JSON**：`pygen/output/`
 - **Artifact 存储**：`pygen/output/artifacts/`（大载荷工具输出、截图等）
-- **Chrome Profile（可复用登录态）**：默认 `pygen/chrome-profile/` 或你在 `cdp.user_data_dir` 配置的目录
+- **记忆层 (v2 新增)**：
+  - `pygen/output/memory/episode/episodes.jsonl`：已提交的情景记忆（append-only）
+  - `pygen/output/memory/episode/pending/<task_id>.json`：草稿 episode，等用户反馈
+  - `pygen/output/memory/site/<domain>.json|.md`：每站点画像 + 人类可读摘要
+- **页面缓存 (v2 新增)**：`pygen/output/page_cache/`（URL → HTML，用于 rerun 离线预验证）
+- **Chrome Profile**：默认 `pygen/chrome-profile/` 或 `cdp.user_data_dir` 配置的目录
 
 ---
 
-<a id="agent-architecture"></a>
-## Agent 架构 (Agent Architecture)
+<a id="v2-architecture"></a>
+## v2 架构 (v2 Architecture)
 
-系统核心是一个 **ReAct 风格的自主 Agent**，由以下组件协同工作：
+<a id="multi-agent-overview"></a>
+### LangGraph 多智能体总览 (Multi-Agent Overview)
 
-The core is a **ReAct-style autonomous agent** composed of the following components:
+系统核心是一个由 **LangGraph `StateGraph`** 驱动的多智能体编排：
 
 ```text
-┌─────────────────────────────────────────────────────────────────┐
-│                    Frontend (React + TS)                         │
-│  POST /api/generate → SSE /api/status/{taskId} (实时日志)        │
-└──────────────────────────┬──────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│                    Frontend (React + TS)                          │
+│  POST /api/generate → SSE /api/status/{taskId} (实时日志)         │
+│  任务结束 → TaskFeedbackModal (正确/错误 + 建议 + 可选重跑)         │
+└──────────────────────────┬───────────────────────────────────────┘
                            │
                            ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                  Backend (FastAPI: api.py)                       │
-│  ChromeLauncher → BrowserController → AgentPlanner.run()        │
-└──────────────────────────┬──────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│         Backend (FastAPI: api.py → agents/runner.py)              │
+│  注入 site_memory_hint + feedback_replay_hint → graph.ainvoke()   │
+└──────────────────────────┬───────────────────────────────────────┘
                            │
-          ┌────────────────┼────────────────┐
-          ▼                ▼                ▼
-   ┌─────────────┐ ┌─────────────┐ ┌──────────────┐
-   │   Planner   │ │Agent skills │ │   Critic     │
-   │ (ReAct Loop)│◀│ (Router)    │ │(Quality Gate)│
-   │  LLM ←→ Act │ │ 20+ tools   │ │ 3-round loop │
-   └──────┬──────┘ └──────┬──────┘ └──────┬───────┘
-          │               │               │
-          ▼               ▼               ▼
-   ┌─────────────┐ ┌─────────────┐ ┌──────────────┐
-   │  ToolContext │ │  Artifact   │ │  Executor    │
-   │(Shared State)│ │   Store     │ │  Session     │
-   │ browser/llm │ │(Large Data) │ │ (Sandbox)    │
-   └─────────────┘ └─────────────┘ └──────────────┘
+                           ▼
+        ┌──────────────────────────────────────────┐
+        │         Supervisor (StateGraph)          │
+        │  路由到 Planner；预留 specialist 扩展点    │
+        └─────────────────┬────────────────────────┘
+                          │
+                          ▼
+   ┌────────────────────────────────────────────────────────┐
+   │                 Planner Graph                          │
+   │  create_react_agent  ──►  tools (LangChain Tool)       │
+   │        ▲                        │                       │
+   │        │                        ▼                       │
+   │        │                 _need_critic?                  │
+   │        │                 /          \                   │
+   │        │            react            critic             │
+   │        │                              │                 │
+   │        │                              ▼                 │
+   │        │                       ┌───────────────┐        │
+   │        │                       │ Critic Graph  │        │
+   │        │                       │  3 轮诊断修复  │        │
+   │        │                       └──────┬────────┘        │
+   │        │                              │                 │
+   │        └──────── feedback ◄───────────┘                 │
+   │                                                         │
+   │                          ▼ (通过)                        │
+   │                 ┌──────────────────┐                    │
+   │                 │ Codegen Graph    │                    │
+   │                 │ (生成/修复代码)   │                    │
+   │                 └────────┬─────────┘                    │
+   │                          ▼                              │
+   │                 ┌──────────────────┐                    │
+   │                 │ Summarize Node   │                    │
+   │                 │ auto_findings +  │                    │
+   │                 │ draft episode    │                    │
+   │                 └────────┬─────────┘                    │
+   └──────────────────────────┼─────────────────────────────┘
+                              ▼
+                ┌──────────────────────────┐
+                │  AgentState (会话记忆)    │
+                │  messages / tool_log /   │
+                │  selectors / fingerprint │
+                └──────────┬───────────────┘
+                           │
+                           ▼
+                ┌──────────────────────────┐
+                │   MemoryStore (持久记忆)  │
+                │   episodes + site profile│
+                └──────────────────────────┘
 ```
 
----
+**核心落地文件**（`pygen/agents/`）：
 
-<a id="e2e-flow"></a>
-### 端到端流程 (End-to-end flow)
-
-```text
-1. 用户在前端提交任务 (URL, 日期, 运行模式, 额外需求)
-        │
-2. API 层启动 Chrome CDP + BrowserController
-        │
-3. AgentPlanner.run() 进入 ReAct 循环 (最多 20 轮迭代)
-        │
-        ├─ Thought: LLM 分析当前状态，决定下一步行动
-        ├─ Action:  通过 ToolRegistry 路由到具体工具执行
-        ├─ Observation: 工具返回 ToolResult，反馈给 LLM
-        └─ 重复直到 LLM 调用 finish 或达到迭代上限
-        │
-4. Critic 质量关卡: 验证生成代码 → 可选自动修复
-        │
-5. Post-processor: 注入日期/分类映射/输出兜底等增强
-        │
-6. Subprocess: 执行生成脚本 → 汇总 JSON/PDF/新闻等结果
-        │
-7. 前端通过 SSE 实时展示日志与最终结果
-```
-
----
-
-<a id="planner"></a>
-### Planner — ReAct 自主决策循环 (ReAct Loop)
-
-**文件**：`pygen/planner.py` — `AgentPlanner` 类
-
-Planner 是系统的"大脑"，采用 ReAct（Reasoning + Acting）范式驱动任务。每一轮迭代：
-
-1. **构建 System Prompt**：动态注入当前可用工具列表（通过 ToolRegistry）
-2. **LLM 推理**：模型输出 `{"thought": "...", "action": "tool_name", "action_input": {...}}`
-3. **工具执行**：通过 ToolRegistry 路由到对应工具
-4. **观察反馈**：将 ToolResult 格式化为结构化 observation 返回给 LLM
-5. **失败重规划**：连续失败或重复失败时触发 `[REPLAN_REQUIRED]`，引导 LLM 切换策略
-
-| 特性 | 说明 |
+| 文件 | 角色 |
 |------|------|
-| 多模型支持 | OpenAI-compatible / Gemini / Claude 三种 provider |
-| 动态工具发现 | 每轮迭代重新解析可用工具（基于 run_mode、上下文条件） |
-| Critic 关卡 | `finish` 前自动触发 Critic 评估，不通过则要求继续改进 |
-| 大载荷处理 | 工具输出超过 3000 字符时自动存入 ArtifactStore，仅传引用给 LLM |
-| 取消支持 | 通过 `cancel_check` 回调实现任务中途取消 |
+| `runner.py` | 入口函数 `run_agent()`，被 `api.py` 调用；负责构造 LLM/工具/子图/状态，ainvoke 后把 state 翻译成 `PlannerResult` |
+| `supervisor.py` | `build_supervisor_graph()`，当前 pass-through 到 planner；预留多 specialist 路由接入点 |
+| `planner_graph.py` | ReAct 主图：`create_react_agent` + critic gate + summarize 节点 |
+| `codegen_graph.py` | 代码生成子图（独立出来便于单测/替换） |
+| `critic_graph.py` | 3 轮 critic 子图（静态 → 运行时 → 分类 → 修复） |
+| `summarize_node.py` | Stage-1 复盘节点：零 LLM auto_findings → 落盘 draft episode |
+| `rerun_validate.py` | 重跑前基于 page cache 的离线 selector 预验证 |
+| `tools_lc.py` | 把 `pygen.tools` / `high_level_tools` 包装为 LangChain Tool，并按 run_mode / 可用性过滤 |
+| `state.py` | `AgentState` TypedDict：会话记忆的单一数据源 |
+| `llm.py` | `build_chat_model()`：provider 抽象（OpenAI-compatible / Gemini / Claude） |
 
-**标准工作流**（aim for 6 iterations）：
-
-```text
-open_page → extract_list_and_pagination → probe_detail_page
-          → generate_crawler_code → validate_code → finish
-```
+> 多 Agent 扩展姿势：新建一个 `create_react_agent(tools=subset)` → 注册到 `AGENT_REGISTRY` → 把 `_dummy_router` 换成 LLM/规则路由即可，无需改动主流程代码。
 
 ---
 
-<a id="tool-registry"></a>
-### Tool Registry — 工具注册与路由 (Tool Registry & Routing)
+<a id="prompt-assets"></a>
+### Prompt 资产化 (Prompt Externalization)
 
-**文件**：`pygen/tool_registry.py` — `ToolRegistry` 类
+所有静态 prompt 集中在 `pygen/prompts/`，Python 代码只做"动态拼装"（选 crawl_mode、插 HTML、注入错误案例），文本全部落盘为 `.md`：
 
-Tool Registry 是工具生态的中枢，负责：
+```text
+pygen/prompts/
+├── loader.py                 # 统一加载器 (lru_cache + debug dump + 热重载)
+├── planner/     system.md
+├── codegen/     news_sentiment|enterprise_report|shared|user_prompt|repair_footer.md
+├── critic/      fault_adjudicate|repair_round|repair_fallback_system.md
+├── browser/     menu_analyze|menu_exploration_*.md
+├── summarize/   system.md + user.md
+└── errors/      cases_header.md
+```
 
-- **注册**：每个工具以 `ToolSpec`（名称、描述、参数 schema）+ handler 函数注册
-- **动态过滤**：根据 `run_mode`、`availability_check`、`enabled` 状态决定当前可用工具
-- **路由执行**：`execute_tool(ctx, name, input)` 分发到对应 handler，统一错误处理
-- **回退建议**：每个工具配有 `fallback_map`，失败时推荐替代工具
-- **Prompt 生成**：`get_tools_prompt()` 为 Planner 的 System Prompt 动态生成工具描述
+使用姿势：
 
 ```python
-@dataclass
-class RegisteredTool:
-    spec: ToolSpec          # 名称 + 描述 + 参数 schema
-    handler: ToolHandler    # async (ctx, **kwargs) -> ToolResult
-    enabled: bool           # 是否启用
-    tags: Set[str]          # 标签分类 (atomic/high_level/sandbox/...)
-    run_modes: Set[str]     # 限定运行模式 (enterprise_report/news_sentiment/...)
-    risk_level: str         # low / medium / high
-    availability_check      # 动态可用性检查 (如需要 executor_session 才可用)
+from prompts import load
+
+system_prompt = load("planner/system.md", tools_description=desc, max_iterations=20)
+attachment_hint = load("codegen/shared/attachment_hint.md")      # 无变量时省掉 format
 ```
+
+- **A/B 切换**：新增 `planner/system_experiment.md`，用环境变量 `PYGEN_PROMPT_VARIANT` 运行时挑版本
+- **Debug Dump**：`PYGEN_DEBUG_DUMP_PROMPT=1` 会把每次渲染结果落到 `pygen/prompts/_debug_dump/`，用 `git diff` 回归
+- **回归脚本**：`python scripts/verify_prompts.py` 覆盖所有模板 + 哑值渲染，验证占位符拼写
+
+> 详见 `pygen/prompts/README.md`（prompts 维护手册）。
 
 ---
 
-<a id="tool-ecosystem"></a>
-### Agent skills (Tool Ecosystem) Agent技能模组
+<a id="memory"></a>
+### 会话记忆 + 持久记忆 (Session + Persistent Memory)
 
-技能/工具分为 4 层，20+ 个技能/工具供 llm 调用：
+#### 会话记忆 — AgentState (单次运行内)
 
-#### 原子工具 (Atomic Skills/Tools) — `pygen/tools.py`
+`pygen/agents/state.py` 定义的 `AgentState` 贯穿所有节点：
 
-底层浏览器/网络操作，单一职责：
+- `messages`: LangChain message 历史（自动合并工具调用/ToolMessage）
+- `tool_calls_log`, `iterations`: 完整工具调用记录
+- `verified_mapping`, `verified_selectors`, `html_fingerprint`: 阶段性成果
+- `site_memory_hint`, `feedback_replay_hint`: 持久记忆注入的 prompt 片段
+- `critic_verdict`, `generated_code`, `code_strategy`: Critic 与 Codegen 共享
+- `auto_findings`, `summary_draft_path`: Summarize 节点产物
 
-| 技能/工具 | 说明 |
-|------|------|
-| `open_page` | 打开目标 URL |
-| `scroll_page` | 触发懒加载 |
-| `get_page_info` | 获取页面标题/URL |
-| `get_page_html` | 捕获完整 HTML |
-| `take_screenshot` | 页面截图 (base64) |
-| `get_network_requests` | 获取捕获的 API/XHR 请求 |
-| `wait_for_network_idle` | 等待网络空闲 |
-| `detect_data_status` | 检测数据/空/加载/错误状态 |
-| `analyze_page` | 综合分析页面结构 |
-| `get_intercepted_apis` | 获取浏览器拦截器捕获的 API (Playwright route/intercept) |
+所有节点通过 LangGraph 的 reducer 合并更新，不再手动 pass state 字典。
 
-#### 高级工具 (High-Level Skills/Tools) — `pygen/high_level_tools.py`
+#### 持久记忆 — MemoryStore (跨任务)
 
-本质是经过业务积累的封装多步 CDP/Playwright 工作流：
+落盘在 `pygen/output/memory/`：
 
-| 技能/工具 | 说明 |
-|------|------|
-| `extract_list_and_pagination` | 自动发现列表项/报告条数 + CSS 选择器 + 分页控件 + 日期范围 |
-| `capture_api_and_infer_params` | 动态 API 嗅探 + 参数归因（page/date/category） |
-| `turn_page_and_verify_change` | 翻页并验证内容确实变化 |
-| `probe_detail_page` | 在新标签页探测详情页正文容器 |
-| `verify_selector` | 给llm自查CSS选择器是否正确的工具（确保写出来的爬虫代码能抓到东西），返回匹配数与可见数 |
+| 组件 | 位置 | 作用 |
+|------|------|------|
+| **Episode (情景)** | `episode/episodes.jsonl` | append-only；一行一个已提交任务的事实（URL/耗时/迭代/选择器/指纹）+ 用户 verdict + LLM 蒸馏 lessons |
+| **Pending Draft** | `episode/pending/<task_id>.json` | Summarize 节点产出的草稿，等用户反馈后才"晋升"到 episodes.jsonl；`pending_gc_days` 到期自动清理 |
+| **Site Profile (画像)** | `site/<domain>.json` + `.md` | 按域名聚合的画像：稳定选择器 / 黑名单 / 失败原因 / confidence（带时间衰减）/ HTML 指纹漂移 |
+| **Quarantine** | `site/_quarantine/` | 连续 N 次用户判错后隔离整个站点画像供审计 |
 
-#### 导航与策略技能/工具 (Navigation & Strategy Tools)
+**读路径**（runner.py 启动时）：
 
-| 技能/工具 | 说明 |
-|------|------|
-| `get_site_menu_tree` | 提取站点菜单树 |
-| `probe_navigation` | 点击菜单路径，捕获 API/筛选映射 |
-| `build_verified_category_mapping` | 构建验证后的分类参数映射 |
-| `smart_date_api_scan` | 四层渐进式日期 API 检测 |
-| `enhanced_page_analysis` | 浏览器原生增强分析，聚合更多页面信号 |
+1. 按 URL domain 查 `site/<domain>.json` → `apply_time_decay` → 通过 `min_inject_confidence` 阈值 → 渲染 `site_memory_hint`
+2. 查 `prev_task_id` 的 rerun 链（带域名 guard + 自动按 domain 回溯最近同站 pending draft）→ 渲染 `feedback_replay_hint`
+3. 用 `page_cache` 里的旧 HTML 对上轮 selector 跑 `soup.select(...)` 做**离线预验证**，结果（✅/❌/⏭）拼到 `feedback_replay_hint` 顶部
 
-#### 生成与质量检测技能/工具 (Generation & Quality Tools)
+这些 hint 以最高优先级合并进 Planner 的 system prompt，**让模型第一轮就知道"这个站长成什么样、上次哪里踩坑、哪些选择器别再试"**。
 
-| 技能/工具 | 说明 |
-|------|------|
-| `generate_crawler_code` | 基于收集的上下文调用 LLM 生成爬虫脚本 |
-| `validate_code` | 静态代码校验 |
-| `critic_validate` | 规则 + LLM 辅助验收验证 |
-| `run_python_snippet` | 在沙箱中运行 Python 代码片段 |
-| `install_python_packages` | 在沙箱中安装 Python 包 (策略控制) |
+**写路径**（summarize_node.py + commit.py）：
 
-#### 统一工具结果 (Unified ToolResult)
-
-所有工具返回标准化的 `ToolResult`：
-
-```python
-@dataclass
-class ToolResult:
-    success: bool
-    data: Any                          # 工具输出数据
-    error: Optional[str]               # 错误信息
-    summary: str                       # 简洁摘要（给 LLM 看）
-    error_code: Optional[str]          # 结构化错误码
-    retryable: bool                    # 是否可重试
-    recoverable: bool                  # 是否可恢复
-    suggested_next_tools: List[str]    # 推荐下一步工具
-    artifacts: Dict[str, Any]          # 大载荷引用
-    confidence: Optional[float]        # 置信度
-```
+- Planner 图最后 → `summarize_node` 落盘 pending draft（零 LLM）
+- 用户点反馈 Modal 提交 → `POST /api/tasks/{task_id}/feedback` → `commit_episode`：
+  1. 用户 verdict=wrong 时调 LLM 蒸馏 `lessons`（自然语言 → 技术根因）
+  2. 把 episode append 进 `episodes.jsonl`
+  3. 调 `update_profile_from_episode`：更新 stable_selectors / 黑名单 / confidence（成功 +bonus、失败 −penalty）
 
 ---
 
-<a id="critic"></a>
-### Critic — 质量评估与自动修复 (Quality Gate)
-
-**文件**：`pygen/critic_runtime.py` — `Critic` 类
-
-Critic 是 Agent 的"质量保障层"，在 Planner 调用 `finish` 前自动触发：
-
-1. **静态校验**：调用 `StaticCodeValidator` 检查语法和常见反模式
-2. **轻量级运行时验证**：在 Executor Session 中实际执行生成代码，检查输出
-3. **失败分类**：`FailureClassifier` 自动归因（选择器不匹配 / 分页丢失 / 日期提取失败 / WAF 拦截 ...）
-4. **LLM 辅助修复**：将诊断结果传给 LLM，请求针对性修复
-5. **3 轮循环**：最多 3 轮"诊断 → 修复 → 重新验证"，直到通过或用尽轮次
+<a id="feedback-loop"></a>
+### 用户反馈闭环 (Human-in-the-Loop Feedback)
 
 ```text
-Code → Static Check → Runtime Execute → Classify Failure
-  ↑                                           │
-  └── LLM Repair ← Diagnosis Report ←────────┘
-          (最多 3 轮 / up to 3 rounds)
+任务完成
+   │
+   ▼
+Summarize Node: auto_findings + draft episode (pending/)
+   │
+   ▼
+前端 TaskFeedbackModal
+   ┌─────────────────────────────────┐
+   │ ○ correct  ○ wrong              │
+   │ suggestion: "只爬到图标，没有正文"│
+   │ [提交] [提交并重跑] [暂不评价]   │
+   └─────────────────────────────────┘
+                │
+   ┌────────────┴────────────┐
+   │                         │
+   ▼                         ▼
+POST /feedback        POST /rerun/{task_id}
+   │                         │
+   ▼                         ▼
+commit_episode         带 prev_task_id 启新任务
+   │                         │
+   │                         ▼
+   │                    runner.py 查 rerun 链
+   │                         │
+   ▼                         ▼
+更新 site profile      feedback_replay_hint
+   │                    + pre-validate block
+   │                    注入 Planner prompt
+   ▼                         │
+episodes.jsonl ←─────────────┘
 ```
 
----
+核心要点：
 
-<a id="executor-session"></a>
-### Executor Session — 沙箱执行 (Sandbox)
-
-**文件**：`pygen/executor_session.py` — `ExecutorSession` 类
-
-提供代码解释器式的执行环境，支持两种后端：
-
-| 后端 | 说明 |
-|------|------|
-| **docker** | 在隔离容器中运行，支持持久化会话、网络控制、工作目录挂载 |
-| **local** | 本地子进程后端（fallback） |
-
-- **持久化命名空间**：同一 session 内多次 `run_python` 共享变量状态
-- **包安装**：通过 `install_python_packages` 在沙箱内安装依赖（策略白名单控制）
-- **超时控制**：每次执行可设独立超时
+- **wrong 必填 suggestion**：强制用户用业务语言描述问题，LLM 翻译成技术根因
+- **重跑自动继承 lineage**：`prev_task_id` 沿 rerun 链回看 N 跳（最近一跳详写，更老的简写），同时 domain guard 防止跨站污染
+- **黑名单渐进累积**：被判错 `blacklist_min_losses` 次的 selector 进黑名单；中间出现过一次 correct 则 `consecutive_losses` 重置，给"被误判一次的好 selector"一条复活路
+- **重跑前离线预验证**：用 `page_cache` 里上次的 HTML 对候选 selector 做 BeautifulSoup 验证，把"✅ 试这些 / ❌ 别再试"直接送到 prompt 顶部
 
 ---
 
-<a id="artifact-store"></a>
-### Artifact Store — 大载荷存储 (Large Payload Storage)
+<a id="summary-agent"></a>
+### 总结复盘 Agent (Summary Agent)
 
-**文件**：`pygen/artifact_store.py` — `ArtifactStore` 类
+分 **Stage-1 (零 LLM)** + **Stage-2 (按需 LLM)** 两段：
 
-当工具输出（HTML、网络请求、截图等）超过阈值时，自动存入文件系统，仅将 `ArtifactRef`（ID + 路径 + 预览）传递给 LLM，避免 context window 溢出。
+#### Stage-1：`summarize_node.py`（Planner 图最后一个节点）
 
----
+纯启发式扫描，**零 LLM 调用**，产物直接展示给用户：
 
-<a id="date-detection"></a>
-## 日期控件检测与 API 提取 (Date Detection & API Extraction)
+- `run_auto_findings`：
+  - **redundant_tool_calls**：同一工具同参数被反复调用
+  - **suspected_silent_failure**：工具返回 success=true 但数据明显不对（空列表 / 全是图标 URL / 无日期等）
+  - **duplicated_code_blocks**：生成代码里出现重复函数/循环
+- 计算 `html_fingerprint`（用于漂移检测）
+- `new_draft_episode`：落盘 `episode/pending/<task_id>.json`
+- 把 `auto_findings` + `summary_draft_path` 镜像回 `AgentState`，API 层返回给前端在 Modal 里展示
 
-这个是agent独创的根据业务经验积累与反复调试的高级agent skill。
+#### Stage-2：`memory/commit.py`（用户反馈后触发）
 
-当使用 `smart_date_api_scan` 技能时，系统采用**四层渐进式架构**自动检测页面的日期筛选接口，核心实现在 `pygen/date_api_extractor.py`。
+由 `commit_episode()` 驱动，受 `memory.summary_agent` 配置控制：
 
-### 四层架构 (Four-layer Architecture)
+- `use_llm=false` → 永远走降级，只把 auto_findings 转写成 lessons 条目
+- `skip_llm_when_correct=true` + verdict=correct → 跳过 LLM（默认 false：希望 correct 也总结冗余优化）
+- `model_strategy`：
+  - `task_model` → 用任务本身的 LLM（最贴合，token 成本最高）
+  - `draft_alias` → 用任务运行时记下的 model alias（模型轮换时各归各）
+  - `small_model` → 用 `small_model_alias` 的小模型（最省钱）
 
-```text
-用户输入 URL + 日期范围
-        │
-        ▼
-┌─ Layer 0: JS 全局变量扫描 ──────────────────────────┐
-│  技术: Playwright page.evaluate() 扫描 window 对象    │
-│  原理: 直接读取前端配置变量 (如 LatestAnnouncement)    │
-│  提取: API URL + 日期参数名 + 请求参数                 │
-│  成功 → 跳过所有后续层，直接生成确定性脚本              │
-└──────────── 失败 ▼ ─────────────────────────────────┘
-┌─ Layer 1: 纯 API 直连 ─────────────────────────────┐
-│  技术: CDP Network 事件监听                          │
-│  原理: 分析页面加载时的网络请求，识别含日期参数的 API   │
-└──────────── 失败 ▼ ─────────────────────────────────┘
-┌─ Layer 2: DOM 特征检测 + 自动操作 ──────────────────┐
-│  技术: Playwright DOM 查询 + CDP Input.insertText    │
-│  支持: Laydate / ElementUI / AntDesign / Bootstrap   │
-│        / native input / 通用 input[placeholder]      │
-│  步骤: 检测控件类型 → 三级填写策略 → 点击提交 → 捕获 API│
-└──────────── 失败 ▼ ─────────────────────────────────┘
-┌─ Layer 3: 截图 + LLM 视觉分析 ─────────────────────┐
-│  技术: Playwright screenshot + Gemini/Qwen 多模态    │
-│  兜底: 处理无法程序化识别的非标日期控件                │
-└──────────── 失败 → 回退到通用 LLM 生成爬虫 ──────────┘
-        │ 任一层成功
-        ▼
-┌─ 验证 + 脚本生成 ──────────────────────────────────┐
-│  1. httpx 重放 API 验证数据 (自动截断未来日期)        │
-│  2. analyze_response_schema() 自动推断字段映射        │
-│  3. LLM "完形填空" 补全未识别字段 (可选)              │
-│  4. 确定性模板生成 Python 爬虫脚本 (不调 LLM)         │
-└────────────────────────────────────────────────────┘
-```
-
-越靠前的层**越精准、越快、越不依赖 LLM**。例如上交所 (SSE) 在 Layer 0 即可直接命中，全程不需要调用大模型。
-
-### 日期控件自动操作 — 三级填写策略 (Input Fill Strategy)
-
-Layer 2 的 `_safe_fill()` 采用三级递进策略，兼容各类日期控件：
-
-| 优先级 | 策略 | 技术 | 适用场景 |
-|--------|------|------|---------|
-| 1 | Playwright `fill()` | Playwright API | 非 readonly 的普通 input |
-| 2 | CDP `Input.insertText` | Chrome DevTools Protocol | readonly 的 Laydate / ElementUI 等 (引擎级键盘输入，触发完整原生事件链) |
-| 3 | JS `nativeSetter.call()` | JavaScript evaluate | CDP 不可用时的兜底 |
-
-### 字段映射自适应 (Adaptive Field Mapping)
-
-`pygen/deterministic_templates.py` 中的 `analyze_response_schema()` 从 API 响应中自动推断字段映射（日期、标题、下载链接、证券代码等），三层递进：
-
-1. **自动检测**：正则匹配字段名 + 值格式识别（如 `SSEDATE` 匹配日期模式、`attachPath` 匹配 URL 模式）
-2. **LLM 完形填空**：对未识别的字段类别，构造 cloze prompt 让 LLM 补全
-3. **通用兜底列表**：`["publishDate", "date", "Date", ...]` 等常见字段名
+产物是结构化的 `lessons`（slot_verdicts + 根因 + 建议），同时写入 episodes.jsonl 与 site profile，下次同站任务自动复用。
 
 ---
 
@@ -796,49 +733,52 @@ Layer 2 的 `_safe_fill()` 采用三级递进策略，兼容各类日期控件�
 
 - `README.md`：本说明（this file）
 - `config.yaml`：**你的真实配置（配置模板）**
+- `Dockerfile`：沙箱镜像构建入口
 
 ### 后端 `pygen/` — Agent 核心
 
+#### v2 新增 / 重写
+
+| 目录 / 文件 | 角色 | 说明 |
+|------|------|------|
+| `agents/` | **LangGraph 多智能体** | `runner.py` 入口 / `supervisor.py` 路由 / `planner_graph.py`  ReAct / `codegen_graph.py` / `critic_graph.py` / `summarize_node.py` / `rerun_validate.py` / `tools_lc.py` LangChain tools / `state.py` AgentState / `llm.py` provider 抽象 |
+| `prompts/` | **Prompt 资产** | 所有长 prompt 按模块分目录落盘；`loader.py` 带 lru_cache + debug dump；详见 `prompts/README.md` |
+| `memory/` | **持久记忆层** | `store.py` 总门面 / `episode.py` 情景 / `site_profile.py` 画像 / `commit.py` Stage-2 LLM 蒸馏 / `render.py` hint 渲染 / `fingerprint.py` HTML 指纹 / `auto_findings.py` 零 LLM 启发式扫描 |
+| `summarizers/` | **响应解析辅助** | `html.py` / `json_payload.py` / `llm_fallback.py` 抽离的响应 schema 推断器 |
+| `page_cache.py` | **页面缓存** | URL → HTML 缓存，支撑 rerun 离线预验证 |
+
+#### 复用组件
+
 | 文件 | 角色 | 说明 |
 |------|------|------|
-| `api.py` | API 入口 | FastAPI 服务，启动任务 → 调用 AgentPlanner → 执行脚本 → 返回结果 |
-| `planner.py` | **Planner** | ReAct 自主决策循环，LLM 多轮对话驱动工具调用 |
-| `tool_registry.py` | **Tool Registry** | 动态工具注册、路由、过滤、回退建议 |
-| `tools.py` | **工具实现** | ToolContext / ToolResult 定义 + 原子工具 + 沙箱/Critic 工具 |
-| `high_level_tools.py` | **高级工具** | 封装多步工作流（列表提取、API 嗅探、翻页验证、详情页探测） |
-| `critic_runtime.py` | **Critic** | 3 轮诊断-修复循环，含静态校验 + 运行时验证 + LLM 修复 |
-| `critic.py` | Critic 基础版 | 基础规则验证 |
-| `executor_session.py` | **Executor** | Docker/本地沙箱执行环境 |
-| `artifact_store.py` | **Artifact Store** | 大载荷文件存储，保持 LLM context 精简 |
-| `config.py` | 配置 | 读取/校验 config.yaml |
+| `api.py` | API 入口 | FastAPI 服务，启动任务 → `agents.runner.run_agent()` → 执行脚本 → 返回结果；提供 `/feedback` / `/rerun` / `/draft` 路由 |
+| `tools.py` | 工具实现 | ToolContext / ToolResult + 原子工具 + 沙箱/Critic 工具（底层仍由 `tools_lc` 包装） |
+| `high_level_tools.py` | 高级工具 | 封装多步工作流（列表提取、API 嗅探、翻页验证、详情页探测） |
+| `critic_runtime.py` | Critic 运行时 | 静态校验 + 运行时验证 + 失败分类 + LLM 修复（被 `critic_graph` 调用） |
+| `executor_session.py` | 沙箱执行 | Docker / 本地双后端，持久化命名空间 |
+| `artifact_store.py` | Artifact Store | 大载荷文件存储，保持 LLM context 精简 |
+| `browser_controller.py` | Browser | Playwright + CDP；页面交互、抓包、目录树分析 |
 | `chrome_launcher.py` | Chrome | 启动/复用带 CDP 的 Chrome 实例 |
-| `browser_controller.py` | Browser | Playwright 连接 CDP；页面交互、抓包、目录树分析 |
-| `llm_agent.py` | LLM Agent | 封装 LLM 调用与代码生成 prompt |
-| `post_processor.py` | 后处理 | 注入日期、分类映射、输出兜底等增强 |
-| `validator.py` | 校验器 | 生成代码的静态校验 (语法 / 反模式) |
-| `failure_classifier.py` | 失败分类 | 自动归因运行时失败原因 |
-| `signals_collector.py` | 信号采集 | 采集执行信号（状态、输出、异常）供 Critic 使用 |
+| `llm_agent.py` | LLM Agent | 底层 LLM 调用封装（provider 抽象在 `agents/llm.py`） |
 | `date_api_extractor.py` | 日期 API | 四层渐进式日期 API 检测 |
 | `deterministic_templates.py` | 模板引擎 | 确定性脚本生成（字段映射 + 模板渲染） |
 | `queue_manager.py` | 队列管理 | 批量任务并发控制与调度 |
 | `realtime.py` | SSE 推送 | 日志与状态实时前端同步 |
-| `error_cases.py` | 错误样例 | 错误规则集合（用于更稳的生成/修复） |
+| `database.py` | 任务库 | 历史任务 / 反馈 / rerun 链持久化 |
 | `py/` | 输出目录 | 生成的爬虫脚本 |
 
 ### 前端 `frontend/`
 
-- `frontend/App.tsx`：表单页与视图切换（目录树选择/执行页）
-- `frontend/index.tsx`：前端入口（mount React app）
-- `frontend/index.html`：页面模板
+- `frontend/App.tsx`：表单页与视图切换（目录树选择/执行页/历史/批量）
+- `frontend/index.tsx` / `index.html`：入口与页面模板
 - `frontend/types.ts`：前端类型定义 + `API_BASE_URL`（默认 `http://localhost:8000`）
-- `frontend/components/ExecutionView.tsx`：执行页（启动任务、轮询状态、展示日志/结果、下载脚本/PDF）
+- `frontend/components/ExecutionView.tsx`：执行页（启动任务、轮询/SSE、展示日志/结果、下载脚本/PDF）
+- `frontend/components/TaskFeedbackModal.tsx`：**v2 新增** 任务反馈弹窗（correct/wrong + suggestion + 重跑）
 - `frontend/components/TreeSelectionView.tsx`：多板块手动选择目录树（`/api/menu-tree`）
-- `frontend/components/BatchConfigView.tsx`：**批量任务配置页**
-- `frontend/components/BatchExecutionView.tsx`：**批量任务执行监控页**
-- `frontend/components/RichInput.tsx`：额外需求输入 + 附件上传 UI
+- `frontend/components/BatchConfigView.tsx` / `BatchExecutionView.tsx`：批量任务配置与执行监控
+- `frontend/components/HistoryView.tsx`：历史记录视图（导出/下载脚本/重跑）
+- `frontend/components/RichInput.tsx`：额外需求输入 + 附件上传
 - `frontend/components/SelectInput.tsx` / `DateInput.tsx` / `FormInput.tsx`：通用表单组件
-- `frontend/package.json` / `package-lock.json`：前端依赖与脚本
-- `frontend/vite.config.ts` / `tsconfig.json`：构建与 TS 配置
 
 ---
 
@@ -848,5 +788,9 @@ Layer 2 的 `_safe_fill()` 采用三级递进策略，兼容各类日期控件�
 - **Chrome 找不到/启动失败**：确认已安装 Google Chrome；或使用"手动启动 CDP"方式启动后再运行后端
 - **端口被占用**：`cdp.auto_select_port: true` 可自动换端口；或手动释放 `9222`
 - **前端连不上后端**：确认后端在 `8000` 启动；如要部署到远端，修改 `frontend/types.ts` 里的 `API_BASE_URL`
-- **Agent 迭代上限**：默认 20 轮迭代；如目标网站复杂可在 API 调用时调整 `max_iterations`
-- **Critic 多次不通过**：检查目标网站是否有反爬策略（WAF/验证码），可查看 `[CRITIC]` 日志了解失败原因
+- **LangGraph recursion_limit 超限**：`runner.py` 默认 `max(50, max_iterations * 3 + 20)`，如复杂站点仍被截断，可调大 API 调用时的 `max_iterations`
+- **Critic 多次不通过**：检查目标网站是否有反爬策略（WAF/验证码），查看 `[CRITIC]` 日志了解失败原因
+- **记忆层 hint 没注入**：确认 `memory.enabled: true` 且 URL 能解析出 domain；查看日志 `[MEMORY]` 行
+- **黑名单误伤 selector**：把 `blacklist_require_consecutive` 保持为 `true`（默认），被误判一次后只要下次 correct 就会重置 `consecutive_losses`
+- **Prompt 改了没生效**：prompts 带 `lru_cache`，重启进程即可；或在 REPL 里 `from prompts import reload; reload()`
+- **反馈 Modal 不弹**：确认 `memory.summary_agent.enable_auto_findings: true`，前端 `TaskFeedbackModal` 仅在拿到 draft 后展示
