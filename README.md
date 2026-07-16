@@ -469,6 +469,12 @@ npm run dev
 - **说明**：历史记录界面可以支持查看跑过的历史记录日志，并且提供导出每个任务的配置信息（csv 格式）和下载脚本以及任务的重新运行操作，并且都支持批量处理。也支持对不想要的历史记录的删除以及批量删除操作。
 - **Note**: The history interface allows users to view past task logs and provides options to export configuration information for each task (CSV format), download scripts, and rerun tasks, all with batch processing support. It also supports deleting unwanted history entries and performing batch deletion.
 
+#### 7) 用户审核界面与记忆落库界面 (History Interface)
+
+![用户审核界面与长期记忆落库 / user review and long-term memory](pic/userreview.gif)
+
+- **说明**：在爬取完成后，用户可以根据前端页面展示的爬取成果人工审核爬虫脚本是否正常运行，是否生成正确。用户在点击运行正确后，后端会将此次运行的爬虫脚本和页面信息等作为Agent的长期记忆落库，以便下次参考。
+- **Note**: After the crawling is complete, users can manually review the crawling results displayed on the front-end page to verify whether the crawler script runs correctly and generates the correct output. After the user clicks "Runs Correctly," the backend will store the crawler script and page information as long-term memory in the Agent database for future reference.
 ---
 
 <a id="outputs"></a>
