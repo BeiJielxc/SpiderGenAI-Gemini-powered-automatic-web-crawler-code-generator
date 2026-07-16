@@ -1,4 +1,4 @@
-# SpiderGenAI-v2  基于 LangGraph 多智能体的自动网站分析与爬虫脚本生成系统
+# SpiderGenAI-V3  基于 LangGraph 多智能体的自动网站分析与爬虫脚本生成系统
 
 > 当前主线：**参数签名黄金爬虫复用** + **LangGraph 证据驱动专家流水线** + **阶段 Gate** + **失败归因回退** + **任务隔离运行** + **运行后记忆闭环**。
 > Current mainline: **signature-keyed golden crawler replay**, **evidence-driven LangGraph specialists**, **stage gates**, **failure attribution and rollback**, **task-isolated execution**, and **runtime-grounded memory**.
@@ -6,7 +6,7 @@
 
 ## 目录 (Table of Contents)
 
-- [v2 重要改动 / What's new in v2](#whats-new)
+- [V3 重要改动 / What's new in V3](#whats-new)
 - [简介 / Overview](#overview)
 - [功能 / Key features](#features)
 - [快速开始 / Quickstart](#quickstart)
@@ -18,7 +18,7 @@
   - [启动前端 / Run frontend](#run-frontend)
 - [前端界面使用说明 / UI Guide](#ui-guide)
 - [输出位置 / Outputs](#outputs)
-- [v2 架构 / v2 Architecture](#v2-architecture)
+- [V3 架构 / V3 Architecture](#v3-architecture)
   - [LangGraph 多智能体总览](#multi-agent-overview)
   - [黄金爬虫生命周期](#golden-crawler-lifecycle)
   - [Prompt 资产化](#prompt-assets)
@@ -33,7 +33,7 @@
 ## 🦹🏻Authors作者: Liu， Jack Xingchen — Deloitte Shanghai
 
 <a id="whats-new"></a>
-## v2 重要改动 (What's new in v2)
+## V3 重要改动 (What's new in V3)
 
 | 改动 | 精简描述 | 收益 / 好处 |
 |------|---------|-------------|
@@ -120,7 +120,7 @@ python -m pip install -r pygen/requirements.txt
 python -m playwright install chromium
 ```
 
-> 说明：即便使用 CDP 连接本机 Chrome，也需要安装 Playwright 运行时依赖。`pygen/requirements.txt` 已包含 `langgraph` / `langchain-core` 等 v2 依赖。
+> 说明：即便使用 CDP 连接本机 Chrome，也需要安装 Playwright 运行时依赖。`pygen/requirements.txt` 已包含 `langgraph` / `langchain-core` 等 V3 架构依赖。
 
 ---
 
@@ -272,7 +272,7 @@ docker run --rm pygen-sandbox python -c "from playwright.sync_api import sync_pl
 - 复制模板：`config_copy.yaml` → `config.yaml`
 - 填入你的 **LLM API Key** 与 **CDP 配置**
 
-关键配置示例（节选，v2 新增 `memory:` / `page_cache:` 段）：
+关键配置示例（节选，V3 使用 `memory:` / `page_cache:` 段）：
 
 ```yaml
 llm:
@@ -296,7 +296,7 @@ sandbox:
   docker_mount_workdir: true
   docker_disable_network: false
 
-# v2 新增：持久化记忆 (episodes + site profile)
+# V3：持久化记忆 (episodes + site profile)
 memory:
   enabled: true
   root: pygen/output/memory
@@ -485,17 +485,17 @@ npm run dev
   - `pending/<task_id>--<signature>.py`：Runtime/Final Output Gate 已通过，等待用户确认
   - `active/<signature>.py`：用户确认成功，可按相同参数签名直接复用
   - `invalid/<signature>/<timestamp>--<reason>--<task_id>.py`：失效或被否决，仅供审计，绝不执行
-- **记忆层 (v2 新增)**：
+- **记忆层 (V3)**：
   - `pygen/output/memory/episode/episodes.jsonl`：已提交的情景记忆（append-only）
   - `pygen/output/memory/episode/pending/<task_id>.json`：草稿 episode，等用户反馈
   - `pygen/output/memory/site/<domain>.json|.md`：每站点画像 + 人类可读摘要
-- **页面缓存 (v2 新增)**：`pygen/output/page_cache/`（URL → HTML，用于 rerun 离线预验证）
+- **页面缓存 (V3)**：`pygen/output/page_cache/`（URL → HTML，用于 rerun 离线预验证）
 - **Chrome Profile**：默认 `pygen/chrome-profile/` 或 `cdp.user_data_dir` 配置的目录
 
 ---
 
-<a id="v2-architecture"></a>
-## v2 架构 (v2 Architecture)
+<a id="v3-architecture"></a>
+## V3 架构 (V3 Architecture)
 
 <a id="multi-agent-overview"></a>
 ### LangGraph 多智能体总览 (Multi-Agent Overview)
@@ -787,7 +787,7 @@ episodes.jsonl ←─────────────┘
 
 ### 后端 `pygen/` — Agent 核心
 
-#### v2 新增 / 重写
+#### V3 核心架构 / 重写
 
 | 目录 / 文件 | 角色 | 说明 |
 |------|------|------|
@@ -797,12 +797,13 @@ episodes.jsonl ←─────────────┘
 | `summarizers/` | **响应解析辅助** | `html.py` / `json_payload.py` / `llm_fallback.py` 抽离的响应 schema 推断器 |
 | `page_cache.py` | **页面缓存** | URL → HTML 缓存，支撑 rerun 离线预验证 |
 | `golden_crawlers.py` | **黄金爬虫注册表** | 规范化参数签名；完整 `.py` 在 `pending/active/invalid` 间原子迁移；不写 sidecar JSON |
+| `news_attachments.py` | **新闻附件归一化** | 正文与附件双通道；识别按钮、正文链接、嵌入标签和直接文件 URL，统一去重并保留远程/本地状态 |
 
 #### 复用组件
 
 | 文件 | 角色 | 说明 |
 |------|------|------|
-| `api.py` | API 入口 | FastAPI 服务，启动任务 → `agents.runner.run_agent()` → 执行脚本 → 返回结果；提供 `/feedback` / `/rerun` / `/draft` 路由 |
+| `api.py` | API 入口 | FastAPI 服务，优先复用黄金脚本，未命中再进入专家图；负责最终结果归一化、新闻附件下载及 `/feedback` / `/rerun` / `/draft` 路由 |
 | `execution_service.py` | 最终执行服务 | 每任务独立工作目录；执行生成脚本、只收集任务所属 JSON、计算质量并写显式 manifest；零记录为硬失败 |
 | `tools.py` | 工具实现 | ToolContext / ToolResult + 原子工具 + 沙箱/Critic 工具（底层仍由 `tools_lc` 包装） |
 | `high_level_tools.py` | 高级工具 | 封装多步工作流（列表提取、API 嗅探、翻页验证、详情页探测） |
@@ -824,8 +825,8 @@ episodes.jsonl ←─────────────┘
 - `frontend/App.tsx`：表单页与视图切换（目录树选择/执行页/历史/批量）
 - `frontend/index.tsx` / `index.html`：入口与页面模板
 - `frontend/types.ts`：前端类型定义 + `API_BASE_URL`（默认 `http://localhost:8000`）
-- `frontend/components/ExecutionView.tsx`：执行页（启动任务、轮询/SSE、展示日志/结果、下载脚本/PDF）
-- `frontend/components/TaskFeedbackModal.tsx`：**v2 新增** 任务反馈弹窗（correct/wrong + suggestion + 重跑）
+- `frontend/components/ExecutionView.tsx`：执行页（启动任务、轮询/SSE、展示日志/结果、新闻正文与附件、下载脚本/PDF）
+- `frontend/components/TaskFeedbackModal.tsx`：**V3 反馈闭环**任务弹窗（correct/wrong + suggestion + 重跑）
 - `frontend/components/TreeSelectionView.tsx`：多板块手动选择目录树（`/api/menu-tree`）
 - `frontend/components/BatchConfigView.tsx` / `BatchExecutionView.tsx`：批量任务配置与执行监控
 - `frontend/components/HistoryView.tsx`：历史记录视图（导出/下载脚本/重跑）
