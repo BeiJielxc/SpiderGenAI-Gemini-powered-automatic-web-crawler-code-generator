@@ -24,7 +24,7 @@ import {
   Clock,
   Users
 } from 'lucide-react';
-import { ProcessStep, StepStatus, CrawlerFormData, API_BASE_URL, TaskStatusResponse, GenerateRequest, ReportFile, NewsArticle, QueueInfo, AutoFindings } from '../types';
+import { ProcessStep, StepStatus, CrawlerFormData, API_BASE_URL, TaskStatusResponse, GenerateRequest, ReportFile, NewsArticle, NewsAttachment, QueueInfo, AutoFindings } from '../types';
 import { explainError } from '../utils/errorExplain';
 import TaskFeedbackModal from './TaskFeedbackModal';
 
@@ -620,6 +620,20 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({
       // 远程文件：下载
       const filename = `${report.name}.${report.fileType || 'pdf'}`;
       forceDownloadFile(report.downloadUrl, filename);
+    }
+  };
+
+  const handleOpenNewsAttachment = (attachment: NewsAttachment) => {
+    if (attachment.isLocal && attachment.localPath) {
+      const encodedPath = attachment.localPath
+        .split('/')
+        .map(part => encodeURIComponent(part))
+        .join('/');
+      window.open(`${API_BASE_URL}/api/pdf/${encodedPath}`, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    if (attachment.url) {
+      window.open(attachment.url, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -1282,6 +1296,44 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({
                                   style={{ maxHeight: '300px', overflowY: 'auto' }}
                                   dangerouslySetInnerHTML={{ __html: article.content.replace(/\n/g, '<br/>') }} 
                                 />
+                              </div>
+                            )}
+
+                            {article.attachments && article.attachments.length > 0 && (
+                              <div className="mt-4 pt-4 border-t border-gray-100">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <FileText size={15} className="text-rose-500" />
+                                  <h4 className="text-sm font-bold text-gray-700">
+                                    附件 ({article.attachments.length})
+                                  </h4>
+                                </div>
+                                <div className="divide-y divide-gray-100 border-y border-gray-100">
+                                  {article.attachments.map((attachment, attachmentIndex) => (
+                                    <div
+                                      key={attachment.id || `${attachment.url}-${attachmentIndex}`}
+                                      className="flex items-center gap-3 py-2.5"
+                                    >
+                                      <File size={16} className="text-gray-400 shrink-0" />
+                                      <div className="min-w-0 flex-1">
+                                        <div className="text-sm text-gray-700 truncate" title={attachment.name}>
+                                          {attachment.name || `附件 ${attachmentIndex + 1}`}
+                                        </div>
+                                        <div className="text-xs text-gray-400 uppercase">
+                                          {attachment.fileType || 'file'}{attachment.isLocal ? ' · 已下载' : ' · 远程文件'}
+                                        </div>
+                                      </div>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleOpenNewsAttachment(attachment)}
+                                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-rose-600 hover:text-rose-700 hover:bg-rose-50 border border-rose-200 rounded-md transition-colors shrink-0"
+                                        title={attachment.isLocal ? '查看已下载文件' : '打开远程文件'}
+                                      >
+                                        {attachment.isLocal ? <Eye size={14} /> : <ExternalLink size={14} />}
+                                        查看
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
                               </div>
                             )}
                           </div>

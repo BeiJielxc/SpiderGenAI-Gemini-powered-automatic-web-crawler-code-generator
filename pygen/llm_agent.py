@@ -877,6 +877,24 @@ class LLMAgent:
                     message="检测到 API 请求可用，但代码使用 BeautifulSoup 解析 HTML 而非调用 API",
                     suggestion="页面数据通过 API 动态加载，必须使用 requests 调用 API 获取 JSON 数据，而不是解析 HTML"
                 ))
+
+        if context_checks.get("needs_news_attachments"):
+            has_attachment_output = (
+                "attachments" in code_lower
+                and any(token in code_lower for token in (
+                    "pdf", "download", "object", "embed", "data-href", "data-url"
+                ))
+            )
+            if not has_attachment_output:
+                issues.append(CodeIssue(
+                    code="NEWS_ATTACHMENT_001",
+                    severity=IssueSeverity.ERROR,
+                    message="详情页已验证存在文件附件，但生成代码没有独立 attachments 提取逻辑。",
+                    suggestion=(
+                        "保留正文 content 提取，并额外扫描 a/object/embed/iframe/数据属性中的文件 URL，"
+                        "写入 article['attachments'] 数组；不能用 PDF 覆盖正文。"
+                    ),
+                ))
         
         # 检查4: CATEGORIES 字典中分类参数重复（致命逻辑错误）
         # 检测模式：CATEGORIES = { "xxx": {...}, "yyy": {...} } 其中多个分类的参数值完全相同
@@ -1145,8 +1163,9 @@ class LLMAgent:
                 enhanced_summary=enhanced_summary,
             )
 
-        # 获取输出目录的绝对路径
-        output_dir = str(Path(__file__).parent / "output")
+        # 生成脚本必须从运行环境读取输出目录。服务端会为每个任务注入
+        # PYGEN_OUTPUT_DIR，独立运行时默认回退到当前工作目录。
+        output_dir = 'os.environ.get("PYGEN_OUTPUT_DIR", ".")'
 
         # 将“任务目标/日期范围”等高优先级约束放在 user_prompt 最前面。
         # verified_selectors_section 优先级最高（绝对约束），紧随其后是任务目标和日期。
@@ -1517,15 +1536,17 @@ class LLMAgent:
                 "1. 在访问每个详情页时，必须用 try-except 包裹 `page.goto()`。\n"
                 "2. 如果捕获到 'Download is starting' 或 'net::ERR_ABORTED' 异常 → 文件链接。\n"
                 "3. 如果 URL 以 .pdf/.doc/.docx/.xls/.xlsx 结尾 → 文件链接。\n"
-                "4. 以上文件链接情况，content 字段放干净的 HTML 链接：`<a href=\"{url}\" target=\"_blank\">{url}</a>`\n"
-                "5. **严禁**在 content 中添加任何额外文字（如\"抓取失败\"、\"Failed to load\"等）。\n\n"
+                "4. 以上文件链接必须写入独立 attachments 数组：`[{\"name\": title, \"url\": url, \"fileType\": file_type}]`。\n"
+                "5. 直接文件页可以把 content 留空或放原文链接，但 attachments 不得为空。\n"
+                "6. **严禁**在 content 中添加任何额外文字（如\"抓取失败\"、\"Failed to load\"等）。\n\n"
                 "**正文优先规则**（页面正常加载时）：\n"
-                "6. 如果 `page.goto()` 成功（未抛出下载异常），则该页面是 HTML 页面，**必须尝试提取正文**。\n"
-                "7. 提取前**必须**用 `page.wait_for_selector(selector, timeout=8000)` 等待内容容器出现，\n"
+                "7. 如果 `page.goto()` 成功（未抛出下载异常），则该页面是 HTML 页面，**必须尝试提取正文**。\n"
+                "8. 提取前**必须**用 `page.wait_for_selector(selector, timeout=8000)` 等待内容容器出现，\n"
                 "   因为某些页面在 domcontentloaded 后仍需 JS 渲染内容。\n"
-                "8. 依次尝试 probe_detail_page 给出的多个候选 selector，取第一个 inner_html 长度 > 50 的。\n"
-                "9. **只有在所有候选 selector 都等待超时或内容为空后**，才回退为 URL 链接。\n"
-                "10. 即使该网站有些链接是 PDF，也**不影响** HTML 页面的正文提取——不要因为网站有 PDF 就放弃提取正文。\n"
+                "9. 依次尝试 probe_detail_page 给出的多个候选 selector，取第一个 inner_html 长度 > 50 的。\n"
+                "10. **只有在所有候选 selector 都等待超时或内容为空后**，才回退为 URL 链接。\n"
+                "11. 即使该网站有些链接是 PDF，也**不影响** HTML 页面的正文提取——不要因为网站有 PDF 就放弃提取正文。\n"
+                "12. HTML 页正文提取后，还必须独立扫描附件并写入 attachments；正文和附件可以同时存在。\n"
             )
 
         # 收集所有 HTML 页面的正文候选（合并去重）
@@ -1539,6 +1560,15 @@ class LLMAgent:
                 if sel and sel not in seen_selectors:
                     seen_selectors.add(sel)
                     all_candidates.append(c)
+
+        all_attachments = []
+        seen_attachment_urls = set()
+        for probe in detail_probes:
+            for attachment in (probe.get("attachmentCandidates") or []):
+                url = attachment.get("url", "") if isinstance(attachment, dict) else ""
+                if url and url not in seen_attachment_urls:
+                    seen_attachment_urls.add(url)
+                    all_attachments.append(attachment)
 
         if all_candidates:
             lines.append("\n### 【详情页正文容器】必须从以下候选中选择")
@@ -1566,6 +1596,18 @@ class LLMAgent:
             lines.append("\n### 【详情页】所有探测到的详情页均为文件下载（无 HTML 正文）")
         else:
             lines.append("\n### 【详情页正文容器】未探测到正文容器候选，请根据页面结构自行选择正文区域。")
+
+        if all_attachments:
+            lines.append("\n### 【详情页文件附件】必须与正文同时输出")
+            lines.append(
+                "以下附件由真实详情页 DOM 独立探测得到。生成代码必须保留正文提取，"
+                "并把这些来源对应的文件写入每条新闻的 attachments 数组："
+            )
+            for i, attachment in enumerate(all_attachments[:10], 1):
+                lines.append(
+                    f"  {i}. {attachment.get('name', 'Attachment')} | "
+                    f"type={attachment.get('fileType', 'file')} | url={attachment.get('url', '')}"
+                )
         
         return "\n".join(lines)
 

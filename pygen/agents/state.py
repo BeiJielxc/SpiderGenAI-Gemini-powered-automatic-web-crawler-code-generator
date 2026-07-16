@@ -23,8 +23,71 @@ from langgraph.managed import RemainingSteps
 from typing_extensions import Annotated
 
 
+def latest_value(_current: Any, incoming: Any) -> Any:
+    """Allow concurrent tool mirrors while keeping LangGraph's stable write order."""
+    return incoming
+
+
+def merge_mapping(current: Any, incoming: Any) -> Dict[str, Any]:
+    """Merge independent top-level analysis keys emitted by concurrent tools."""
+    merged = dict(current or {})
+    merged.update(dict(incoming or {}))
+    return merged
+
+
+def merge_tool_logs(
+    current: Optional[List[Dict[str, Any]]],
+    incoming: Optional[List[Dict[str, Any]]],
+) -> List[Dict[str, Any]]:
+    """Merge nested-graph tool logs without re-appending the same call."""
+    merged: List[Dict[str, Any]] = []
+    seen_call_ids = set()
+    seen_legacy_objects = set()
+    for entry in list(current or []) + list(incoming or []):
+        call_id = entry.get("tool_call_id") if isinstance(entry, dict) else None
+        if call_id:
+            if call_id in seen_call_ids:
+                continue
+            seen_call_ids.add(call_id)
+        else:
+            # Compatibility for old/manual state updates without call ids. An
+            # identical dict returned by a nested subgraph should appear once.
+            legacy_key = repr(entry)
+            if legacy_key in seen_legacy_objects:
+                continue
+            seen_legacy_objects.add(legacy_key)
+        merged.append(entry)
+    return merged
+
+
+def _merge_unique_dicts(
+    current: Optional[List[Dict[str, Any]]],
+    incoming: Optional[List[Dict[str, Any]]],
+    key_fields: tuple[str, ...],
+) -> List[Dict[str, Any]]:
+    merged: List[Dict[str, Any]] = []
+    seen = set()
+    for entry in list(current or []) + list(incoming or []):
+        key = tuple(repr(entry.get(field)) for field in key_fields)
+        if key in seen:
+            continue
+        seen.add(key)
+        merged.append(entry)
+    return merged
+
+
+def merge_validation_reports(current, incoming) -> List[Dict[str, Any]]:
+    return _merge_unique_dicts(current, incoming, ("gate", "created_at", "summary"))
+
+
+def merge_repair_history(current, incoming) -> List[Dict[str, Any]]:
+    return _merge_unique_dicts(
+        current, incoming, ("attempt", "failure_type", "rollback_target", "reason")
+    )
+
+
 class AgentState(TypedDict, total=False):
-    """State shared by the planner, critic and codegen subgraphs."""
+    """State shared by the supervisor, specialists and critic subgraphs."""
 
     # ---- chat history (merged via add_messages reducer) ----
     messages: Annotated[List[AnyMessage], add_messages]
@@ -41,24 +104,24 @@ class AgentState(TypedDict, total=False):
     task_id: str
 
     # ---- collected context (tool-populated, serializable) ----
-    page_info: Optional[Dict[str, Any]]
-    page_html_len: Optional[int]  # only length; full HTML stays on ToolContext
-    page_structure: Optional[Dict[str, Any]]
-    network_requests: Optional[Dict[str, Any]]
-    menu_tree: Optional[Dict[str, Any]]
-    verified_mapping: Optional[Dict[str, Any]]
+    page_info: Annotated[Optional[Dict[str, Any]], latest_value]
+    page_html_len: Annotated[Optional[int], latest_value]  # full HTML stays on ToolContext
+    page_structure: Annotated[Optional[Dict[str, Any]], latest_value]
+    network_requests: Annotated[Optional[Dict[str, Any]], latest_value]
+    menu_tree: Annotated[Optional[Dict[str, Any]], latest_value]
+    verified_mapping: Annotated[Optional[Dict[str, Any]], latest_value]
     # Structured ledger of selectors proven to work on the live page. Filled
     # by extract_list_and_pagination / probe_detail_page / verify_selector
     # tool hooks; consumed by codegen build_prompt_node as a hard constraint.
     # See pygen.verified_selectors for the schema.
-    verified_selectors: Optional[Dict[str, Any]]
-    enhanced_analysis: Dict[str, Any]
-    date_api_result: Optional[Dict[str, Any]]
-    screenshots_count: int
+    verified_selectors: Annotated[Optional[Dict[str, Any]], latest_value]
+    enhanced_analysis: Annotated[Dict[str, Any], merge_mapping]
+    date_api_result: Annotated[Optional[Dict[str, Any]], latest_value]
+    screenshots_count: Annotated[int, latest_value]
 
     # ---- generation outputs ----
-    generated_code: Optional[str]
-    code_strategy: Optional[str]
+    generated_code: Annotated[Optional[str], latest_value]
+    code_strategy: Annotated[Optional[str], latest_value]
 
     # ---- critic subgraph state ----
     critic_rounds: int
@@ -66,30 +129,41 @@ class AgentState(TypedDict, total=False):
     critic_repaired_code: Optional[str]
     critic_evidence: Annotated[List[Dict[str, Any]], operator.add]
 
-    # ---- planner/supervisor control ----
+    # ---- supervisor control ----
     iterations: int
     # Use operator.add so each tool wrapper can append a single-element list
     # and LangGraph concatenates across steps (mirrors legacy PlannerResult.tool_calls).
-    tool_calls_log: Annotated[List[Dict[str, Any]], operator.add]
+    tool_calls_log: Annotated[List[Dict[str, Any]], merge_tool_logs]
     strategy_summary: str
     cancelled: bool
     finish_requested: bool
     last_error: Optional[str]
 
     # ---- persistent memory bridge (Stage-2 feedback flow) ----
-    # Read-only at the planner level; written by runner.run_agent before
-    # ainvoke() based on prior episodes. The planner subgraph renders
-    # them into the user prompt with priority feedback > site > task.
+    # Written by runner.run_agent before ainvoke() based on prior episodes.
+    # Initial messages expose them to the specialist graph with priority
+    # feedback > site > task.
     site_memory_hint: Optional[str]
     feedback_replay_hint: Optional[str]
     prev_task_id: Optional[str]
-    # Wall-clock start time (epoch seconds) — used by summarize_node to
-    # compute duration_sec without re-instrumenting tool wrappers.
+    # Wall-clock start time (epoch seconds), consumed by runtime finalization.
     started_at: Optional[float]
-    # Stage-1 outputs from summarize_node
+    # Stage-1 outputs from runtime-grounded finalization
     auto_findings: Optional[Dict[str, Any]]
     summary_draft_path: Optional[str]
     html_fingerprint: Optional[str]
+
+    # ---- evidence-driven specialist orchestration ----
+    stage_evidence: Dict[str, Dict[str, Any]]
+    validation_reports: Annotated[List[Dict[str, Any]], merge_validation_reports]
+    router_decision: Optional[Dict[str, Any]]
+    acquisition_route: Optional[str]
+    attribution_decision: Optional[Dict[str, Any]]
+    rollback_target: Optional[str]
+    rollback_count: int
+    repair_history: Annotated[List[Dict[str, Any]], merge_repair_history]
+    runtime_report: Optional[Dict[str, Any]]
+    final_output: Optional[Dict[str, Any]]
 
 
 def initial_state(
@@ -143,7 +217,20 @@ def initial_state(
         auto_findings=None,
         summary_draft_path=None,
         html_fingerprint=None,
+        stage_evidence={},
+        validation_reports=[],
+        router_decision=None,
+        acquisition_route=None,
+        attribution_decision=None,
+        rollback_target=None,
+        rollback_count=0,
+        repair_history=[],
+        runtime_report=None,
+        final_output=None,
     )
 
 
-__all__ = ["AgentState", "initial_state"]
+__all__ = [
+    "AgentState", "initial_state", "latest_value", "merge_mapping",
+    "merge_tool_logs", "merge_validation_reports", "merge_repair_history",
+]

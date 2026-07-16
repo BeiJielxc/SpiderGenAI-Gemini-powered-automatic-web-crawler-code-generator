@@ -32,6 +32,9 @@
    - **文件检测不能仅看 URL 后缀**：有些网站的 PDF 链接路径中不含 .pdf 后缀（如 `/detail-pages/publication/xxx`），必须通过运行时行为判断。
    - 先检查 URL 后缀（.pdf, .doc, .docx, .xls, .xlsx）：如果匹配，直接保存链接，跳过 page.goto()。
    - **如果 URL 无文件后缀**：正常导航并提取正文。
+   - 【强制】详情页必须分别初始化 `article_data["content"]` 和 `article_data["attachments"]`；两者互不覆盖。
+   - 正常 HTML 详情页：先按正文候选提取完整 `content`，然后额外扫描整个详情内容区域中的 `a[href]`、`object[data]`、`embed[src]`、`iframe[src]`、`data-href/data-url/data-download-url` 与直接文件 URL，写入 `attachments` 并按绝对 URL 去重。
+   - PDF/文件按钮可能在正文容器内部，也可能是正文旁边的独立组件；附件扫描不能只限制在最终选中的正文元素内。
    - 【强制】详情页内容提取的 try-except 代码结构：
      ```python
      try:
@@ -62,15 +65,17 @@
              # 其他异常 → 也回退为 URL 链接
              article_data["content"] = f'<a href="{{url}}" target="_blank">{{url}}</a>'
      ```
+   - 上述正文 try-except 完成后仍必须执行独立附件扫描。即使 `content` 已成功，也不能跳过附件；即使找到附件，也不能跳过正文。
    - 【关键】必须对每个 selector 用 `wait_for_selector(sel, timeout=8000)` 等待，因为某些页面内容在 domcontentloaded 后由 JS 动态渲染。
    - 【严禁】在 content 字段中添加任何额外文字，如 "抓取失败"、"Failed to load"、"Download Document"、"请访问原文" 等。
    - 【严禁】生成不含 target="_blank" 的链接。所有 <a> 标签必须包含 `target="_blank"`。
-   - content 字段要么是提取到的完整 HTML 正文，要么是纯链接 `<a href="{{url}}" target="_blank">{{url}}</a>`，没有第三种格式。
+   - content 字段要么是提取到的完整 HTML 正文，要么是纯链接 `<a href="{{url}}" target="_blank">{{url}}</a>`，没有第三种格式；附件必须同时写入独立 `attachments` 数组。
 6. 【重要】如果检测到分类参数，必须：
    - 定义分类配置字典
    - 遍历所有分类获取完整数据
    - 在输出中标记每条数据的分类来源
-7. 将结果JSON文件保存到固定目录：`{output_dir}`
+7. 将结果 JSON 保存到当前任务的运行目录，必须在代码中使用：`OUTPUT_DIR = {output_dir}`
+   - 严禁写死本机绝对路径或项目级 `pygen/output` 路径
    - 使用 os.makedirs 确保目录存在
    - 文件名使用有意义的名称（如：网站名_数据类型_时间.json）
 

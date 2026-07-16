@@ -286,6 +286,14 @@ def static_validate_node(state: CodegenState, config: RunnableConfig) -> Dict[st
             or page_spa.get("hasAppRoot")
         ),
         "has_api_requests": bool(api_requests),
+        "needs_news_attachments": bool(
+            state.get("run_mode") == "news_sentiment"
+            and any(
+                probe.get("attachmentCandidates")
+                for probe in ((state.get("enhanced_analysis") or {}).get("detail_probes") or [])
+                if isinstance(probe, dict)
+            )
+        ),
     }
     context_issues = llm_agent._check_context_issues(script, context_checks)
 

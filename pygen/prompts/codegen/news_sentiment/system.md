@@ -51,6 +51,22 @@ browser = p.chromium.launch(
 5. **sourceUrl**：原文链接
 6. **summary**：摘要（如果有）
 7. **content**：正文内容（完整保留，包含 HTML 标签或 Markdown 格式的图片链接）
+8. **attachments**：详情页文件附件数组。正文和附件必须独立提取，页面同时存在时两者都要保留
+
+### 【强制】正文与文件附件双通道
+
+- `content` 只负责正文 HTML，不能因为发现 PDF、Download 按钮或嵌入文件而停止正文提取。
+- `attachments` 始终为数组，没有附件时为 `[]`。每项格式：
+  `{"name": "文件名", "url": "绝对地址", "fileType": "pdf"}`。
+- 必须在**整个详情内容区域**扫描以下来源并去重：
+  1. `<a href>`，包括文字为 PDF / Download / Download File / 附件 / 文件的按钮链接；
+  2. `<object data>`、`<embed src>`、`<iframe src>` 中的 PDF；
+  3. `data-href`、`data-url`、`data-download-url` 和 `onclick` 中的文件地址；
+  4. 正文文本或 HTML 中直接出现的 `.pdf/.doc/.docx/.xls/.xlsx` URL；
+  5. 列表项本身直接指向文件的 URL。
+- 所有相对地址必须通过 `urljoin(detail_url, value)` 转成绝对地址。
+- URL 没有 `.pdf` 后缀但按钮文字表示下载时仍要收集，`fileType` 可先设为 `file`。
+- **严禁**用附件链接覆盖 `content`，也严禁只返回 PDF 而跳过同页正文。
 
 
 ## 【强制】内容清洗要求（修复图片加载问题）
@@ -109,7 +125,14 @@ def clean_html_content(html_content, base_url):
       "author": "张三",
       "sourceUrl": "https://xxx.com/news/1.html",
       "summary": "新闻摘要...",
-      "content": "<p>新闻正文内容...</p><img src='...'>"
+      "content": "<p>新闻正文内容...</p><img src='...'>",
+      "attachments": [
+        {
+          "name": "Public Notice",
+          "url": "https://xxx.com/files/public-notice.pdf",
+          "fileType": "pdf"
+        }
+      ]
     }
   ]
 }
@@ -169,7 +192,7 @@ def main():
     # 配置
     START_DATE = "2026-01-01"
     END_DATE = "2026-12-31"
-    OUTPUT_DIR = "./output"
+    OUTPUT_DIR = os.environ.get("PYGEN_OUTPUT_DIR", ".")
     
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     

@@ -13,6 +13,7 @@ import asyncio
 import uuid
 import time
 import json
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, List, Dict, Any
@@ -21,12 +22,14 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from config import Config
 from chrome_launcher import ChromeLauncher
 from browser_controller import BrowserController
 from llm_agent import LLMAgent
+from golden_crawlers import GoldenCrawlerStore, compute_task_signature
+from news_attachments import FILE_TYPES, infer_file_type, normalize_news_attachments
 from database import (
     init_db,
     add_history,
@@ -81,6 +84,15 @@ class ReportFile(BaseModel):
     isLocal: bool = False  # 是否是本地文件
     category: Optional[str] = None  # 来源板块（多页爬取时标识）
 
+class NewsAttachment(BaseModel):
+    id: str
+    name: str
+    url: str
+    fileType: str = "file"
+    localPath: Optional[str] = None
+    isLocal: bool = False
+
+
 class NewsArticle(BaseModel):
     """新闻文章（新闻舆情场景）"""
     id: str
@@ -92,6 +104,7 @@ class NewsArticle(BaseModel):
     summary: Optional[str] = None
     content: Optional[str] = None
     category: Optional[str] = None  # 来源板块（多页爬取时标识）
+    attachments: List[NewsAttachment] = Field(default_factory=list)
 
 class BatchDownloadRequest(BaseModel):
     filenames: List[str]
@@ -125,14 +138,21 @@ class TaskStatusResponse(BaseModel):
     htmlFingerprint: Optional[str] = None     # 列表页结构指纹
     userVerdict: Optional[str] = None         # 用户评价后回填: correct | wrong
     userSuggestion: Optional[str] = None      # 用户建议（已提交时回填）
+    # 专家证据与运行诊断（供审计/后续诊断 UI 使用）
+    stageEvidence: Optional[Dict[str, Any]] = None
+    validationReports: Optional[List[Dict[str, Any]]] = None
+    attributionDecision: Optional[Dict[str, Any]] = None
+    repairHistory: Optional[List[Dict[str, Any]]] = None
+    runtimeReport: Optional[Dict[str, Any]] = None
+    taskSignature: Optional[str] = None
+    executionSource: Optional[str] = None
+    goldenCodePath: Optional[str] = None
+    goldenStatus: Optional[str] = None
 
 # ============ 全局状态 ============
 
 # 任务存储（生产环境应使用 Redis）
 tasks: Dict[str, Dict[str, Any]] = {}
-
-# 任务对应的子进程（用于停止任务）
-task_processes: Dict[str, Any] = {}
 
 # 任务对应的浏览器资源（launcher, browser）
 task_browsers: Dict[str, Dict[str, Any]] = {}
@@ -145,6 +165,7 @@ task_cancelled: Dict[str, bool] = {}
 
 # 配置
 config: Optional[Config] = None
+_golden_store = GoldenCrawlerStore(Path(__file__).parent / "output" / "golden_crawlers")
 
 # ── 队列 & SSE（仅 config 开启时才实例化，见 lifespan） ──
 _task_queue = None       # type: ignore  # Optional[TaskQueue]
@@ -200,7 +221,7 @@ async def lifespan(app: FastAPI):
         _event_broadcaster = EventBroadcaster()
         print("✓ SSE 事件广播已启用")
 
-    # Module A: bring up the URL-keyed PageCache (used by the planner
+    # Module A: bring up the URL-keyed PageCache (used by the specialist graph
     # tools' write-through path and by the rerun-validator). The cache
     # is a *singleton* shared across all task runs in this process, so
     # configure it once at startup. ``build_default_page_cache`` is a
@@ -251,7 +272,7 @@ app.add_middleware(
 def _schedule_publish(coro) -> None:
     """线程安全地把广播协程丢回主事件循环。
 
-    LangGraph 的同步节点 (例如 ``summarize_node``) 会被
+    LangGraph 的同步节点（例如确定性 Gate）会被
     ``run_in_executor`` 丢到 worker 线程里执行；那个线程没有自己的事件
     循环，因此 ``asyncio.ensure_future`` / ``get_event_loop`` 会在 Py3.14+
     抛 ``RuntimeError``。这里统一兜底：
@@ -309,6 +330,214 @@ def _update_step(task_id: str, step: int, label: str):
             _schedule_publish(
                 _event_broadcaster.publish(task_id, "step", {"currentStep": step, "stepLabel": label})
             )
+
+
+async def _task_golden_context(task_id: str) -> Dict[str, Any]:
+    """Resolve golden metadata from memory first, then persisted history."""
+    task = tasks.get(task_id) or {}
+    request_data = task.get("request")
+    result_data: Dict[str, Any] = task
+
+    if not request_data:
+        try:
+            history = await asyncio.to_thread(get_history_detail, task_id)
+        except Exception:
+            history = None
+        if history:
+            request_data = history.get("config")
+            result_data = history.get("result") or {}
+
+    if not request_data:
+        raise HTTPException(status_code=404, detail="原任务不存在或无法恢复参数签名")
+
+    signature = (
+        task.get("taskSignature")
+        or result_data.get("taskSignature")
+        or compute_task_signature(request_data)
+    )
+    return {
+        "signature": signature,
+        "request": request_data,
+        "execution_source": task.get("executionSource") or result_data.get("executionSource"),
+    }
+
+
+async def _transition_golden_from_feedback(task_id: str, verdict: str) -> Dict[str, Any]:
+    """Move the sole Python asset according to explicit user feedback."""
+    context = await _task_golden_context(task_id)
+    signature = context["signature"]
+    source = context.get("execution_source")
+    path: Optional[Path] = None
+    status: Optional[str] = None
+
+    if verdict == "correct":
+        path = _golden_store.activate(task_id=task_id, signature=signature)
+        if path is not None:
+            status = "active"
+    elif source == "golden_replay":
+        path = _golden_store.invalidate_active(signature=signature, task_id=task_id)
+        status = "invalid" if path is not None else None
+    else:
+        path = _golden_store.reject_pending(task_id=task_id, signature=signature)
+        status = "invalid" if path is not None else None
+
+    existing_task = tasks.get(task_id) or {}
+    if path is None and existing_task.get("goldenStatus") == "invalid":
+        existing_path = existing_task.get("goldenCodePath")
+        if existing_path:
+            path = Path(existing_path)
+            status = "invalid"
+
+    update = {
+        "taskSignature": signature,
+        "goldenStatus": status,
+        "goldenCodePath": str(path) if path is not None else None,
+    }
+    if task_id in tasks:
+        tasks[task_id].update(update)
+
+    # Keep the pending Episode relationship aligned before commit_episode
+    # appends it to JSONL. The draft stores only path/signature metadata.
+    if config is not None:
+        try:
+            from memory import MemoryStore  # type: ignore
+            store = MemoryStore(config.memory_root)
+            draft = await asyncio.to_thread(store.read_draft, task_id)
+            if draft is not None:
+                draft.update({
+                    "task_signature": signature,
+                    "golden_status": status,
+                    "golden_code_path": str(path) if path is not None else None,
+                })
+                await asyncio.to_thread(store.write_draft, draft)
+        except Exception as exc:
+            _add_log(task_id, f"[WARNING] Episode 黄金关联同步失败: {exc}")
+
+    # Persist the relationship without changing the task execution status.
+    try:
+        history = await asyncio.to_thread(get_history_detail, task_id)
+        if history:
+            persisted_result = dict(history.get("result") or {})
+            persisted_result.update(update)
+            await asyncio.to_thread(
+                update_history_status,
+                task_id,
+                history.get("status") or "completed",
+                persisted_result,
+            )
+    except Exception as exc:
+        _add_log(task_id, f"[WARNING] 历史记录黄金关联同步失败: {exc}")
+    return update
+
+
+def _golden_failure_is_definitive(error: str) -> bool:
+    """Avoid invalidating good code for infrastructure/network failures."""
+    value = str(error or "").lower()
+    transient_markers = (
+        "timeout", "timed out", "429", "rate limit", "temporarily unavailable",
+        "connection reset", "connection refused", "dns", "name resolution",
+        "chrome", "browser", "cdp", "任务已被用户取消", "任务被用户停止",
+    )
+    return not any(marker in value for marker in transient_markers)
+
+
+async def _download_news_attachments(
+    *,
+    task_id: str,
+    articles: List[Dict[str, Any]],
+    request: GenerateRequest,
+) -> tuple[int, Optional[Path]]:
+    """Best-effort local download while preserving every remote URL."""
+    if request.downloadReport != "yes" or not articles or config is None:
+        return 0, None
+
+    attachment_count = sum(len(article.get("attachments") or []) for article in articles)
+    if attachment_count <= 0:
+        return 0, None
+
+    import httpx
+
+    folder_name = f"{task_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_news"
+    base_dir = config.output_dir.parent / "output" / "output_pdf"
+    output_dir = base_dir / folder_name
+    output_dir.mkdir(parents=True, exist_ok=True)
+    _add_log(task_id, f"[INFO] 正在下载新闻附件，共 {attachment_count} 个候选")
+
+    downloaded = 0
+    sequence = 0
+    downloaded_by_url: Dict[str, Dict[str, Any]] = {}
+    max_bytes = 50 * 1024 * 1024
+    default_headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "application/pdf, application/octet-stream, */*",
+        "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+    }
+
+    async with httpx.AsyncClient(timeout=60.0, follow_redirects=True, verify=False) as client:
+        for article in articles:
+            referer = str(article.get("sourceUrl") or request.url)
+            for attachment in article.get("attachments") or []:
+                url = str(attachment.get("url") or "").strip()
+                if not url:
+                    continue
+                if url in downloaded_by_url:
+                    attachment.update(downloaded_by_url[url])
+                    continue
+
+                sequence += 1
+                try:
+                    response = await client.get(url, headers={**default_headers, "Referer": referer})
+                    if response.status_code != 200:
+                        _add_log(task_id, f"[WARNING] 新闻附件下载失败 ({response.status_code}): {url[:120]}")
+                        continue
+                    declared_size = int(response.headers.get("content-length") or 0)
+                    if declared_size > max_bytes or len(response.content) > max_bytes:
+                        _add_log(task_id, f"[WARNING] 新闻附件超过 50MB，保留远程链接: {url[:120]}")
+                        continue
+
+                    content_type = (response.headers.get("content-type") or "").lower()
+                    detected_type = "pdf" if (
+                        "application/pdf" in content_type or response.content.startswith(b"%PDF")
+                    ) else infer_file_type(url, mime_type=content_type, label=attachment.get("name", ""))
+                    requested_type = str(attachment.get("fileType") or "file").lower().lstrip(".")
+                    if requested_type not in (set(FILE_TYPES.values()) | {"file"}):
+                        requested_type = "file"
+                    if requested_type == "pdf" and detected_type != "pdf":
+                        _add_log(task_id, f"[WARNING] PDF 候选返回的不是 PDF，保留远程链接: {url[:120]}")
+                        continue
+
+                    file_type = detected_type if detected_type != "file" else requested_type
+                    if file_type == "file":
+                        file_type = "bin"
+                    raw_name = str(attachment.get("name") or f"attachment_{sequence}")[:80]
+                    safe_name = re.sub(r"[^A-Za-z0-9._\-\u4e00-\u9fff ]+", "_", raw_name).strip(" ._")
+                    safe_name = safe_name or f"attachment_{sequence}"
+                    known_suffix = f".{file_type}"
+                    if safe_name.lower().endswith(known_suffix):
+                        safe_name = safe_name[: -len(known_suffix)].rstrip(" ._") or f"attachment_{sequence}"
+                    filename = f"{sequence}_{safe_name}.{file_type}"
+                    local_path = output_dir / filename
+                    local_path.write_bytes(response.content)
+                    relationship = {
+                        "fileType": file_type,
+                        "localPath": f"{folder_name}/{filename}",
+                        "isLocal": True,
+                    }
+                    attachment.update(relationship)
+                    downloaded_by_url[url] = relationship
+                    downloaded += 1
+                    _add_log(task_id, f"[SUCCESS] 新闻附件已下载: {filename}")
+                except Exception as exc:
+                    _add_log(task_id, f"[WARNING] 新闻附件下载异常，保留远程链接: {str(exc)[:100]}")
+
+    if downloaded <= 0:
+        try:
+            output_dir.rmdir()
+        except OSError:
+            pass
+        return 0, None
+    _add_log(task_id, f"[SUCCESS] 共下载 {downloaded} 个新闻附件到 {output_dir}")
+    return downloaded, output_dir
 
 # ============ 核心逻辑：获取目录树 ============
 
@@ -373,6 +602,19 @@ async def _run_generation_task(task_id: str, request: GenerateRequest):
     """后台执行爬虫脚本生成"""
     launcher = None
     browser = None
+    planner_result = None
+    runtime_report = None
+    memory_finalized = False
+    golden_runtime_started = False
+    task_signature = tasks.get(task_id, {}).get("taskSignature") or compute_task_signature(request)
+    golden_asset = _golden_store.load_active(task_signature)
+    if task_id in tasks:
+        tasks[task_id].update({
+            "taskSignature": task_signature,
+            "executionSource": "golden_replay" if golden_asset else "generated",
+            "goldenCodePath": str(golden_asset.path) if golden_asset else None,
+            "goldenStatus": "active" if golden_asset else None,
+        })
     
     try:
         tasks[task_id]["status"] = "running"
@@ -462,13 +704,20 @@ async def _run_generation_task(task_id: str, request: GenerateRequest):
         task_browsers[task_id]["browser"] = browser
         
         # ================================================================
-        # Agent 模式：使用 Planner 自主决策（替代原有 crawlMode 分支）
+        # Agent 模式：使用证据驱动专家状态机（替代原有 crawlMode 分支）
         # ================================================================
         if _is_cancelled(task_id):
             raise RuntimeError("任务已被用户取消")
 
-        _update_step(task_id, 2, "正在启动 Agent 智能决策")
-        _add_log(task_id, "[INFO] Agent 模式 (LangGraph)：Planner 将自主探测网站并生成代码")
+        if golden_asset:
+            _update_step(task_id, 2, "已命中黄金爬虫，跳过大模型")
+            _add_log(
+                task_id,
+                f"[GOLDEN] 参数签名命中 active/{task_signature}.py，将直接复用人工确认代码",
+            )
+        else:
+            _update_step(task_id, 2, "正在启动 Agent 智能决策")
+            _add_log(task_id, "[INFO] Agent 模式 (LangGraph)：Supervisor 将按阶段调度专家、Gate 与失败回退")
 
         task_objective = (request.taskObjective or request.extraRequirements or "").strip()
         supplemental_lines: List[str] = []
@@ -520,23 +769,18 @@ async def _run_generation_task(task_id: str, request: GenerateRequest):
             max_iterations=config.agent_max_iterations if config else 20,
             cancel_check=lambda: _is_cancelled(task_id),
             prev_task_id=request.prevTaskId or None,
-            # Allow the Stage-1 Summary Agent (running as the last node of
-            # planner_graph) to advance the side-bar UI to "🧠 Agent 正在
-            # 自我复盘" the moment it actually starts. Without this the
-            # phase runs invisibly inside step 6 ("正在调用LLM生成爬虫脚本")
-            # and the user perceives a sudden jump straight to "task done".
+            # Specialist and runtime-finalization phases can update the sidebar
+            # through one thread-safe callback.
             step_callback=lambda step, label: _update_step(task_id, step, label),
+            reusable_script_code=golden_asset.code if golden_asset else None,
+            task_signature=task_signature,
+            golden_code_path=str(golden_asset.path) if golden_asset else None,
         )
 
-        # Surface Stage-1 summary outputs onto the task record so the
-        # frontend feedback Modal can read them via /api/status.
-        try:
-            tasks[task_id]["autoFindings"] = planner_result.auto_findings
-            tasks[task_id]["summaryDraftPath"] = planner_result.summary_draft_path
-            tasks[task_id]["htmlFingerprint"] = planner_result.html_fingerprint
-            tasks[task_id]["pendingFeedback"] = bool(planner_result.summary_draft_path)
-        except Exception:
-            pass
+        tasks[task_id]["stageEvidence"] = planner_result.stage_evidence
+        tasks[task_id]["validationReports"] = planner_result.validation_reports
+        tasks[task_id]["attributionDecision"] = planner_result.attribution_decision
+        tasks[task_id]["repairHistory"] = planner_result.repair_history
 
         if not planner_result.success or not planner_result.script_code:
             error_msg = planner_result.error or "Agent 未能生成有效代码"
@@ -547,60 +791,20 @@ async def _run_generation_task(task_id: str, request: GenerateRequest):
         enhanced_analysis = planner_result.enhanced_analysis
         verified_mapping = planner_result.verified_mapping
 
-        _add_log(task_id, f"[SUCCESS] Agent 完成: {planner_result.iterations} 次迭代, "
-                          f"{len(planner_result.tool_calls)} 次工具调用")
+        if golden_asset:
+            _add_log(task_id, "[SUCCESS] 黄金爬虫已加载：0 次 LLM 调用，0 次专家工具调用")
+        else:
+            _add_log(task_id, f"[SUCCESS] Agent 完成: {planner_result.iterations} 次迭代, "
+                              f"{len(planner_result.tool_calls)} 次工具调用")
         _add_log(task_id, f"[INFO] 策略: {planner_result.strategy_summary[:200]}")
 
-        # 后处理：如果 Planner 发现了可信映射，注入到代码中
-        if verified_mapping:
-            try:
-                from main import _inject_selected_categories_and_fix_dates
-                script_code = _inject_selected_categories_and_fix_dates(
-                    script_code=script_code,
-                    start_date=request.startDate,
-                    end_date=request.endDate,
-                    verified_mapping=verified_mapping,
-                )
-                injected_filters = len((verified_mapping or {}).get("menu_to_filters", {})) if isinstance(verified_mapping, dict) else 0
-                injected_urls = len((verified_mapping or {}).get("menu_to_urls", {})) if isinstance(verified_mapping, dict) else 0
-                _add_log(task_id, f"[INFO] 已注入可信映射（filters={injected_filters}，urls={injected_urls}）")
-            except Exception as inj_err:
-                _add_log(task_id, f"[WARNING] 可信映射注入失败: {inj_err}")
-        
         # 兜底：确保 script_code 是字符串
         if not isinstance(script_code, str) or not script_code.strip():
             _add_log(task_id, "[ERROR] 脚本生成失败：script_code 为空或非字符串")
             raise RuntimeError("脚本生成失败：script_code 为空或非字符串")
 
-        # Step 8: 验证代码（可选）
-        if auto_repair_enabled:
-            _update_step(task_id, 8, "正在验证生成的代码")
-            _add_log(task_id, "[INFO] 正在进行静态代码检查...")
-            try:
-                from validator import StaticCodeValidator
-                validator = StaticCodeValidator()
-                issues = validator.validate(script_code)
-                if validator.has_errors():
-                    error_issues = [i for i in issues if i.severity.value == "error"]
-                    _add_log(task_id, f"[ERROR] 代码验证失败：发现 {len(error_issues)} 个错误")
-                    for it in error_issues[:5]:
-                        line_info = f"（行 {it.line_number}）" if getattr(it, "line_number", None) else ""
-                        _add_log(task_id, f"[ERROR] - [{it.code}]{line_info} {it.message}")
-                    raise RuntimeError("生成的脚本未通过语法/规则验证，已终止任务")
-                else:
-                    warn_issues = [i for i in issues if i.severity.value == "warning"]
-                    if warn_issues:
-                        _add_log(task_id, f"[WARNING] 代码检查通过，但有 {len(warn_issues)} 个警告")
-                    else:
-                        _add_log(task_id, "[SUCCESS] 代码验证通过")
-            except ImportError:
-                _add_log(task_id, "[INFO] 验证器模块未安装，跳过验证")
-            except RuntimeError:
-                raise
-            except Exception as val_err:
-                _add_log(task_id, f"[WARNING] 验证时出现问题: {val_err}")
-        else:
-            _update_step(task_id, 8, "已跳过（auto_repair=false）")
+        # Static validation and repair already ran inside Codegen + Critic gates.
+        _update_step(task_id, 8, "代码证据与静态 Gate 已通过")
 
         # Step 9: 保存脚本
         print(f"[DEBUG][task={task_id}] === 进入 Step 9: 保存脚本 ===")
@@ -623,88 +827,47 @@ async def _run_generation_task(task_id: str, request: GenerateRequest):
         _add_log(task_id, f"[SUCCESS] 脚本已保存: {output_path}")
         _add_log(task_id, f"[SUCCESS] 文件大小: {len(script_code):,} 字符")
         
-        # Step 10: 自动运行生成的爬虫脚本
+        # Step 10: 在任务独立目录中运行生成脚本。ExecutorSession 优先使用
+        # Docker；没有 Docker 时才按配置回退到 local backend。
         print(f"[DEBUG][task={task_id}] 检查任务是否被取消 (Step 10 前)...")
         if _is_cancelled(task_id):
             raise RuntimeError("任务已被用户取消")
             
         print(f"[DEBUG][task={task_id}] === 进入 Step 10: 运行爬虫脚本 ===")
         _update_step(task_id, 10, "正在运行爬虫脚本")
-        _add_log(task_id, f"[INFO] 正在运行: python {output_path}")
-        
-        import subprocess
-        import sys
-        import os as _os_env
-        
-        try:
-            # 设置 UTF-8 编码环境，避免 Windows GBK 编码问题（LLM 生成的代码可能包含 emoji）
-            script_env = _os_env.environ.copy()
-            script_env["PYTHONIOENCODING"] = "utf-8"
-            
-            # 运行生成的脚本（使用 asyncio.create_subprocess_exec 以免阻塞主线程）
-            # 注意：create_subprocess_exec 不支持 text/encoding 参数，需手动解码
-            process = await asyncio.create_subprocess_exec(
-                sys.executable, str(output_path),
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-                cwd=str(output_dir),
-                env=script_env
+        _add_log(task_id, "[INFO] 正在任务隔离沙箱中运行 crawler.py")
+        from execution_service import TaskExecutionService
+        execution_root = Path(__file__).parent / "output" / "tasks"
+        runtime_service = TaskExecutionService(execution_root)
+        golden_runtime_started = bool(golden_asset)
+        runtime_report_obj, runtime_payload = await runtime_service.execute(
+            task_id=task_id,
+            script_code=script_code,
+            run_mode=request.runMode,
+            config=config,
+            timeout_sec=300,
+        )
+        runtime_report = runtime_report_obj.to_dict()
+        tasks[task_id]["runtimeReport"] = runtime_report
+        rewrite_count = int((runtime_report.get("stage_counts") or {}).get("output_path_rewrites") or 0)
+        if rewrite_count:
+            _add_log(
+                task_id,
+                f"[INFO] Runtime 已将 {rewrite_count} 个绝对输出目录重定向到当前任务目录",
             )
-            
-            # 存储进程引用以便可以停止
-            task_processes[task_id] = process
-            
-            try:
-                # 等待进程完成，最多5分钟
-                stdout_bytes, stderr_bytes = await asyncio.wait_for(process.communicate(), timeout=300)
-                
-                # 解码输出
-                stdout = stdout_bytes.decode("utf-8", errors="replace") if stdout_bytes else ""
-                stderr = stderr_bytes.decode("utf-8", errors="replace") if stderr_bytes else ""
-                
-                if process.returncode == 0:
-                    _add_log(task_id, "[SUCCESS] 爬虫脚本运行成功")
-                    # 只显示最后1000字符避免日志过长
-                    if stdout:
-                        stdout_preview = stdout[-1000:] if len(stdout) > 1000 else stdout
-                        _add_log(task_id, stdout_preview)
-                elif process.returncode == -9 or process.returncode == -15:
-                    _add_log(task_id, "[INFO] 脚本已被用户停止")
-                else:
-                    _add_log(task_id, f"[ERROR] 脚本运行失败，返回码: {process.returncode}")
-                    if stderr:
-                        _add_log(task_id, f"[STDERR] {stderr[-800:]}")
-                    # 直接终止任务（否则会出现“脚本失败但任务完成”的误导）
-                    raise RuntimeError(f"爬虫脚本运行失败（返回码 {process.returncode}）")
-                        
-            except asyncio.TimeoutError:
-                _add_log(task_id, "[WARNING] 脚本运行超时（5分钟），正在终止...")
-                try:
-                    process.kill()
-                    await process.wait()
-                except:
-                    pass
-            finally:
-                # 清理进程引用
-                if task_id in task_processes:
-                    del task_processes[task_id]
-                    
-        except Exception as run_err:
-            _add_log(task_id, f"[WARNING] 运行脚本时出错: {run_err}")
+        if runtime_report.get("stdout_tail"):
+            _add_log(task_id, runtime_report["stdout_tail"][-1000:])
+        if not runtime_report_obj.success:
+            _add_log(task_id, f"[ERROR] Runtime Gate 失败: {runtime_report_obj.error}")
+            raise RuntimeError(runtime_report_obj.error or "Runtime Gate failed")
+        _add_log(task_id, f"[SUCCESS] Runtime Gate 通过，records={runtime_report_obj.record_count}")
         
         # Step 11: 验证爬取结果
         _update_step(task_id, 11, "📊 正在验证爬取结果")
         
-        # 查找输出的文件（在 output 目录）
-        # 兼容两种路径：pygen/output 和 pygen/py/output
-        possible_dirs = []
-        if output_dir:
-            possible_dirs.append(output_dir.parent / "output") # pygen/output
-            possible_dirs.append(output_dir / "output")        # pygen/py/output
-        else:
-            possible_dirs.append(Path("./output"))
-            possible_dirs.append(Path("pygen/output"))
-            possible_dirs.append(Path("pygen/py/output"))
+        # Runtime service returns only files owned by this task. Never scan
+        # process-wide output directories or use "latest file" heuristics.
+        possible_dirs = [Path(runtime_report["workdir"])]
             
         # 确定主输出目录（用于后续下载文件存放等），优先选择存在的目录
         output_json_dir = possible_dirs[0]
@@ -717,25 +880,10 @@ async def _run_generation_task(task_id: str, request: GenerateRequest):
         news_articles = []
         markdown_file = None
         
-        all_json_files = []
-        for d in possible_dirs:
-            if d.exists():
-                # 注意：Windows 下可能存在“以 .json 结尾的目录”（历史 bug），glob("*.json") 会把目录也返回
-                # 这里显式过滤，仅保留真正的文件；若遇到 *.json 目录，则尝试读取其内部的 *.json 文件作为兜底
-                for p in d.glob("*.json"):
-                    try:
-                        if p.is_file():
-                            all_json_files.append(p)
-                        elif p.is_dir():
-                            # 兜底：将目录内的 json 文件也纳入候选（修复历史产物：pygen_multi_*.json/xxx.json）
-                            for q in p.glob("*.json"):
-                                if q.is_file():
-                                    all_json_files.append(q)
-                    except Exception:
-                        continue
-        
-        # 去重
-        all_json_files = list(set(all_json_files))
+        all_json_files = [
+            Path(path) for path in (runtime_report.get("output_files") or [])
+            if Path(path).is_file() and Path(path).suffix.lower() == ".json"
+        ]
         
         if all_json_files:
             # 根据运行模式处理不同的结果格式
@@ -793,19 +941,33 @@ async def _run_generation_task(task_id: str, request: GenerateRequest):
                                 if not isinstance(item, dict):
                                     continue
                                 
+                                content = _safe_str(item.get("content"), "")
+                                normalized_item = dict(item)
+                                normalized_item.update({
+                                    "sourceUrl": _safe_str(item.get("sourceUrl") or item.get("url") or item.get("link"), ""),
+                                    "content": content,
+                                })
+                                attachments = normalize_news_attachments(normalized_item)
                                 news_articles.append({
                                     "id": str(i + 1),
                                     "title": _safe_str(item.get("title"), "未知") or "未知",
                                     "author": _safe_str(item.get("author"), ""),
                                     "date": _safe_str(item.get("date"), ""),
                                     "source": _safe_str(item.get("source"), ""),
-                                    "sourceUrl": _safe_str(item.get("sourceUrl") or item.get("url") or item.get("link"), ""),
+                                    "sourceUrl": normalized_item["sourceUrl"],
                                     "summary": _safe_str(item.get("summary"), ""),
-                                    "content": _safe_str(item.get("content"), ""),
+                                    "content": content,
                                     "category": _safe_str(item.get("category"), ""),  # 来源板块
+                                    "attachments": attachments,
                                 })
                             
-                            _add_log(task_id, f"[SUCCESS] 解析到 {len(news_articles)} 条新闻")
+                            articles_with_content = sum(1 for item in news_articles if item.get("content"))
+                            articles_with_attachments = sum(1 for item in news_articles if item.get("attachments"))
+                            attachment_total = sum(len(item.get("attachments") or []) for item in news_articles)
+                            _add_log(
+                                task_id,
+                                f"[SUCCESS] 解析到 {len(news_articles)} 条新闻，正文 {articles_with_content} 条，附件 {attachment_total} 个",
+                            )
                     except Exception as parse_err:
                         _add_log(task_id, f"[WARNING] 解析新闻 JSON 失败: {parse_err}")
                 else:
@@ -906,6 +1068,42 @@ async def _run_generation_task(task_id: str, request: GenerateRequest):
         else:
             _add_log(task_id, f"[INFO] 未找到 output 目录: {output_json_dir}")
         
+        # Final Output Gate runs after API-side normalization and date filtering.
+        # A crawler that exits cleanly but yields no usable records is a failure.
+        final_record_count = (
+            len(news_articles) if request.runMode == "news_sentiment" else len(reports)
+        )
+        runtime_report.setdefault("stage_counts", {})["after_date_filter"] = final_record_count
+        runtime_report["stage_counts"]["final_records"] = final_record_count
+        runtime_report["record_count"] = final_record_count
+        if request.runMode == "news_sentiment":
+            runtime_report["stage_counts"].update({
+                "articles_with_content": sum(1 for item in news_articles if item.get("content")),
+                "articles_with_attachments": sum(1 for item in news_articles if item.get("attachments")),
+                "articles_with_content_and_attachments": sum(
+                    1 for item in news_articles if item.get("content") and item.get("attachments")
+                ),
+                "attachment_count": sum(len(item.get("attachments") or []) for item in news_articles),
+            })
+        if final_record_count <= 0:
+            runtime_report["success"] = False
+            runtime_report["error"] = (
+                "Final Output Gate failed: crawler produced no usable records "
+                "after normalization and date filtering"
+            )
+            tasks[task_id]["runtimeReport"] = runtime_report
+            _add_log(task_id, f"[ERROR] {runtime_report['error']}")
+            raise RuntimeError(runtime_report["error"])
+
+        manifest_path = Path(runtime_report["workdir"]) / "result_manifest.json"
+        try:
+            with open(manifest_path, "w", encoding="utf-8") as manifest_file:
+                json.dump(runtime_report, manifest_file, ensure_ascii=False, indent=2)
+        except Exception as manifest_err:
+            _add_log(task_id, f"[WARNING] 更新运行清单失败: {manifest_err}")
+        tasks[task_id]["runtimeReport"] = runtime_report
+        _add_log(task_id, f"[SUCCESS] Final Output Gate 通过，records={final_record_count}")
+
         # ============ PDF 下载逻辑（企业报告/新闻报告场景 + 选择下载文件）============
         downloaded_count = 0
         files_not_enough = False
@@ -1026,6 +1224,15 @@ async def _run_generation_task(task_id: str, request: GenerateRequest):
             # 只保留已下载的报告（前5个）
             reports = downloaded_reports
             _add_log(task_id, f"[SUCCESS] 共下载 {downloaded_count} 个文件到 {pdf_output_dir}")
+
+        if request.runMode == "news_sentiment":
+            downloaded_count, pdf_output_dir = await _download_news_attachments(
+                task_id=task_id,
+                articles=news_articles,
+                request=request,
+            )
+            tasks[task_id]["downloadedCount"] = downloaded_count
+            tasks[task_id]["pdfOutputDir"] = str(pdf_output_dir) if pdf_output_dir else None
         
         # 新闻舆情模式：如果选择下载，则保存 Markdown 文件
         if request.runMode == "news_sentiment" and request.downloadReport == "yes" and len(news_articles) > 0:
@@ -1058,6 +1265,13 @@ async def _run_generation_task(task_id: str, request: GenerateRequest):
                     md_lines.append(f"- **作者**: {article['author']}")
                 if article.get('sourceUrl'):
                     md_lines.append(f"- **链接**: [{article['sourceUrl']}]({article['sourceUrl']})")
+                for attachment in article.get('attachments') or []:
+                    attachment_url = attachment.get('url')
+                    if attachment_url:
+                        md_lines.append(
+                            f"- **附件 ({attachment.get('fileType', 'file').upper()})**: "
+                            f"[{attachment.get('name') or 'Download'}]({attachment_url})"
+                        )
                 if article.get('summary'):
                     md_lines.append(f"")
                     md_lines.append(f"> {article['summary']}")
@@ -1076,6 +1290,49 @@ async def _run_generation_task(task_id: str, request: GenerateRequest):
             markdown_file = str(md_filepath)
             _add_log(task_id, f"[SUCCESS] Markdown 已保存: {md_filepath}")
         
+        # A generated script becomes a candidate only after both runtime and
+        # final-output validation have passed.  The full Python file is the
+        # only golden asset; no manifest or code copy is written elsewhere.
+        if golden_asset is None:
+            pending_path = _golden_store.stage_pending(
+                task_id=task_id,
+                signature=task_signature,
+                code=script_code,
+            )
+            tasks[task_id]["goldenStatus"] = "pending"
+            tasks[task_id]["goldenCodePath"] = str(pending_path)
+            _add_log(task_id, f"[GOLDEN] 候选爬虫已进入 pending，等待人工评价: {pending_path}")
+
+        planner_result.final_state.update({
+            "task_signature": task_signature,
+            "execution_source": tasks[task_id].get("executionSource"),
+            "golden_code_path": tasks[task_id].get("goldenCodePath"),
+            "golden_status": tasks[task_id].get("goldenStatus"),
+        })
+
+        # Stage-1 memory is grounded in the real isolated runtime result, not
+        # in a specialist's self-reported success.
+        try:
+            from memory import finalize_runtime_episode
+            memory_summary = await asyncio.to_thread(
+                finalize_runtime_episode,
+                planner_result=planner_result,
+                runtime_report=runtime_report,
+                final_output={"reports": reports, "newsArticles": news_articles},
+                config=config,
+                log_callback=lambda msg: _add_log(task_id, msg),
+            )
+            tasks[task_id]["autoFindings"] = memory_summary.get("auto_findings")
+            tasks[task_id]["summaryDraftPath"] = memory_summary.get("summary_draft_path")
+            tasks[task_id]["htmlFingerprint"] = memory_summary.get("html_fingerprint")
+            tasks[task_id]["pendingFeedback"] = bool(memory_summary.get("summary_draft_path"))
+            tasks[task_id]["validationReports"] = memory_summary.get("validation_reports")
+            tasks[task_id]["attributionDecision"] = memory_summary.get("attribution_decision")
+            tasks[task_id]["repairHistory"] = memory_summary.get("repair_history")
+            memory_finalized = True
+        except Exception as memory_err:
+            _add_log(task_id, f"[WARNING] Runtime-grounded memory 写入失败: {memory_err}")
+
         # Step 12: 任务完成
         _update_step(task_id, 13, "🎉 任务完成")
         
@@ -1083,6 +1340,8 @@ async def _run_generation_task(task_id: str, request: GenerateRequest):
         if request.runMode == "news_sentiment":
             tasks[task_id]["newsArticles"] = news_articles
             tasks[task_id]["markdownFile"] = markdown_file
+            tasks[task_id]["downloadedCount"] = downloaded_count
+            tasks[task_id]["pdfOutputDir"] = str(pdf_output_dir) if pdf_output_dir else None
         else:
             tasks[task_id]["reports"] = reports
             tasks[task_id]["downloadedCount"] = downloaded_count
@@ -1164,6 +1423,34 @@ async def _run_generation_task(task_id: str, request: GenerateRequest):
         
     except Exception as e:
         error_str = str(e)
+        if golden_asset is not None and golden_runtime_started and _golden_failure_is_definitive(error_str):
+            invalid_path = _golden_store.invalidate_active(
+                signature=task_signature,
+                task_id=task_id,
+            )
+            if invalid_path is not None:
+                tasks[task_id]["goldenStatus"] = "invalid"
+                tasks[task_id]["goldenCodePath"] = str(invalid_path)
+                _add_log(
+                    task_id,
+                    "[GOLDEN] 已确认黄金爬虫无法通过结果 Gate，已移入 invalid；下次相同参数将重新走 Agent",
+                )
+        elif golden_asset is None:
+            rejected_path = _golden_store.reject_pending(
+                task_id=task_id,
+                signature=task_signature,
+            )
+            if rejected_path is not None:
+                tasks[task_id]["goldenStatus"] = "invalid"
+                tasks[task_id]["goldenCodePath"] = str(rejected_path)
+
+        if planner_result is not None:
+            planner_result.final_state.update({
+                "task_signature": task_signature,
+                "execution_source": tasks[task_id].get("executionSource"),
+                "golden_code_path": tasks[task_id].get("goldenCodePath"),
+                "golden_status": tasks[task_id].get("goldenStatus"),
+            })
         # 如果是用户取消，使用更友好的消息
         if "任务已被用户取消" in error_str:
             _add_log(task_id, "[INFO] 任务已被用户停止")
@@ -1175,6 +1462,39 @@ async def _run_generation_task(task_id: str, request: GenerateRequest):
             _add_log(task_id, f"[ERROR] {traceback.format_exc()}")
         
         tasks[task_id]["status"] = "failed"
+
+        # Preserve failed runtime evidence as a pending memory draft. This is
+        # where hidden selector/API mistakes become learnable across reruns.
+        if planner_result is not None and not memory_finalized:
+            try:
+                from memory import finalize_runtime_episode
+                failure_report = dict(runtime_report or {})
+                failure_report.update({
+                    "success": False,
+                    "error": error_str,
+                    "record_count": int(failure_report.get("record_count") or 0),
+                })
+                memory_summary = await asyncio.to_thread(
+                    finalize_runtime_episode,
+                    planner_result=planner_result,
+                    runtime_report=failure_report,
+                    final_output={
+                        "reports": tasks[task_id].get("reports") or [],
+                        "newsArticles": tasks[task_id].get("newsArticles") or [],
+                    },
+                    config=config,
+                    log_callback=lambda msg: _add_log(task_id, msg),
+                )
+                tasks[task_id]["autoFindings"] = memory_summary.get("auto_findings")
+                tasks[task_id]["summaryDraftPath"] = memory_summary.get("summary_draft_path")
+                tasks[task_id]["htmlFingerprint"] = memory_summary.get("html_fingerprint")
+                tasks[task_id]["pendingFeedback"] = bool(memory_summary.get("summary_draft_path"))
+                tasks[task_id]["validationReports"] = memory_summary.get("validation_reports")
+                tasks[task_id]["attributionDecision"] = memory_summary.get("attribution_decision")
+                tasks[task_id]["repairHistory"] = memory_summary.get("repair_history")
+                memory_finalized = True
+            except Exception as memory_err:
+                _add_log(task_id, f"[WARNING] 失败任务记忆写入失败: {memory_err}")
 
         try:
             result_to_save = tasks[task_id].copy()
@@ -1278,7 +1598,7 @@ async def rerun_task(task_id: str, body: Optional[Dict[str, Any]] = None):
 
     传入 ``verdict`` 时，先调用 :func:`commit_episode` 把上一次的草稿
     晋升为正式记录并更新站点画像；接着把 ``prev_task_id = task_id``
-    透传给新任务，使 ``feedback_replay_hint`` 能注入到 planner 提示词
+    透传给新任务，使 ``feedback_replay_hint`` 能注入专家图初始状态
     最顶端。
     """
     body = body or {}
@@ -1305,6 +1625,14 @@ async def rerun_task(task_id: str, body: Optional[Dict[str, Any]] = None):
         raise HTTPException(status_code=404, detail="原任务不存在或已失效")
 
     if verdict and not skip_feedback:
+        try:
+            golden_update = await _transition_golden_from_feedback(task_id, verdict)
+            print(
+                f"[GOLDEN] rerun pre-transition: status={golden_update.get('goldenStatus')} "
+                f"path={golden_update.get('goldenCodePath')}"
+            )
+        except Exception as golden_err:
+            print(f"[GOLDEN] transition before rerun failed (continuing): {golden_err}")
         try:
             commit_result = await _commit_feedback_async(
                 task_id=task_id,
@@ -1479,6 +1807,17 @@ async def submit_task_feedback(task_id: str, body: FeedbackRequest):
         _update_step(task_id, current_step, "🧠 Agent 正在根据反馈做 LLM 深度复盘…")
 
     try:
+        golden_update = await _transition_golden_from_feedback(task_id, verdict)
+    except Exception as e:
+        _add_log(task_id, f"[ERROR] 黄金爬虫状态迁移失败: {e}")
+        raise HTTPException(status_code=500, detail=f"golden crawler transition failed: {e}")
+
+    if golden_update.get("goldenStatus") == "active":
+        _add_log(task_id, f"[GOLDEN] 用户确认成功，黄金爬虫已激活: {golden_update.get('goldenCodePath')}")
+    elif golden_update.get("goldenStatus") == "invalid":
+        _add_log(task_id, f"[GOLDEN] 用户判定失败，脚本已移入 invalid: {golden_update.get('goldenCodePath')}")
+
+    try:
         result = await _commit_feedback_async(
             task_id=task_id,
             verdict=verdict,
@@ -1487,7 +1826,7 @@ async def submit_task_feedback(task_id: str, body: FeedbackRequest):
     except HTTPException:
         raise
     except Exception as e:
-        _add_log(task_id, f"❌ [SUMMARY/Stage-2] 复盘失败: {e}（draft 不会被删，可重新提交评价）")
+        _add_log(task_id, f"❌ [SUMMARY/Stage-2] 复盘失败: {e}（黄金脚本状态已按用户评价更新）")
         raise HTTPException(status_code=500, detail=f"commit_episode failed: {e}")
 
     # ---- Stage-2 收尾 ----
@@ -1535,13 +1874,6 @@ async def submit_task_feedback(task_id: str, body: FeedbackRequest):
         tasks[task_id]["userSuggestion"] = suggestion
         tasks[task_id]["pendingFeedback"] = False
 
-    # 同步更新历史记录的"成功/失败"标签（若可用）
-    try:
-        new_status = "success" if verdict == "correct" else "failed"
-        await asyncio.to_thread(update_history_status, task_id, new_status)
-    except Exception as e:
-        print(f"update_history_status after feedback failed: {e}")
-
     episode = result.get("episode") or {}
     profile = result.get("profile") or {}
     return {
@@ -1556,6 +1888,9 @@ async def submit_task_feedback(task_id: str, body: FeedbackRequest):
         "profile_quarantined": (
             profile.get("quarantined") if isinstance(profile, dict) else None
         ),
+        "task_signature": golden_update.get("taskSignature"),
+        "golden_status": golden_update.get("goldenStatus"),
+        "golden_code_path": golden_update.get("goldenCodePath"),
     }
 
 @app.post("/api/generate")
@@ -1571,6 +1906,7 @@ async def start_generation(request: GenerateRequest):
     
     # 创建任务
     task_id = str(uuid.uuid4())[:8]
+    task_signature = compute_task_signature(request)
 
     # 判断是否进入排队
     use_queue = _task_queue is not None
@@ -1579,6 +1915,10 @@ async def start_generation(request: GenerateRequest):
     tasks[task_id] = {
         "taskId": task_id,
         "request": request.model_dump(),
+        "taskSignature": task_signature,
+        "executionSource": None,
+        "goldenCodePath": None,
+        "goldenStatus": None,
         "status": initial_status,
         "currentStep": 0,
         "totalSteps": 14,  # 0..13: 启动 → 连接 → 打开 → 滚动 → 分析 → 增强分析 → LLM 生成 → 验证代码 → 已生成 → 运行 → 验证结果 → 🧠 自我复盘 → 完成
@@ -1718,6 +2058,15 @@ async def get_task_status(task_id: str):
             htmlFingerprint=html_fingerprint,
             userVerdict=user_verdict,
             userSuggestion=user_suggestion,
+            stageEvidence=task.get("stageEvidence"),
+            validationReports=task.get("validationReports"),
+            attributionDecision=task.get("attributionDecision"),
+            repairHistory=task.get("repairHistory"),
+            runtimeReport=task.get("runtimeReport"),
+            taskSignature=task.get("taskSignature"),
+            executionSource=task.get("executionSource"),
+            goldenCodePath=task.get("goldenCodePath"),
+            goldenStatus=task.get("goldenStatus"),
         )
     
     # 2. 如果内存中没有，尝试从数据库获取（历史任务）
@@ -1748,6 +2097,15 @@ async def get_task_status(task_id: str):
                 htmlFingerprint=draft_html_fingerprint,
                 userVerdict=draft_user_verdict,
                 userSuggestion=draft_user_suggestion,
+                stageEvidence=result.get("stageEvidence") or (draft_disk or {}).get("stage_evidence"),
+                validationReports=result.get("validationReports") or (draft_disk or {}).get("validation_reports"),
+                attributionDecision=result.get("attributionDecision") or (draft_disk or {}).get("attribution_decision"),
+                repairHistory=result.get("repairHistory") or (draft_disk or {}).get("repair_history"),
+                runtimeReport=result.get("runtimeReport") or (draft_disk or {}).get("runtime_report"),
+                taskSignature=result.get("taskSignature") or (draft_disk or {}).get("task_signature"),
+                executionSource=result.get("executionSource") or (draft_disk or {}).get("execution_source"),
+                goldenCodePath=result.get("goldenCodePath") or (draft_disk or {}).get("golden_code_path"),
+                goldenStatus=result.get("goldenStatus") or (draft_disk or {}).get("golden_status"),
             )
     except Exception as e:
         print(f"从数据库恢复任务状态失败: {e}")
@@ -1769,6 +2127,15 @@ async def get_task_status(task_id: str):
             htmlFingerprint=draft_html_fingerprint,
             userVerdict=draft_user_verdict,
             userSuggestion=draft_user_suggestion,
+            stageEvidence=draft_disk.get("stage_evidence"),
+            validationReports=draft_disk.get("validation_reports"),
+            attributionDecision=draft_disk.get("attribution_decision"),
+            repairHistory=draft_disk.get("repair_history"),
+            runtimeReport=draft_disk.get("runtime_report"),
+            taskSignature=draft_disk.get("task_signature"),
+            executionSource=draft_disk.get("execution_source"),
+            goldenCodePath=draft_disk.get("golden_code_path"),
+            goldenStatus=draft_disk.get("golden_status"),
         )
 
     raise HTTPException(status_code=404, detail="任务不存在")
@@ -1867,8 +2234,13 @@ async def view_pdf(filepath: str):
         print(f"[DEBUG] pdf_base_dir 绝对路径: {pdf_base_dir.absolute()}")
         print(f"[DEBUG] pdf_base_dir 存在: {pdf_base_dir.exists()}")
         
-        # 首先尝试直接拼接路径
-        file_path = pdf_base_dir / decoded_path
+        # 首先尝试直接拼接路径，并阻止 ../ 穿越 output_pdf 根目录。
+        pdf_base_resolved = pdf_base_dir.resolve()
+        file_path = (pdf_base_dir / decoded_path).resolve()
+        try:
+            file_path.relative_to(pdf_base_resolved)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="非法文件路径")
         print(f"[DEBUG] 尝试路径: {file_path}")
         print(f"[DEBUG] 文件存在: {file_path.exists()}")
         
@@ -1971,23 +2343,6 @@ async def stop_task(task_id: str):
             _add_log(task_id, "[INFO] 异步任务已取消")
         if task_id in task_asyncio_tasks:
             del task_asyncio_tasks[task_id]
-    
-    # 尝试终止正在运行的子进程（爬虫脚本）
-    if task_id in task_processes:
-        process = task_processes[task_id]
-        try:
-            process.kill()
-            try:
-                await asyncio.wait_for(process.wait(), timeout=5)
-            except asyncio.TimeoutError:
-                pass
-            
-            _add_log(task_id, "[INFO] 爬虫脚本已终止")
-        except Exception as e:
-            _add_log(task_id, f"[WARNING] 终止进程时出错: {e}")
-        finally:
-            if task_id in task_processes:
-                del task_processes[task_id]
     
     # 尝试关闭浏览器
     if task_id in task_browsers:

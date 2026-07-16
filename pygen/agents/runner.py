@@ -5,9 +5,8 @@ Responsibilities:
 
 1. Build or accept the runtime singletons (``ArtifactStore``,
    ``Critic``, ``ExecutorSession``) and a shared ``ToolContext``.
-2. Construct the LLM (through ``agents.llm.build_chat_model``) and bind
-   the filtered tool set.
-3. Compile the planner graph (wrapped by the supervisor) and ``ainvoke``
+2. Construct the LLM (through ``agents.llm.build_chat_model``).
+3. Compile the evidence-driven specialist supervisor and ``ainvoke``
    it with the proper ``RunnableConfig['configurable']`` so every node
    can reach the runtime handles.
 4. Translate the graph's final ``AgentState`` back into a legacy
@@ -38,6 +37,7 @@ except ImportError:  # pragma: no cover
 try:
     from memory import (  # type: ignore
         MemoryStore,
+        compute_list_page_fingerprint,
         find_recent_task_id_for_domain,
         render_feedback_replay_hint,
         render_site_memory_hint,
@@ -48,6 +48,7 @@ try:
 except ImportError:  # pragma: no cover
     from ..memory import (
         MemoryStore,
+        compute_list_page_fingerprint,
         find_recent_task_id_for_domain,
         render_feedback_replay_hint,
         render_site_memory_hint,
@@ -60,7 +61,7 @@ from .result import PlannerResult
 
 from .critic_graph import finalize_verdict_from_state
 from .llm import build_chat_model
-from .planner_graph import build_initial_state_messages, build_planner_graph
+from .planner_graph import build_initial_state_messages
 from .rerun_validate import (
     pre_validate_rerun_selectors,
     render_pre_validation_hint,
@@ -72,7 +73,6 @@ from .tools_lc import (
     CANCEL_CHECK_CONFIG_KEY,
     CODEGEN_GRAPH_CONFIG_KEY,
     TOOL_CONTEXT_CONFIG_KEY,
-    select_tools_for_context,
 )
 from .codegen_graph import LLM_AGENT_CONFIG_KEY, PYGEN_CONFIG_KEY
 from .critic_graph import (
@@ -110,6 +110,9 @@ async def run_agent(
     memory_store: Optional[MemoryStore] = None,
     prev_task_id: Optional[str] = None,
     step_callback: Optional[Callable[[int, str], None]] = None,
+    reusable_script_code: Optional[str] = None,
+    task_signature: Optional[str] = None,
+    golden_code_path: Optional[str] = None,
 ) -> PlannerResult:
     """Run the LangGraph-based agent and return a ``PlannerResult``.
 
@@ -118,6 +121,36 @@ async def run_agent(
     """
     log = log_callback or (lambda _msg: None)
     _cancel = cancel_check or (lambda: False)
+
+    # An active golden crawler is already user-approved executable code.  This
+    # branch must stay ahead of model construction, memory lookup and graph
+    # compilation so an exact-signature replay never depends on an LLM.
+    if isinstance(reusable_script_code, str) and reusable_script_code.strip():
+        result = PlannerResult()
+        result.success = True
+        result.script_code = reusable_script_code
+        result.strategy_summary = "golden_replay"
+        result.final_state = {
+            "url": url,
+            "run_mode": run_mode,
+            "start_date": start_date,
+            "end_date": end_date,
+            "extra_requirements": extra_requirements,
+            "task_id": task_id,
+            "prev_task_id": prev_task_id,
+            "generated_code": reusable_script_code,
+            "code_strategy": "golden_replay",
+            "started_at": time.time(),
+            "task_signature": task_signature,
+            "execution_source": "golden_replay",
+            "golden_code_path": golden_code_path,
+            "golden_status": "active",
+            "stage_evidence": {},
+            "validation_reports": [],
+            "repair_history": [],
+        }
+        log("[GOLDEN] 已加载人工确认的黄金爬虫，跳过 LLM 与专家图")
+        return result
 
     owns_executor = False
     owns_artifact_store = False
@@ -374,21 +407,12 @@ async def run_agent(
             critic=critic,
         )
 
-        # --- Build LLM + tools + graph ----------------------------------
+        # --- Build LLM + evidence-driven specialist graph ---------------
         chat_model = build_chat_model(config, temperature=0.2)
-        tools = select_tools_for_context(
-            has_executor=executor_session is not None,
-            has_critic=critic is not None,
-            run_mode=run_mode,
-        )
-
-        planner_graph = build_planner_graph(
+        graph = build_supervisor_graph(
             llm=chat_model,
-            tools=tools,
-            max_iterations=max_iterations,
-            enable_critic=enable_critic,
+            has_executor=executor_session is not None,
         )
-        graph = build_supervisor_graph(planner_graph=planner_graph)
 
         # --- Initial state ----------------------------------------------
         state = initial_state(
@@ -423,11 +447,11 @@ async def run_agent(
             # ReAct iteration can internally produce 2 steps (AIMessage +
             # ToolMessage) so we multiply by 3 for generous headroom, plus
             # a few for critic/feedback transitions.
-            "recursion_limit": max(50, max_iterations * 3 + 20),
+            "recursion_limit": max(120, max_iterations * 8 + 40),
         }
 
         log(f"[LANGGRAPH] Starting agent (model={getattr(config, 'qwen_model', '?')}, "
-            f"max_iter={max_iterations}, tools={len(tools)})")
+            f"max_iter={max_iterations}, architecture=evidence-specialists)")
 
         try:
             final_state = await graph.ainvoke(state, config=runnable_config)
@@ -444,12 +468,15 @@ async def run_agent(
                 state, ctx, error=f"Graph invocation failed: {exc}"
             )
 
+        if not final_state.get("html_fingerprint") and getattr(ctx, "page_html", None):
+            final_state["html_fingerprint"] = compute_list_page_fingerprint(ctx.page_html)
+
         return _build_result_from_state(final_state, ctx, error=None)
 
     finally:
         if owns_executor and executor_session is not None:
             try:
-                await executor_session.stop()
+                await executor_session.close(force=True)
             except Exception:
                 pass
         # ArtifactStore / MemoryStore have no close() today; leave to GC.
@@ -479,6 +506,11 @@ def _build_result_from_state(
     result.auto_findings = state.get("auto_findings")
     result.summary_draft_path = state.get("summary_draft_path")
     result.html_fingerprint = state.get("html_fingerprint")
+    result.stage_evidence = dict(state.get("stage_evidence") or {})
+    result.validation_reports = list(state.get("validation_reports") or [])
+    result.attribution_decision = state.get("attribution_decision")
+    result.repair_history = list(state.get("repair_history") or [])
+    result.final_state = dict(state)
 
     # Prefer the (possibly critic-repaired) generated_code on state; fall
     # back to ctx for the rare pathological case where the mirror was
@@ -493,7 +525,7 @@ def _build_result_from_state(
         result.error = error
     elif not script_code.strip():
         result.success = False
-        result.error = "Agent did not produce any crawler code."
+        result.error = state.get("last_error") or "Agent did not produce any crawler code."
     elif critic_raw and not critic_raw.get("passed", False):
         # Match legacy behavior: if critic rejects, report the summary.
         verdict = finalize_verdict_from_state(state)

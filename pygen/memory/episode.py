@@ -146,13 +146,10 @@ def _count_code_lines(code: Optional[str]) -> int:
 # Draft context capture (Stage 2 LLM uses these for first-person retrospective)
 # ---------------------------------------------------------------------------
 
-# Caps to keep on-disk drafts manageable. Generous enough that a real run's
-# code + tool log fits, but short of the absurd. The commit-time prompt
-# builder may further truncate.
+# Caps to keep on-disk draft tool context manageable.
 MAX_TOOL_CALLS_KEEP = 80
 MAX_TOOL_INPUT_CHARS = 400
 MAX_TOOL_SUMMARY_CHARS = 600
-MAX_GENERATED_CODE_CHARS = 30000
 
 _LARGE_INPUT_KEYS = {"html", "page_html", "raw_html", "screenshot", "screenshot_b64",
                      "image", "image_base64", "content", "body"}
@@ -246,15 +243,6 @@ def _capture_initial_prompt(state: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def _capture_generated_code(code: Optional[str]) -> Optional[str]:
-    if not code or not isinstance(code, str):
-        return None
-    if len(code) <= MAX_GENERATED_CODE_CHARS:
-        return code
-    half = MAX_GENERATED_CODE_CHARS // 2
-    return code[:half] + "\n\n# … (middle elided to fit draft) …\n\n" + code[-half:]
-
-
 # ---------------------------------------------------------------------------
 # Fact extraction (Stage 1, zero LLM)
 # ---------------------------------------------------------------------------
@@ -343,14 +331,25 @@ def extract_facts_from_state(
         "lessons": None,
         # ---- retrospective context (Stage-2 LLM uses these) ----
         # Snapshotted at task end so the committing model has the same
-        # information the running model had — full code, ordered tool log,
-        # the original task brief — without us having to re-invoke any
-        # graph internals at commit time.
+        # ordered tool log and original task brief. Code is deliberately not
+        # copied into Episode; golden_code_path links to the sole Python asset.
         "task_brief": _capture_initial_prompt(state),
         "tool_calls_excerpt": _build_tool_calls_excerpt(tool_calls),
-        "generated_code": _capture_generated_code(generated_code),
         "code_strategy": _coerce_str(state.get("code_strategy"))[:1500] or None,
         "model_alias": model_alias,
+        # Evidence-driven orchestration and post-run facts.  These remain
+        # structured so Stage-2 can attribute feedback to a concrete candidate.
+        "stage_evidence": state.get("stage_evidence") or {},
+        "validation_reports": state.get("validation_reports") or [],
+        "repair_history": state.get("repair_history") or [],
+        "attribution_decision": state.get("attribution_decision"),
+        "runtime_report": state.get("runtime_report"),
+        # The executable source of truth lives in golden_crawlers/*.py.  The
+        # episode records only the relationship needed for audit and replay.
+        "task_signature": _coerce_str(state.get("task_signature")) or None,
+        "execution_source": _coerce_str(state.get("execution_source")) or None,
+        "golden_code_path": _coerce_str(state.get("golden_code_path")) or None,
+        "golden_status": _coerce_str(state.get("golden_status")) or None,
     }
 
 
@@ -394,7 +393,6 @@ def is_valid_task_id(task_id: str) -> bool:
 __all__ = [
     "EPISODE_SCHEMA_VERSION",
     "VALID_VERDICTS",
-    "MAX_GENERATED_CODE_CHARS",
     "MAX_TOOL_CALLS_KEEP",
     "MAX_TOOL_INPUT_CHARS",
     "MAX_TOOL_SUMMARY_CHARS",

@@ -1,7 +1,7 @@
 # SpiderGenAI-v2  基于 LangGraph 多智能体的自动网站分析与爬虫脚本生成系统
 
-> v2 版本核心升级：**LangGraph 多智能体编排** + **Prompt 资产化** + **会话/持久记忆** + **用户反馈闭环** + **总结复盘 Agent**。
-> v2 highlights: **LangGraph multi-agent orchestration**, **prompt asset externalization**, **session + persistent memory**, **user-feedback loop**, **self-reflection summary agent**.
+> 当前主线：**参数签名黄金爬虫复用** + **LangGraph 证据驱动专家流水线** + **阶段 Gate** + **失败归因回退** + **任务隔离运行** + **运行后记忆闭环**。
+> Current mainline: **signature-keyed golden crawler replay**, **evidence-driven LangGraph specialists**, **stage gates**, **failure attribution and rollback**, **task-isolated execution**, and **runtime-grounded memory**.
 ### 注：该agent是用于生成爬虫代码，便于日后代码入库跑批，是生成爬虫代码的agent，不建议您当成直接帮您爬东西的agent的使用。
 
 ## 目录 (Table of Contents)
@@ -20,6 +20,7 @@
 - [输出位置 / Outputs](#outputs)
 - [v2 架构 / v2 Architecture](#v2-architecture)
   - [LangGraph 多智能体总览](#multi-agent-overview)
+  - [黄金爬虫生命周期](#golden-crawler-lifecycle)
   - [Prompt 资产化](#prompt-assets)
   - [会话记忆 + 持久记忆](#memory)
   - [用户反馈闭环](#feedback-loop)
@@ -36,11 +37,13 @@
 
 | 改动 | 精简描述 | 收益 / 好处 |
 |------|---------|-------------|
-| **1. 架构升级：LangGraph + Multi-Agent** | 用 LangGraph 的 `StateGraph` + `create_react_agent` 取代手写 ReAct 循环，Planner / Codegen / Critic / Summarize 各自成为可独立编排的子图，由 `Supervisor` 统一路由。 | 消息通道、工具调用、重试、取消原生支持，不再维护脆弱的自写循环；每个 Agent 可独立迭代/替换/并行扩展（例如新增 date-api-specialist 只需注册工厂，不改主流程）。 |
+| **1. 架构升级：证据驱动 Specialist Pipeline** | `Supervisor` 固定主阶段；Site Profiler / API Discovery / Selector / Date Scope 使用 ReAct 动态探测，每个探测专家后接确定性的 Evidence Enforcer，Codegen 到达阶段后必定执行独立 `codegen_graph`。采集路线由 LLM Router 在 API、DOM、Hybrid 之间动态选择。 | 同一任务既保留 LLM 对未知网站的适应性，又保证页面恢复、API 探测、Selector 提取、日期探测和代码生成等必做动作不会被模型用一段文本跳过。 |
 | **2. Prompt 资产化** | 所有长 prompt 从代码里抽出，按 `planner/`、`codegen/`、`critic/`、`browser/`、`summarize/`、`errors/` 分目录落盘为 `.md`，通过 `PromptLoader`（带 `lru_cache` + debug dump + 热重载）按需加载与变量渲染。 | Prompt 迭代不再需要改 Python 代码、写 diff 也更清晰；支持 A/B 切换、`PYGEN_DEBUG_DUMP_PROMPT` 一键产出渲染后版本供回归；非技术同事也能直接维护提示词。 |
-| **3. 会话记忆 + 持久记忆** | 单次运行内：`AgentState` 在 LangGraph 节点间共享（messages/工具结果/选择器/HTML 指纹等全链路）。跨运行：`pygen/output/memory/` 落盘 **情景记忆 (episodes.jsonl)** + **网站画像 (site/<domain>.json)**，启动时按 URL domain 自动注入 `site_memory_hint` 与 `feedback_replay_hint`。 | 同一站点多次运行越跑越稳——稳定选择器被晋升进 `stable_selectors`，被用户标过 wrong 的选择器进黑名单；HTML 指纹漂移自动检测；同站重跑时 Planner 第一轮就带着"✅ 试这些 / ❌ 别再试 / ⏭ 暂不判"。 |
-| **4. 用户反馈功能** | 任务结束后前端弹出 `TaskFeedbackModal`，用户打标签 (correct/wrong) + 填写自然语言建议。后端 `POST /api/tasks/{task_id}/feedback` 把反馈注入 `commit_episode`，并可一键"提交并重新运行"。 | 人在回路 (Human-in-the-loop)：用户的业务语言吐槽（"只爬到一堆图标"）被 LLM 翻译成技术根因并写入记忆；重跑时这段诊断作为最高优先级提示直接喂给 Planner，错过一次的坑不会再踩。 |
-| **5. 总结复盘 Agent** | Planner 图的最后一个节点 `summarize_node`：零 LLM 调用跑 `auto_findings`（冗余工具调用 / 疑似静默失败 / 重复代码块）并落盘 draft episode；用户提交反馈后 Stage-2 由 `commit_episode` 用 LLM 把 auto_findings + 用户吐槽蒸馏成可复用 `lessons`。 | 运行完立刻产出"模型自检报告"展示给用户，降低评估成本；LLM 只在"有用户吐槽"时才调用，token 成本可控；`lessons` 作为经验沉淀进网站画像，下一次同站任务直接受益。 |
+| **3. 证据、Gate 与可归因回退** | 每个阶段输出 `StageEvidence`：候选 ID、断言、置信度、artifact、风险和淘汰原因；确定性 Gate 决定能否前进。Critic 失败后先按失败类型归因，未知类型才交给 LLM Attribution Critic，并回退到责任专家。 | 不再相信 Agent 自报的 `success=true`；最终零数据可以追溯到 API、selector、日期或代码候选，并保存每次修复历史，避免从头盲目重跑。 |
+| **4. 用户反馈功能** | 任务结束后前端弹出 `TaskFeedbackModal`，用户打标签 (correct/wrong) + 填写自然语言建议。后端 `POST /api/tasks/{task_id}/feedback` 把反馈注入 `commit_episode`，并可一键"提交并重新运行"。 | 人在回路 (Human-in-the-loop)：用户的业务语言描述被 LLM 翻译成技术根因并写入记忆；重跑时这段诊断作为最高优先级上下文注入专家图，错过一次的问题不会再重复试。 |
+| **5. 运行后总结与持久记忆** | Stage-1 不再位于 Agent 图末尾，而是在任务隔离运行、JSON schema、日期过滤和最终非空 Gate 之后执行；成功和失败都会写入带 runtime report、阶段证据和修复历史的 pending episode。Stage-2 仍由用户反馈触发 `commit_episode`。 | 记忆学习的是实际爬取结果，而不是生成代码后的乐观判断；“工具把错判成对”会通过最终结果暴露，并成为下次同站任务的候选黑名单或经验。 |
+| **6. 人工确认的黄金爬虫复用** | 对影响爬虫行为的配置计算 SHA-256 参数签名。首次生成并通过 Runtime/Final Output Gate 后，完整 `.py` 进入 `pending`；用户确认后移动到 `active`。相同签名再次运行时直接加载该文件并跳过 LLM、记忆注入和专家图。 | 已成功且参数完全一致的任务不再重复生成代码，消除模型随机性并显著降低延迟与 token 成本；脚本失效时移入 `invalid`，下一次自动恢复完整 Agent 流程。 |
+| **7. 新闻正文与附件双通道** | 新闻详情页的 `content` 与 `attachments[]` 独立采集。附件发现覆盖下载按钮、正文链接、`object/embed/iframe`、`data-*`、`onclick` 和直接文件 URL；后端统一归一化、去重并按需下载。 | 同一篇新闻可同时展示正文和 PDF/文档，不再让文件容器参与正文候选竞争；附件下载失败时仍保留远程链接，不影响正文和文章记录通过最终 Gate。 |
 
 ---
 
@@ -49,14 +52,15 @@
 
 这是一个**基于 LangGraph 多智能体编排的"智能分析网站 → 生成爬虫脚本 → 执行 → 复盘 → 前端可视化"**完整工程：
 
-- **后端**：`pygen/api.py`（FastAPI）启动任务，调用 `pygen/agents/runner.py` 进入 **LangGraph 图**（Supervisor → Planner/ReAct → Codegen → Critic → Summarize），自主驱动浏览器分析 → 生成代码 → 质量验证 → 写入记忆
+- **后端**：`pygen/api.py`（FastAPI）先计算任务签名并查询 `active` 黄金爬虫；命中时直接执行完整 `.py`，未命中才调用 `pygen/agents/runner.py` 进入 **LangGraph 专家图**，随后统一通过任务隔离运行与最终输出 Gate
 - **前端**：`frontend/`（Vite + React + TS）负责表单配置、展示日志与结果，并在任务结束时弹出**反馈 Modal** 收集用户评价
 - **浏览器自动化**：通过 **Chrome DevTools Protocol (CDP)** 连接到 Chrome，并用 Playwright 做页面交互与网络请求捕获
-- **记忆层**：`pygen/output/memory/` 落盘 episodes（情景）+ site profile（网站画像），支撑跨任务经验复用
+- **黄金资产层**：`pygen/output/golden_crawlers/` 只保存完整 Python 文件，目录表达 `pending/active/invalid` 状态；无 manifest、无代码 JSON 副本
+- **记忆层**：`pygen/output/memory/` 落盘 episodes（情景）+ site profile（网站画像），只记录黄金脚本关联关系与诊断经验，不承担代码复用
 
 This repo provides an end-to-end **LangGraph multi-agent** workflow:
 
-- **Backend**: `pygen/api.py` (FastAPI) orchestrates via `pygen/agents/runner.py`, driving a LangGraph state machine (Supervisor → Planner/ReAct → Codegen → Critic → Summarize)
+- **Backend**: `pygen/api.py` drives a LangGraph specialist state machine, then executes the crawler in a task-owned runtime directory before committing memory
 - **Frontend**: `frontend/` (Vite + React + TS) provides UI + a post-run feedback Modal for human-in-the-loop supervision
 - **Browser automation**: Playwright over CDP
 - **Memory**: JSONL episodes + per-site profiles persisted under `pygen/output/memory/`
@@ -66,17 +70,19 @@ This repo provides an end-to-end **LangGraph multi-agent** workflow:
 <a id="features"></a>
 ## 功能 (Key features)
 
-- **LangGraph 多智能体**：Supervisor 统一路由，Planner/Codegen/Critic/Summarize 子图各司其职，天生支持取消、重试、条件跳转
+- **LangGraph 专家状态机**：固定主阶段 + 动态 API/DOM/Hybrid 分支 + 按失败类型定向回退
 - **Prompt 资产化**：静态 prompt 全部 `.md` 化、目录分层、支持热重载/A-B 切换/变量校验
-- **动态工具生态**：20+ 工具通过 `tools_lc` 路由成 LangChain Tool，按 run_mode / 可用性动态过滤
+- **受限动态工具生态**：原有 20+ 工具继续维护，但通过专家 allowlist 分配；每个专家内部用 ReAct 动态选择自己的工具
 - **Critic 质量关卡**：独立子图，3 轮"诊断 → 修复 → 重新验证"循环
-- **沙箱执行**：Docker / 本地两种后端，ExecutorSession 持久化命名空间
-- **会话记忆**：`AgentState` 在 LangGraph 节点间共享 messages / 工具调用日志 / 选择器 / 指纹
+- **任务隔离运行**：每个任务写入 `pygen/output/tasks/<task_id>/`，Docker 优先、本地回退，显式生成 `result_manifest.json`
+- **会话记忆**：`AgentState` 共享消息、工具日志、候选证据、Gate 报告、归因决定和修复历史
 - **持久记忆**：episodes.jsonl（情景）+ site/<domain>.json（画像），带时间衰减 / 黑名单 / stable 晋升
 - **用户反馈闭环**：前端 Feedback Modal → commit_episode → LLM 蒸馏 lessons → 下次同站自动注入
-- **总结复盘 Agent**：零 LLM 跑 auto_findings，+ 用户反馈驱动的 LLM 蒸馏
+- **运行后总结 Agent**：真实运行与最终非空 Gate 后运行 auto_findings，用户反馈再驱动 LLM 蒸馏
+- **确定性黄金复用**：相同参数签名命中 `active` 后 0 次 LLM、0 次专家工具调用，仍执行 Runtime/Final Output Gate 和人工审核
 - **多板块爬取**：支持手动选择目录树（多板块）与自动探测板块
 - **结果可视化 + 批量任务**：实时日志、下载脚本、报告/新闻列表、批量队列与 SSE 状态
+- **新闻正文 + 附件展示**：正文与附件分开呈现；PDF/文档既可来自按钮，也可来自正文链接或嵌入标签，本地下载失败时回退到远程链接
 
 ---
 
@@ -402,7 +408,7 @@ npm run dev
 
 1. 选择**运行模式**（企业报告下载 / 新闻报告下载 / 新闻舆情爬取）
 2. 填写 URL、日期范围、是否下载文件等
-3. 点击执行后，LangGraph 多智能体将自主完成网站分析 → 策略选择 → 代码生成 → 质量验证 → 执行 → 自我复盘
+3. 点击执行后先匹配黄金爬虫；命中则直接执行，未命中才由 LangGraph 多智能体完成网站分析 → 策略选择 → 代码生成 → 质量验证 → 执行 → 自我复盘
 4. 在执行页查看日志与结果，必要时下载生成脚本
 5. 任务结束后**弹出反馈 Modal**：打 correct/wrong 标签 + 填写自然语言建议，可选择"提交并重新运行"让 Agent 按你的反馈二次尝试
 
@@ -472,7 +478,13 @@ npm run dev
 
 - **生成的脚本**：`pygen/py/`
 - **执行结果 JSON**：`pygen/output/`
+- **任务隔离运行目录**：`pygen/output/tasks/<task_id>/`（`crawler.py`、任务所属 JSON、`result_manifest.json`）；生成脚本通过 `PYGEN_OUTPUT_DIR` 接收输出目录，运行副本会自动归一化遗留的绝对 `OUTPUT_DIR`
 - **Artifact 存储**：`pygen/output/artifacts/`（大载荷工具输出、截图等）
+- **新闻附件**：`pygen/output/output_pdf/<task_id>_<timestamp>_news/`；每篇文章的 JSON 同时保留 `content` 与 `attachments[]`，附件包含 `url/fileType/localPath/isLocal`
+- **黄金爬虫文件**：`pygen/output/golden_crawlers/`
+  - `pending/<task_id>--<signature>.py`：Runtime/Final Output Gate 已通过，等待用户确认
+  - `active/<signature>.py`：用户确认成功，可按相同参数签名直接复用
+  - `invalid/<signature>/<timestamp>--<reason>--<task_id>.py`：失效或被否决，仅供审计，绝不执行
 - **记忆层 (v2 新增)**：
   - `pygen/output/memory/episode/episodes.jsonl`：已提交的情景记忆（append-only）
   - `pygen/output/memory/episode/pending/<task_id>.json`：草稿 episode，等用户反馈
@@ -488,87 +500,111 @@ npm run dev
 <a id="multi-agent-overview"></a>
 ### LangGraph 多智能体总览 (Multi-Agent Overview)
 
-系统核心是一个由 **LangGraph `StateGraph`** 驱动的多智能体编排：
+系统核心是一个由 **LangGraph `StateGraph`** 驱动的半动态专家流水线：主阶段固定，采集路线和失败回退动态；每个专家内部仍是可动态调用工具的 ReAct Agent。
+
+```mermaid
+flowchart TD
+    UI["Frontend: React + SSE + Feedback"] --> API["FastAPI /api/generate"]
+    API --> SIG["Canonical config -> SHA-256 task signature"]
+    SIG --> HIT{"active/signature.py exists?"}
+    HIT -->|Yes| REPLAY["Load full Python file\n0 LLM / 0 specialist tools"]
+    HIT -->|No| RUNNER["agents/runner.py"]
+    MEMIN["Site profile + rerun memory"] --> RUNNER
+
+    subgraph GRAPH["LangGraph Supervisor: 固定主阶段"]
+        SP["Site Profiler Specialist"] --> SPE["Required Site Evidence Enforcer"]
+        SPE --> SG{"Site Profile Gate"}
+        SG -->|pass| ROUTER{"LLM Acquisition Router"}
+        ROUTER -->|API| AD["API Discovery Specialist"]
+        ROUTER -->|DOM| SS["Selector Specialist"]
+        ROUTER -->|Hybrid| AD
+        AD --> ADE["Required API Probe"]
+        ADE -->|No verified data API or Hybrid| SS
+        ADE -->|Verified data API| AG{"Acquisition Evidence Gate"}
+        SS --> SSE["Required List Extract + Title-Link Verify"]
+        SSE --> AG
+        AG -->|pass| DS["Date Scope Specialist"]
+        DS --> DSE["Required Date Evidence Probe"]
+        DSE --> DG{"Date Strategy Gate"}
+        DG -->|pass| CG["Required Codegen Specialist: codegen_graph"]
+        CG --> COG{"Code Gate"}
+        COG -->|pass| CR["Critic Graph: static + runtime checks"]
+        CR --> CRG{"Critic Output Gate"}
+
+        SG -->|fail| ATTR["Attribution Critic"]
+        AG -->|fail| ATTR
+        DG -->|fail| ATTR
+        COG -->|fail| ATTR
+        CRG -->|fail| ATTR
+        ATTR -->|site| SP
+        ATTR -->|API| AD
+        ATTR -->|selector| SS
+        ATTR -->|date| DS
+        ATTR -->|code| CG
+    end
+
+    RUNNER --> SP
+    CRG -->|pass| ISO["TaskExecutionService: output/tasks/task_id"]
+    REPLAY --> ISO
+    ISO --> RG{"Runtime + Schema Gate"}
+    RG -->|fail| RATTR["Runtime Failure Attribution"]
+    RG --> NORM["API normalization + date hard filter"]
+    NORM --> FG{"Final Output Gate: records > 0"}
+    FG -->|new code pass| CANDIDATE["pending/task_id--signature.py"]
+    FG -->|golden replay pass| SUM["Runtime-grounded Stage-1 Summary"]
+    CANDIDATE --> SUM
+    FG -->|fail| RATTR
+    RATTR --> SUM
+    SUM --> PENDING["Pending episode: evidence + runtime + repair history"]
+    PENDING --> FEEDBACK{"User feedback"}
+    FEEDBACK -->|correct| ACTIVE["Move Python file to active/signature.py"]
+    FEEDBACK -->|wrong| INVALID["Move Python file to invalid/signature/"]
+    ACTIVE --> STORE["Episode relationship + site profile"]
+    INVALID --> STORE
+    INVALID -->|next identical run| RUNNER
+```
+
+图中的“固定”是阶段职责和允许的前进顺序固定；“动态”是 Router 选择 API/DOM/Hybrid、探测专家选择工具、Critic 失败后选择回退目标。四个 ReAct 探测专家每轮只执行一个工具调用，避免共享浏览器和 `ToolContext` 被并发修改；专家返回后，Evidence Enforcer 检查必需状态并直接补做被 LLM 漏掉的动作。Codegen 本身也是必执行节点，其内部 `codegen_graph` 仍负责动态生成与修复。状态镜像字段同时配置 reducer 作为并发安全兜底。
+
+<a id="golden-crawler-lifecycle"></a>
+### 黄金爬虫生命周期 (Golden Crawler Lifecycle)
+
+`pygen/golden_crawlers.py` 是文件式注册表。影响爬虫行为的 URL、日期、任务目标、额外要求、运行模式、下载设置、所选路径和附件内容参与签名；`taskId`、`prevTaskId` 和输出文件名不参与，因为它们不改变爬取行为。
 
 ```text
-┌──────────────────────────────────────────────────────────────────┐
-│                    Frontend (React + TS)                          │
-│  POST /api/generate → SSE /api/status/{taskId} (实时日志)         │
-│  任务结束 → TaskFeedbackModal (正确/错误 + 建议 + 可选重跑)         │
-└──────────────────────────┬───────────────────────────────────────┘
-                           │
-                           ▼
-┌──────────────────────────────────────────────────────────────────┐
-│         Backend (FastAPI: api.py → agents/runner.py)              │
-│  注入 site_memory_hint + feedback_replay_hint → graph.ainvoke()   │
-└──────────────────────────┬───────────────────────────────────────┘
-                           │
-                           ▼
-        ┌──────────────────────────────────────────┐
-        │         Supervisor (StateGraph)          │
-        │  路由到 Planner；预留 specialist 扩展点    │
-        └─────────────────┬────────────────────────┘
-                          │
-                          ▼
-   ┌────────────────────────────────────────────────────────┐
-   │                 Planner Graph                          │
-   │  create_react_agent  ──►  tools (LangChain Tool)       │
-   │        ▲                        │                       │
-   │        │                        ▼                       │
-   │        │                 _need_critic?                  │
-   │        │                 /          \                   │
-   │        │            react            critic             │
-   │        │                              │                 │
-   │        │                              ▼                 │
-   │        │                       ┌───────────────┐        │
-   │        │                       │ Critic Graph  │        │
-   │        │                       │  3 轮诊断修复  │        │
-   │        │                       └──────┬────────┘        │
-   │        │                              │                 │
-   │        └──────── feedback ◄───────────┘                 │
-   │                                                         │
-   │                          ▼ (通过)                        │
-   │                 ┌──────────────────┐                    │
-   │                 │ Codegen Graph    │                    │
-   │                 │ (生成/修复代码)   │                    │
-   │                 └────────┬─────────┘                    │
-   │                          ▼                              │
-   │                 ┌──────────────────┐                    │
-   │                 │ Summarize Node   │                    │
-   │                 │ auto_findings +  │                    │
-   │                 │ draft episode    │                    │
-   │                 └────────┬─────────┘                    │
-   └──────────────────────────┼─────────────────────────────┘
-                              ▼
-                ┌──────────────────────────┐
-                │  AgentState (会话记忆)    │
-                │  messages / tool_log /   │
-                │  selectors / fingerprint │
-                └──────────┬───────────────┘
-                           │
-                           ▼
-                ┌──────────────────────────┐
-                │   MemoryStore (持久记忆)  │
-                │   episodes + site profile│
-                └──────────────────────────┘
+首次或未命中：Agent 生成 -> Runtime Gate -> Final Output Gate -> pending .py
+用户 correct：pending .py -> active .py
+相同签名重跑：active .py -> 直接执行 -> Runtime/Final Output Gate -> 再次人工审核
+用户 wrong：active/pending .py -> invalid .py -> 下一次重新进入 LangGraph
+明确的运行/结果 Gate 失败：active .py -> invalid .py
+网络、Chrome、CDP、超时等基础设施故障：保留 active，不误判代码失效
 ```
+
+完整 `.py` 是唯一可执行黄金资产。任务目录中的 `crawler.py` 只是隔离执行副本，Episode 和数据库只记录 `task_signature`、`execution_source`、`golden_code_path`、`golden_status` 等关联字段。Stage-2 总结需要查看代码时临时从关联路径读取，不把代码正文写进 Episode。
+
+新闻模式还有一层独立输出契约：`content` 只表达正文，`attachments[]` 只表达附件。详情探针会分别产出正文候选和附件证据，Codegen 静态上下文检查要求在探针发现附件时生成独立附件提取逻辑；API 端再从显式字段和已有正文 HTML 中补做归一化与去重。黄金签名包含运行时契约版本，因此本次契约升级前的 `active` 脚本不会被直接复用，同配置首次运行会重新生成并经人工确认进入新版本黄金资产。
+
+原始 XHR 只算候选，统计/广告请求会被过滤；只有验证出数据结构的 API 才能跳过 DOM Selector 专家。Selector Enforcer 会至少执行一次列表提取，并在需要时现场验证标题链接。如果页面 HTML 和列表/链接结构足够可观察、但自动 selector 仍未形成完整 bundle，Acquisition Gate 会把 DOM 证据标为 `proposed` 并允许进入 Codegen，而不是在同一阶段空转；该候选必须通过 Critic、任务隔离运行和最终非空 Gate 才能成为成功结果。`StageEvidence` 和 `ValidationReport` 随 `AgentState` 传递，因此最终零数据仍能归因到 API、selector、日期或代码阶段。
 
 **核心落地文件**（`pygen/agents/`）：
 
 | 文件 | 角色 |
 |------|------|
 | `runner.py` | 入口函数 `run_agent()`，被 `api.py` 调用；负责构造 LLM/工具/子图/状态，ainvoke 后把 state 翻译成 `PlannerResult` |
-| `supervisor.py` | `build_supervisor_graph()`，当前 pass-through 到 planner；预留多 specialist 路由接入点 |
-| `planner_graph.py` | ReAct 主图：`create_react_agent` + critic gate + summarize 节点 |
+| `supervisor.py` | 生产主图：固定阶段、LLM 采集路由、Evidence Enforcer、conditional edges、失败归因与最多 5 次定向回退 |
+| `specialists.py` | 四个探测 ReAct 专家及工具 allowlist；Codegen 注册为必执行的独立 `codegen_graph` 节点 |
+| `gates.py` | 确定性阶段 Gate：从状态提取候选证据并产生 `ValidationReport` |
+| `evidence.py` | `StageEvidence` / `EvidenceCandidate` / `ValidationReport` / `RuntimeReport` 数据契约 |
+| `planner_graph.py` | 旧 Planner 图兼容模块；生产 `runner.py` 已不再把它作为主流程 |
 | `codegen_graph.py` | 代码生成子图（独立出来便于单测/替换） |
 | `critic_graph.py` | 3 轮 critic 子图（静态 → 运行时 → 分类 → 修复） |
-| `summarize_node.py` | Stage-1 复盘节点：零 LLM auto_findings → 落盘 draft episode |
+| `summarize_node.py` | 旧图兼容节点；生产 Stage-1 写入时机已迁至 `memory/runtime_finalize.py` |
 | `rerun_validate.py` | 重跑前基于 page cache 的离线 selector 预验证 |
-| `tools_lc.py` | 把 `pygen.tools` / `high_level_tools` 包装为 LangChain Tool，并按 run_mode / 可用性过滤 |
+| `tools_lc.py` | 包装原有 Tool，通过 `SPECIALIST_TOOL_NAMES` 给专家分配 allowlist，并提供 Site/API/Selector/Date/Codegen 必执行动作 |
 | `state.py` | `AgentState` TypedDict：会话记忆的单一数据源 |
 | `llm.py` | `build_chat_model()`：provider 抽象（OpenAI-compatible / Gemini / Claude） |
 
-> 多 Agent 扩展姿势：新建一个 `create_react_agent(tools=subset)` → 注册到 `AGENT_REGISTRY` → 把 `_dummy_router` 换成 LLM/规则路由即可，无需改动主流程代码。
+> 新增专家时，需要同时定义工具 allowlist、输出证据契约、阶段 Gate 和失败类型到回退目标的映射。只注册一个 Agent 但没有 Gate，不允许进入生产主流程。
 
 ---
 
@@ -616,8 +652,11 @@ attachment_hint = load("codegen/shared/attachment_hint.md")      # 无变量时�
 - `tool_calls_log`, `iterations`: 完整工具调用记录
 - `verified_mapping`, `verified_selectors`, `html_fingerprint`: 阶段性成果
 - `site_memory_hint`, `feedback_replay_hint`: 持久记忆注入的 prompt 片段
+- `stage_evidence`, `validation_reports`: 每阶段候选、断言、artifact 与 Gate 结果
+- `acquisition_route`, `router_decision`: API / DOM / Hybrid 路由及理由
+- `attribution_decision`, `rollback_target`, `repair_history`: 失败归因与定向修复轨迹
 - `critic_verdict`, `generated_code`, `code_strategy`: Critic 与 Codegen 共享
-- `auto_findings`, `summary_draft_path`: Summarize 节点产物
+- `runtime_report`, `final_output`: 图外任务隔离运行完成后写入的真实结果
 
 所有节点通过 LangGraph 的 reducer 合并更新，不再手动 pass state 字典。
 
@@ -628,7 +667,7 @@ attachment_hint = load("codegen/shared/attachment_hint.md")      # 无变量时�
 | 组件 | 位置 | 作用 |
 |------|------|------|
 | **Episode (情景)** | `episode/episodes.jsonl` | append-only；一行一个已提交任务的事实（URL/耗时/迭代/选择器/指纹）+ 用户 verdict + LLM 蒸馏 lessons |
-| **Pending Draft** | `episode/pending/<task_id>.json` | Summarize 节点产出的草稿，等用户反馈后才"晋升"到 episodes.jsonl；`pending_gc_days` 到期自动清理 |
+| **Pending Draft** | `episode/pending/<task_id>.json` | 最终运行后 Summary 产出的草稿，含阶段证据、运行报告和修复历史；等用户反馈后才“晋升”到 episodes.jsonl |
 | **Site Profile (画像)** | `site/<domain>.json` + `.md` | 按域名聚合的画像：稳定选择器 / 黑名单 / 失败原因 / confidence（带时间衰减）/ HTML 指纹漂移 |
 | **Quarantine** | `site/_quarantine/` | 连续 N 次用户判错后隔离整个站点画像供审计 |
 
@@ -638,15 +677,16 @@ attachment_hint = load("codegen/shared/attachment_hint.md")      # 无变量时�
 2. 查 `prev_task_id` 的 rerun 链（带域名 guard + 自动按 domain 回溯最近同站 pending draft）→ 渲染 `feedback_replay_hint`
 3. 用 `page_cache` 里的旧 HTML 对上轮 selector 跑 `soup.select(...)` 做**离线预验证**，结果（✅/❌/⏭）拼到 `feedback_replay_hint` 顶部
 
-这些 hint 以最高优先级合并进 Planner 的 system prompt，**让模型第一轮就知道"这个站长成什么样、上次哪里踩坑、哪些选择器别再试"**。
+这些 hint 会在专家图启动前注入初始状态，**让 Site Profiler 和后续专家知道“这个站长成什么样、上次哪里踩坑、哪些候选别再试”**。
 
-**写路径**（summarize_node.py + commit.py）：
+Episode 不保存 `generated_code` 正文。它只记录黄金文件的签名、路径、执行来源和当时状态；站点画像继续承担跨配置的经验复用，黄金爬虫承担完全相同配置的确定性代码复用，两者职责不同。
 
-- Planner 图最后 → `summarize_node` 落盘 pending draft（零 LLM）
-- 用户点反馈 Modal 提交 → `POST /api/tasks/{task_id}/feedback` → `commit_episode`：
-  1. 用户 verdict=wrong 时调 LLM 蒸馏 `lessons`（自然语言 → 技术根因）
-  2. 把 episode append 进 `episodes.jsonl`
-  3. 调 `update_profile_from_episode`：更新 stable_selectors / 黑名单 / confidence（成功 +bonus、失败 −penalty）
+**写路径**（runtime_finalize.py + commit.py）：
+
+- 生成代码 → 任务隔离执行 → schema/日期/最终非空 Gate → `finalize_runtime_episode` 落盘 pending draft（零 LLM）
+- 运行失败或最终零数据也写 draft，并保留 `stage_evidence`、`validation_reports`、`repair_history`、`runtime_report`
+- 用户点反馈 Modal 提交 → `POST /api/tasks/{task_id}/feedback`：先按 verdict 原子移动黄金 `.py` 并同步关联字段，再调用 `commit_episode`
+- `commit_episode` 按配置调用 LLM 蒸馏 `lessons`，把 episode append 进 `episodes.jsonl`，并更新 stable selectors / 黑名单 / confidence
 
 ---
 
@@ -654,10 +694,10 @@ attachment_hint = load("codegen/shared/attachment_hint.md")      # 无变量时�
 ### 用户反馈闭环 (Human-in-the-Loop Feedback)
 
 ```text
-任务完成
+任务隔离运行 + Final Output Gate
    │
    ▼
-Summarize Node: auto_findings + draft episode (pending/)
+Runtime Summary: evidence + runtime + auto_findings + draft episode
    │
    ▼
 前端 TaskFeedbackModal
@@ -673,7 +713,11 @@ Summarize Node: auto_findings + draft episode (pending/)
 POST /feedback        POST /rerun/{task_id}
    │                         │
    ▼                         ▼
-commit_episode         带 prev_task_id 启新任务
+移动 .py 到           带 prev_task_id 启新任务
+active / invalid
+   │
+   ▼
+commit_episode
    │                         │
    │                         ▼
    │                    runner.py 查 rerun 链
@@ -681,7 +725,7 @@ commit_episode         带 prev_task_id 启新任务
    ▼                         ▼
 更新 site profile      feedback_replay_hint
    │                    + pre-validate block
-   │                    注入 Planner prompt
+   │                    注入专家图初始状态
    ▼                         │
 episodes.jsonl ←─────────────┘
 ```
@@ -692,6 +736,7 @@ episodes.jsonl ←─────────────┘
 - **重跑自动继承 lineage**：`prev_task_id` 沿 rerun 链回看 N 跳（最近一跳详写，更老的简写），同时 domain guard 防止跨站污染
 - **黑名单渐进累积**：被判错 `blacklist_min_losses` 次的 selector 进黑名单；中间出现过一次 correct 则 `consecutive_losses` 重置，给"被误判一次的好 selector"一条复活路
 - **重跑前离线预验证**：用 `page_cache` 里上次的 HTML 对候选 selector 做 BeautifulSoup 验证，把"✅ 试这些 / ❌ 别再试"直接送到 prompt 顶部
+- **完全相同配置优先复用**：签名命中 `active` 时不会进入专家图；人工判错或明确结果 Gate 失败后才失效，下一次再用站点记忆辅助重新生成
 
 ---
 
@@ -700,9 +745,9 @@ episodes.jsonl ←─────────────┘
 
 分 **Stage-1 (零 LLM)** + **Stage-2 (按需 LLM)** 两段：
 
-#### Stage-1：`summarize_node.py`（Planner 图最后一个节点）
+#### Stage-1：`memory/runtime_finalize.py`（真实运行完成后）
 
-纯启发式扫描，**零 LLM 调用**，产物直接展示给用户：
+只有任务隔离执行及最终输出 Gate 已得到结果后才运行，纯启发式扫描，**零 LLM 调用**：
 
 - `run_auto_findings`：
   - **redundant_tool_calls**：同一工具同参数被反复调用
@@ -710,7 +755,11 @@ episodes.jsonl ←─────────────┘
   - **duplicated_code_blocks**：生成代码里出现重复函数/循环
 - 计算 `html_fingerprint`（用于漂移检测）
 - `new_draft_episode`：落盘 `episode/pending/<task_id>.json`
-- 把 `auto_findings` + `summary_draft_path` 镜像回 `AgentState`，API 层返回给前端在 Modal 里展示
+- 记录 `stage_evidence`、`validation_reports`、`repair_history` 和 `runtime_report`
+- 记录 `task_signature`、`execution_source`、`golden_code_path`、`golden_status`，不保存代码正文
+- 把 `auto_findings` + `summary_draft_path` 返回 API 层，在 Modal 中展示
+
+旧 `agents/summarize_node.py` 仅为旧 Planner 图兼容保留，不再处于生产主路径。这个时机变化很关键：代码“看起来能跑”不再被当成成功，最终零记录会以失败样本进入待反馈记忆。
 
 #### Stage-2：`memory/commit.py`（用户反馈后触发）
 
@@ -742,17 +791,19 @@ episodes.jsonl ←─────────────┘
 
 | 目录 / 文件 | 角色 | 说明 |
 |------|------|------|
-| `agents/` | **LangGraph 多智能体** | `runner.py` 入口 / `supervisor.py` 路由 / `planner_graph.py`  ReAct / `codegen_graph.py` / `critic_graph.py` / `summarize_node.py` / `rerun_validate.py` / `tools_lc.py` LangChain tools / `state.py` AgentState / `llm.py` provider 抽象 |
+| `agents/` | **LangGraph 专家编排** | `supervisor.py` 主状态机 / `specialists.py` 五个专家 / `gates.py` 阶段验证 / `evidence.py` 证据契约 / `critic_graph.py` / `tools_lc.py` 工具 allowlist / `state.py` |
 | `prompts/` | **Prompt 资产** | 所有长 prompt 按模块分目录落盘；`loader.py` 带 lru_cache + debug dump；详见 `prompts/README.md` |
-| `memory/` | **持久记忆层** | `store.py` 总门面 / `episode.py` 情景 / `site_profile.py` 画像 / `commit.py` Stage-2 LLM 蒸馏 / `render.py` hint 渲染 / `fingerprint.py` HTML 指纹 / `auto_findings.py` 零 LLM 启发式扫描 |
+| `memory/` | **持久记忆层** | `runtime_finalize.py` 运行后 Stage-1 / `store.py` / `episode.py` / `site_profile.py` / `commit.py` Stage-2 LLM 蒸馏 / `render.py` / `fingerprint.py` / `auto_findings.py` |
 | `summarizers/` | **响应解析辅助** | `html.py` / `json_payload.py` / `llm_fallback.py` 抽离的响应 schema 推断器 |
 | `page_cache.py` | **页面缓存** | URL → HTML 缓存，支撑 rerun 离线预验证 |
+| `golden_crawlers.py` | **黄金爬虫注册表** | 规范化参数签名；完整 `.py` 在 `pending/active/invalid` 间原子迁移；不写 sidecar JSON |
 
 #### 复用组件
 
 | 文件 | 角色 | 说明 |
 |------|------|------|
 | `api.py` | API 入口 | FastAPI 服务，启动任务 → `agents.runner.run_agent()` → 执行脚本 → 返回结果；提供 `/feedback` / `/rerun` / `/draft` 路由 |
+| `execution_service.py` | 最终执行服务 | 每任务独立工作目录；执行生成脚本、只收集任务所属 JSON、计算质量并写显式 manifest；零记录为硬失败 |
 | `tools.py` | 工具实现 | ToolContext / ToolResult + 原子工具 + 沙箱/Critic 工具（底层仍由 `tools_lc` 包装） |
 | `high_level_tools.py` | 高级工具 | 封装多步工作流（列表提取、API 嗅探、翻页验证、详情页探测） |
 | `critic_runtime.py` | Critic 运行时 | 静态校验 + 运行时验证 + 失败分类 + LLM 修复（被 `critic_graph` 调用） |

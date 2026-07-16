@@ -28,6 +28,7 @@ if str(PYGEN_DIR) not in sys.path:
     sys.path.insert(0, str(PYGEN_DIR))
 
 from memory.auto_findings import run_auto_findings  # noqa: E402
+from memory.commit import _read_linked_code  # noqa: E402
 from memory.episode import (  # noqa: E402
     domain_of,
     extract_facts_from_state,
@@ -119,6 +120,28 @@ def test_extract_facts_includes_domain_and_tool_stats(sample_state):
     # default empty buckets
     assert facts["auto_findings"]["redundant_tool_calls"] == []
     assert facts["committed"] is False
+
+
+def test_episode_links_golden_file_without_copying_code(sample_state):
+    sample_state.update({
+        "task_signature": "a" * 64,
+        "execution_source": "generated",
+        "golden_code_path": "output/golden_crawlers/pending/task.py",
+        "golden_status": "pending",
+    })
+    facts = extract_facts_from_state(sample_state)
+    assert "generated_code" not in facts
+    assert facts["task_signature"] == "a" * 64
+    assert facts["execution_source"] == "generated"
+    assert facts["golden_code_path"].endswith("task.py")
+    assert facts["golden_status"] == "pending"
+
+
+def test_retrospective_reads_code_through_episode_path(tmp_path):
+    script = tmp_path / "active" / "signature.py"
+    script.parent.mkdir()
+    script.write_text("print('linked')\n", encoding="utf-8")
+    assert _read_linked_code({"golden_code_path": str(script)}) == "print('linked')\n"
 
 
 def test_new_draft_episode_normalizes_invalid_outcome(sample_state):

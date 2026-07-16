@@ -27,6 +27,11 @@ except ImportError:
     from .tools import ToolContext, ToolResult  # type: ignore
 
 try:
+    from news_attachments import normalize_news_attachments
+except ImportError:  # pragma: no cover
+    from .news_attachments import normalize_news_attachments  # type: ignore
+
+try:
     from node_semantics import (
         aggregate_node_stats,
         collect_node_stats_from_bs4,
@@ -1532,6 +1537,10 @@ async def tool_probe_detail_page(ctx: ToolContext, url: str = "") -> ToolResult:
                 is_pdf_response = "application/pdf" in content_type or target_url.lower().split('?')[0].endswith(".pdf")
             
             if is_pdf_response:
+                attachment_candidates = normalize_news_attachments({
+                    "sourceUrl": target_url,
+                    "attachments": [{"url": target_url, "fileType": "pdf", "name": "PDF Document"}],
+                })
                 summary = "Detail page is a PDF file (Content-Type: application/pdf)"
                 payload = {
                     "url": target_url,
@@ -1553,7 +1562,8 @@ async def tool_probe_detail_page(ctx: ToolContext, url: str = "") -> ToolResult:
                     "titleText": "PDF Document",
                     "structureHint": f"Direct PDF File: {target_url} (Do not parse HTML, download directly)",
                     "isDirectFile": True,
-                    "fileType": "pdf"
+                    "fileType": "pdf",
+                    "attachmentCandidates": attachment_candidates,
                 }
                 ctx.log(f"[TOOL] probe_detail_page: {summary}")
 
@@ -1566,6 +1576,7 @@ async def tool_probe_detail_page(ctx: ToolContext, url: str = "") -> ToolResult:
                     "fileType": "pdf",
                     "contentSelector": "",
                     "contentCandidates": payload["contentCandidates"],
+                    "attachmentCandidates": attachment_candidates,
                     "structureHint": payload["structureHint"],
                 })
                 # 兼容旧字段
@@ -1581,6 +1592,14 @@ async def tool_probe_detail_page(ctx: ToolContext, url: str = "") -> ToolResult:
 
             detail_html = await detail_page.content()
             soup = BeautifulSoup(detail_html, "html.parser")
+
+            # Attachments are discovered independently from body selection.
+            # This intentionally scans the rendered detail page before any
+            # candidate ranking so a download button can never replace body.
+            attachment_candidates = normalize_news_attachments({
+                "sourceUrl": target_url,
+                "content": detail_html,
+            })
 
             for tag in soup(["script", "style", "noscript"]):
                 tag.decompose()
@@ -1599,9 +1618,6 @@ async def tool_probe_detail_page(ctx: ToolContext, url: str = "") -> ToolResult:
 
             seen_selectors: set = set()
             content_candidates: List[Dict[str, Any]] = []
-
-            # 常见文件扩展名
-            FILE_EXTS = {".pdf", ".doc", ".docx", ".xls", ".xlsx", ".csv", ".zip", ".rar", ".7z"}
 
             def _icon_payload_for(el: Tag) -> Optional[Dict[str, Any]]:
                 """Compute icon-likelihood for a single candidate.
@@ -1679,51 +1695,8 @@ async def tool_probe_detail_page(ctx: ToolContext, url: str = "") -> ToolResult:
                     cand["iconLikelihood"] = icon_info
                 content_candidates.append(cand)
 
-            # --- 兜底：搜索显著的文件下载链接 ---
-            # 如果正文区域很短或者未找到，尝试寻找是否直接提供了 PDF/表格下载
-            # 这种情况下，下载链接所在的容器可能就是“正文”
-            for a in soup.find_all("a", href=True):
-                href = (a.get("href") or "").strip().lower()
-                # 检查是否是文件链接
-                if any(href.endswith(ext) for ext in FILE_EXTS):
-                    # 找到一个文件链接，查看其容器
-                    container = a.parent
-                    if not container or container.name in ['body', 'html']:
-                        container = a
-                    
-                    # 排除导航/页脚等噪音区域
-                    cont_cls = " ".join(container.get("class", []) or []).lower()
-                    cont_id = str(container.get("id", "")).lower()
-                    if any(kw in (cont_cls + cont_id) for kw in ("nav", "footer", "header", "menu", "sidebar", "breadcrumb")):
-                        continue
-
-                    # 获取容器文本长度（文件下载容器通常文本较短，不能用 <50 过滤）
-                    text = container.get_text(strip=True)
-                    text_len = len(text)
-                    
-                    # 只有当容器不过大（避免选中整个列表页）时才采纳
-                    if text_len < 2000:
-                        selector = _selector_for_el(container)
-                        if selector in seen_selectors:
-                            continue
-                        seen_selectors.add(selector)
-                        
-                        # 标记为文件容器
-                        content_candidates.append({
-                            "selector": selector,
-                            "textLength": text_len, # 即使很短也没关系
-                            "linkCount": 1,
-                            "linkDensity": 0.0, # 忽略密度检查
-                            "textPreview": f"[FILE] {text[:80]}",
-                            "isFileContainer": True, # 特殊标记，排序时优先
-                            "fileExt": href.split('.')[-1]
-                        })
-
-            # 按“是否为文件容器优先、正文长度优先、链接密度低优先”排序
-            # isFileContainer=True 的给予极大加权，确保如果没找到长文，文件链接能排前面
-            # 但如果已经找到了很长的正文（textLength > 500），文件链接排在次席作为补充
-            #
-            # NEW: 同时根据 iconLikelihood.verdict 做软惩罚。
+            # Rank body containers only. Attachments have their own channel
+            # and therefore cannot outrank or replace an article body.
             #   - icon_container：扣 5000，几乎一定沉底
             #   - ambiguous：扣 1500，仅在没有更好选择时才会被推荐
             # 我们 *不* 直接 drop 这些候选，因为：
@@ -1731,9 +1704,8 @@ async def tool_probe_detail_page(ctx: ToolContext, url: str = "") -> ToolResult:
             #   (2) 留在列表里 LLM 也能看到 evidence，自己判断；
             #   (3) 真的没找到正文时，ambiguous 仍可作为最后兜底。
             def _candidate_score(c):
-                is_file = c.get("isFileContainer", False)
                 length = c["textLength"]
-                base_score = 2000 if is_file else 0
+                base_score = 0
                 ilk = c.get("iconLikelihood") or {}
                 verdict = ilk.get("verdict") or "content"
                 if verdict == "icon_container":
@@ -1786,6 +1758,8 @@ async def tool_probe_detail_page(ctx: ToolContext, url: str = "") -> ToolResult:
                 hint_parts.append("no content container found – use longest-text fallback")
             if title_selector:
                 hint_parts.append(f"title in <{title_tag_name}> (selector: '{title_selector}')")
+            if attachment_candidates:
+                hint_parts.append(f"{len(attachment_candidates)} independent file attachment candidate(s)")
             structure_hint = "; ".join(hint_parts)
 
             payload = {
@@ -1799,6 +1773,7 @@ async def tool_probe_detail_page(ctx: ToolContext, url: str = "") -> ToolResult:
                 "titleTagName": title_tag_name,
                 "titleText": title_text,
                 "structureHint": structure_hint,
+                "attachmentCandidates": attachment_candidates,
             }
 
             probe_entry = {
@@ -1807,6 +1782,7 @@ async def tool_probe_detail_page(ctx: ToolContext, url: str = "") -> ToolResult:
                 "contentSelector": content_selector,
                 "contentTagName": content_tag_name,
                 "contentCandidates": content_candidates,
+                "attachmentCandidates": attachment_candidates,
                 "titleSelector": title_selector,
                 "structureHint": structure_hint,
             }
@@ -1825,10 +1801,10 @@ async def tool_probe_detail_page(ctx: ToolContext, url: str = "") -> ToolResult:
                 ctx.log(f"[TOOL] verified_selectors merge (probe_detail) failed: {merge_exc}")
 
             return ToolResult(
-                success=bool(content_selector),
+                success=bool(content_selector or attachment_candidates),
                 data=payload,
                 summary=summary,
-                error_code=None if content_selector else "no_content_container",
+                error_code=None if (content_selector or attachment_candidates) else "no_content_or_attachment",
                 suggested_next_tools=["generate_crawler_code", "validate_code"],
             )
 

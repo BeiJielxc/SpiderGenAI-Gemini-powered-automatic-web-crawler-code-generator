@@ -15,10 +15,18 @@ def test_register_agent_roundtrip():
     assert AGENT_REGISTRY["test-worker"] is factory
 
 
-def test_dummy_router_picks_planner():
-    from agents.supervisor import _dummy_router
+def test_acquisition_routes_support_api_dom_and_hybrid():
+    from agents.supervisor import acquisition_route, after_api_route
 
-    assert _dummy_router({}) == "planner"
+    assert acquisition_route({"acquisition_route": "api"}) == "api"
+    assert acquisition_route({"acquisition_route": "dom"}) == "dom"
+    assert acquisition_route({"acquisition_route": "hybrid"}) == "api"
+    assert after_api_route({"acquisition_route": "hybrid"}) == "dom"
+    assert after_api_route({"acquisition_route": "api"}) == "dom"
+    assert after_api_route({
+        "acquisition_route": "api",
+        "enhanced_analysis": {"captured_data_api": {"bestApi": {"url": "https://x/api"}}},
+    }) == "gate"
 
 
 def test_result_translation_preserves_planner_result_shape():
@@ -111,3 +119,35 @@ def test_result_translation_marks_failure_when_critic_rejects():
     result = _build_result_from_state(state, ctx, error=None)
     assert result.success is False
     assert "nope" in (result.error or "")
+
+
+@pytest.mark.asyncio
+async def test_golden_replay_returns_before_model_or_graph_initialization():
+    from agents.runner import run_agent
+
+    class ExplodingConfig:
+        def __getattr__(self, name):
+            raise AssertionError(f"golden replay touched config.{name}")
+
+    logs = []
+    result = await run_agent(
+        browser=None,
+        config=ExplodingConfig(),
+        llm_agent=None,
+        url="https://example.com/news",
+        run_mode="news_sentiment",
+        start_date="2026-01-01",
+        end_date="2026-01-31",
+        task_id="task-1",
+        reusable_script_code="print('golden')\n",
+        task_signature="a" * 64,
+        golden_code_path="output/golden_crawlers/active/example.py",
+        log_callback=logs.append,
+    )
+
+    assert result.success is True
+    assert result.script_code == "print('golden')\n"
+    assert result.iterations == 0
+    assert result.tool_calls == []
+    assert result.final_state["execution_source"] == "golden_replay"
+    assert any("跳过 LLM" in line for line in logs)

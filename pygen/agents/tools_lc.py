@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import json
 from typing import Any, Dict, List, Optional
+from urllib.parse import urlsplit
 
 from langchain_core.messages import ToolMessage
 from langchain_core.runnables import RunnableConfig
@@ -181,6 +182,7 @@ def _format_observation_content(tool_name: str, result: ToolResult) -> str:
 def _mirror_state_update(
     ctx: ToolContext,
     tool_name: str,
+    tool_call_id: str,
     tool_input: Dict[str, Any],
     result: ToolResult,
 ) -> Dict[str, Any]:
@@ -206,11 +208,14 @@ def _mirror_state_update(
         "tool_calls_log": [
             {
                 "action": tool_name,
+                "tool_call_id": tool_call_id,
                 "action_input": tool_input,
                 "success": result.success,
                 "summary": result.summary,
                 "error_code": result.error_code,
                 "suggested_next_tools": result.suggested_next_tools,
+                "confidence": result.confidence,
+                "artifacts": result.artifacts,
             }
         ],
     }
@@ -309,7 +314,7 @@ async def _run_wrapper(
             error_code="invalid_tool_result",
         )
 
-    updates = _mirror_state_update(ctx, tool_name, tool_input, result)
+    updates = _mirror_state_update(ctx, tool_name, tool_call_id, tool_input, result)
     updates["messages"] = [
         ToolMessage(
             content=_format_observation_content(tool_name, result),
@@ -778,6 +783,257 @@ async def generate_crawler_code(
     )
 
 
+def _target_page_matches(ctx: ToolContext) -> bool:
+    """Return whether the live page is still the task's requested page."""
+    current = str((ctx.page_info or {}).get("url") or "").strip()
+    target = str(ctx.url or "").strip()
+    if not current or not target:
+        return False
+    current_url = urlsplit(current)
+    target_url = urlsplit(target)
+    current_path = (current_url.path or "/").rstrip("/") or "/"
+    target_path = (target_url.path or "/").rstrip("/") or "/"
+    return (
+        current_url.hostname == target_url.hostname
+        and current_path == target_path
+    )
+
+
+def _has_selector_bundle(ctx: ToolContext) -> bool:
+    ledger = ctx.verified_selectors or {}
+    slots = ledger.get("list") if isinstance(ledger, dict) else {}
+    return bool(
+        isinstance(slots, dict)
+        and slots.get("container")
+        and (slots.get("title_link") or slots.get("title"))
+    )
+
+
+def _merge_required_updates(
+    combined: Dict[str, Any],
+    incoming: Dict[str, Any],
+) -> Dict[str, Any]:
+    logs = list(combined.get("tool_calls_log") or [])
+    logs.extend(incoming.get("tool_calls_log") or [])
+    combined.update({key: value for key, value in incoming.items() if key != "tool_calls_log"})
+    combined["tool_calls_log"] = logs
+    return combined
+
+
+async def _run_required_tool(
+    state: Dict[str, Any],
+    config: RunnableConfig,
+    *,
+    tool_name: str,
+    tool_input: Dict[str, Any],
+    invoker,
+    sequence: int = 0,
+) -> tuple[Dict[str, Any], ToolResult]:
+    """Execute an orchestration-required tool without relying on an LLM call."""
+    ctx = _get_ctx(config)
+    try:
+        result = await invoker(ctx)
+    except Exception as exc:  # pragma: no cover - defensive boundary
+        result = ToolResult(
+            success=False,
+            error=f"{tool_name} failed: {exc}",
+            summary=f"Required action {tool_name} raised an exception",
+            error_code="required_tool_exception",
+            recoverable=True,
+        )
+    if not isinstance(result, ToolResult):
+        result = ToolResult(
+            success=False,
+            error="Tool returned invalid result type",
+            summary=f"Required action {tool_name} returned an invalid result",
+            error_code="invalid_tool_result",
+        )
+    call_id = (
+        f"required-{tool_name}-{ctx.task_id}-"
+        f"{int(state.get('rollback_count') or 0)}-{sequence}"
+    )
+    updates = _mirror_state_update(ctx, tool_name, call_id, {**tool_input, "required": True}, result)
+    return updates, result
+
+
+async def run_required_site_profile(
+    state: Dict[str, Any], config: RunnableConfig
+) -> Dict[str, Any]:
+    """Guarantee that the Site Profile gate sees the requested live page."""
+    ctx = _get_ctx(config)
+    updates: Dict[str, Any] = {}
+    sequence = 0
+
+    if not _target_page_matches(ctx):
+        ctx.log("[SITE] Required target-page restore starting")
+        incoming, _ = await _run_required_tool(
+            state,
+            config,
+            tool_name="open_page",
+            tool_input={"url": ctx.url},
+            invoker=lambda live_ctx: tool_open_page(live_ctx, url=live_ctx.url),
+            sequence=sequence,
+        )
+        _merge_required_updates(updates, incoming)
+        sequence += 1
+
+    if not ctx.page_info:
+        incoming, _ = await _run_required_tool(
+            state,
+            config,
+            tool_name="get_page_info",
+            tool_input={},
+            invoker=tool_get_page_info,
+            sequence=sequence,
+        )
+        _merge_required_updates(updates, incoming)
+        sequence += 1
+
+    if not ctx.page_structure or not ctx.page_html or len(ctx.page_html) <= 100:
+        ctx.log("[SITE] Required observable-page analysis starting")
+        incoming, _ = await _run_required_tool(
+            state,
+            config,
+            tool_name="analyze_page",
+            tool_input={},
+            invoker=tool_analyze_page,
+            sequence=sequence,
+        )
+        _merge_required_updates(updates, incoming)
+        sequence += 1
+
+    if not ctx.page_html or len(ctx.page_html) <= 100:
+        incoming, _ = await _run_required_tool(
+            state,
+            config,
+            tool_name="get_page_html",
+            tool_input={},
+            invoker=tool_get_page_html,
+            sequence=sequence,
+        )
+        _merge_required_updates(updates, incoming)
+
+    return updates
+
+
+async def run_required_api_discovery(
+    state: Dict[str, Any], config: RunnableConfig
+) -> Dict[str, Any]:
+    """Guarantee one data-bearing API probe before falling back to DOM."""
+    ctx = _get_ctx(config)
+    captured = (ctx.enhanced_analysis or {}).get("captured_data_api")
+    if isinstance(captured, dict) and captured.get("bestApi"):
+        return {}
+    ctx.log("[API] Required data-bearing API probe starting")
+    updates, _ = await _run_required_tool(
+        state,
+        config,
+        tool_name="capture_api_and_infer_params",
+        tool_input={},
+        invoker=tool_capture_api_and_infer_params,
+    )
+    return updates
+
+
+async def run_required_selector(
+    state: Dict[str, Any], config: RunnableConfig
+) -> Dict[str, Any]:
+    """Guarantee list discovery and a live title-link check on DOM routes."""
+    ctx = _get_ctx(config)
+    if _has_selector_bundle(ctx):
+        return {}
+
+    ctx.log("[SELECTOR] Required list extraction starting")
+    updates, _ = await _run_required_tool(
+        state,
+        config,
+        tool_name="extract_list_and_pagination",
+        tool_input={},
+        invoker=tool_extract_list_and_pagination,
+    )
+    if _has_selector_bundle(ctx):
+        return updates
+
+    ledger = ctx.verified_selectors or {}
+    slots = ledger.get("list") if isinstance(ledger, dict) else {}
+    slots = slots if isinstance(slots, dict) else {}
+    container = str(slots.get("container") or "").strip()
+    list_extract = (ctx.enhanced_analysis or {}).get("list_extract") or {}
+    title_selector = str(list_extract.get("titleSelector") or "").strip()
+    if not title_selector and container and not container.startswith("shadow:"):
+        title_selector = f"{container} a"
+    if title_selector:
+        ctx.log(f"[SELECTOR] Required title-link verification: {title_selector}")
+        incoming, _ = await _run_required_tool(
+            state,
+            config,
+            tool_name="verify_selector",
+            tool_input={"selector": title_selector, "description": "list title link"},
+            invoker=lambda live_ctx: tool_verify_selector(
+                live_ctx, selector=title_selector, description="list title link"
+            ),
+            sequence=1,
+        )
+        _merge_required_updates(updates, incoming)
+    return updates
+
+
+async def run_required_date_scope(
+    state: Dict[str, Any], config: RunnableConfig
+) -> Dict[str, Any]:
+    """Probe date APIs when a requested range lacks a verified date source."""
+    ctx = _get_ctx(config)
+    if not (str(ctx.start_date or "").strip() or str(ctx.end_date or "").strip()):
+        return {}
+    ledger = ctx.verified_selectors or {}
+    slots = ledger.get("list") if isinstance(ledger, dict) else {}
+    if ctx.date_api_result or (isinstance(slots, dict) and slots.get("date")):
+        return {}
+    ctx.log("[DATE] Required date-source probe starting")
+    updates, _ = await _run_required_tool(
+        state,
+        config,
+        tool_name="smart_date_api_scan",
+        tool_input={"start_date": ctx.start_date, "end_date": ctx.end_date},
+        invoker=tool_smart_date_api_scan,
+    )
+    return updates
+
+
+async def run_required_codegen(state: Dict[str, Any], config: RunnableConfig) -> Dict[str, Any]:
+    """Run the codegen graph as a required orchestration action.
+
+    The outer specialist must not be able to finish with a prose-only response:
+    reaching the Codegen stage means code generation is mandatory.
+    """
+    ctx = _get_ctx(config)
+    existing = state.get("generated_code")
+    if isinstance(existing, str) and existing.strip():
+        return {"generated_code": existing}
+
+    configurable = (config or {}).get("configurable") or {}
+    use_graph = bool(configurable.get(CODEGEN_GRAPH_CONFIG_KEY, True))
+    strategy = str(state.get("acquisition_route") or "verified_evidence")
+    ctx.log(f"[CODEGEN] Required codegen specialist starting (strategy={strategy})")
+    if use_graph:
+        result = await _generate_via_codegen_graph(ctx, strategy)
+    else:
+        result = await tool_generate_crawler_code(ctx, strategy=strategy)
+
+    call_id = f"required-codegen-{ctx.task_id}-{int(state.get('rollback_count') or 0)}"
+    updates = _mirror_state_update(
+        ctx,
+        "generate_crawler_code",
+        call_id,
+        {"strategy": strategy, "via": "codegen_graph" if use_graph else "legacy", "required": True},
+        result,
+    )
+    if not result.success:
+        updates["last_error"] = result.error or result.summary
+        ctx.log(f"[ERROR] Required codegen failed: {updates['last_error']}")
+    return updates
+
+
 @tool
 async def validate_code(
     code: str = "",
@@ -1040,6 +1296,34 @@ _SANDBOX_TOOLS = {
 
 _CRITIC_TOOLS = {"critic_validate"}
 
+# Specialist allowlists.  The underlying tool implementations remain shared;
+# only the tools visible to each model are narrowed.  ``critic_validate`` is
+# intentionally absent because validation is an orchestration gate, not a
+# model-selected action.
+SPECIALIST_TOOL_NAMES = {
+    "site_profiler": {
+        "open_page", "wait_for_network_idle", "get_page_info", "get_page_html",
+        "analyze_page", "take_screenshot", "get_network_requests",
+        "get_intercepted_apis", "detect_data_status", "enhanced_page_analysis",
+        "read_artifact", "invalidate_page_cache",
+    },
+    "api_discovery": {
+        "get_network_requests", "get_intercepted_apis", "capture_api_and_infer_params",
+        "turn_page_and_verify_change", "smart_date_api_scan",
+        "read_artifact", "wait_for_network_idle",
+    },
+    "selector": {
+        "get_page_html", "analyze_page", "extract_list_and_pagination",
+        "verify_selector", "probe_detail_page", "turn_page_and_verify_change",
+        "get_site_menu_tree", "build_verified_category_mapping", "probe_navigation",
+        "read_artifact", "scroll_page",
+    },
+    "date_scope": {
+        "smart_date_api_scan", "capture_api_and_infer_params", "verify_selector",
+        "get_page_html", "read_artifact",
+    },
+}
+
 
 def get_all_tools() -> List:
     """Return the full tool set (for documentation / unit tests)."""
@@ -1073,10 +1357,37 @@ def select_tools_for_context(
     return out
 
 
+def select_tools_for_specialist(
+    specialist: str,
+    *,
+    has_executor: bool = True,
+) -> List:
+    """Return the strict allowlist for one specialist."""
+    names = SPECIALIST_TOOL_NAMES.get(specialist)
+    if names is None:
+        raise ValueError(f"Unknown specialist: {specialist}")
+    selected = []
+    for tool_obj in _ALL_TOOLS:
+        name = getattr(tool_obj, "name", "")
+        if name not in names:
+            continue
+        if not has_executor and name in _SANDBOX_TOOLS:
+            continue
+        selected.append(tool_obj)
+    return selected
+
+
 __all__ = [
     "TOOL_CONTEXT_CONFIG_KEY",
     "ToolContextNotConfigured",
     "get_all_tools",
     "select_tools_for_context",
+    "select_tools_for_specialist",
+    "run_required_site_profile",
+    "run_required_api_discovery",
+    "run_required_selector",
+    "run_required_date_scope",
+    "run_required_codegen",
+    "SPECIALIST_TOOL_NAMES",
     "_ALL_TOOLS",
 ]

@@ -54,6 +54,7 @@ from .render import (
     should_inject_profile,
     walk_rerun_chain,
 )
+from .runtime_finalize import finalize_runtime_episode
 from .site_profile import SiteProfile, update_profile_from_episode
 from .store import MemoryStore
 
@@ -72,4 +73,5 @@ __all__ = [
     "should_inject_profile",
     "update_profile_from_episode",
     "walk_rerun_chain",
+    "finalize_runtime_episode",
 ]

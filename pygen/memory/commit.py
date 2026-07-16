@@ -38,6 +38,7 @@ from __future__ import annotations
 
 import json
 import re
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
 from .episode import VALID_VERDICTS, Episode
@@ -544,10 +545,9 @@ def _load_system_prompt() -> str:
 def _build_user_message(draft: Dict[str, Any]) -> str:
     """Render the ``USER_TEMPLATE`` from the draft episode.
 
-    The draft is expected to carry the retrospective-context blocks added by
-    ``extract_facts_from_state``: ``task_brief``, ``tool_calls_excerpt``,
-    ``generated_code``. Any of them missing degrade gracefully to a
-    placeholder so the LLM at least gets *something* to chew on.
+    The draft carries ``task_brief``, ``tool_calls_excerpt`` and a
+    ``golden_code_path`` relationship. The Python file is read only for this
+    transient prompt; its contents are never copied into Episode storage.
     """
     suggestion = (draft.get("user_suggestion") or "").strip() or "(用户没有提供文字建议)"
     findings = draft.get("auto_findings") or {}
@@ -564,7 +564,11 @@ def _build_user_message(draft: Dict[str, Any]) -> str:
 
     task_brief_block = _render_task_brief_block(draft.get("task_brief") or {})
 
-    code = draft.get("generated_code") or draft.get("_generated_code_excerpt") or ""
+    code = _read_linked_code(draft)
+    # Backward compatibility for drafts created before the file-only registry.
+    # This fallback is never used for execution or golden promotion.
+    if not code:
+        code = draft.get("generated_code") or draft.get("_generated_code_excerpt") or ""
     if not code:
         code = "(本次未携带代码摘要)"
 
@@ -590,6 +594,23 @@ def _build_user_message(draft: Dict[str, Any]) -> str:
         return load_prompt("summarize/user.md", **fmt_kwargs)
     except Exception:
         return _USER_TEMPLATE.format(**fmt_kwargs)
+
+
+def _read_linked_code(draft: Dict[str, Any], max_chars: int = 30000) -> str:
+    raw_path = str(draft.get("golden_code_path") or "").strip()
+    if not raw_path:
+        return ""
+    path = Path(raw_path)
+    if path.suffix.lower() != ".py" or not path.is_file():
+        return ""
+    try:
+        code = path.read_text(encoding="utf-8")
+    except Exception:
+        return ""
+    if len(code) <= max_chars:
+        return code
+    half = max_chars // 2
+    return code[:half] + "\n\n# ... (middle omitted for retrospective prompt) ...\n\n" + code[-half:]
 
 
 def _render_task_brief_block(brief: Dict[str, Any]) -> str:

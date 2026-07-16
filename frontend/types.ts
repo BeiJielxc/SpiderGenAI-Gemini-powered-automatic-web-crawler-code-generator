@@ -81,6 +81,15 @@ export interface ReportFile {
 }
 
 // ============ 新闻文章类型（新闻舆情场景）============
+export interface NewsAttachment {
+  id: string;
+  name: string;
+  url: string;
+  fileType: string;
+  localPath?: string;
+  isLocal?: boolean;
+}
+
 export interface NewsArticle {
   id: string;
   title: string;
@@ -91,6 +100,7 @@ export interface NewsArticle {
   summary?: string;
   content?: string;
   category?: string;   // 来源板块（多页爬取时标识）
+  attachments?: NewsAttachment[];
 }
 
 // ============ API Types ============
@@ -169,6 +179,15 @@ export interface TaskStatusResponse {
   htmlFingerprint?: string;       // 列表页结构指纹
   userVerdict?: 'correct' | 'wrong' | string;  // 已提交的评价
   userSuggestion?: string;        // 已提交的用户建议
+  stageEvidence?: Record<string, any>;
+  validationReports?: Array<Record<string, any>>;
+  attributionDecision?: Record<string, any>;
+  repairHistory?: Array<Record<string, any>>;
+  runtimeReport?: Record<string, any>;
+  taskSignature?: string;
+  executionSource?: 'generated' | 'golden_replay' | string;
+  goldenCodePath?: string;
+  goldenStatus?: 'pending' | 'active' | 'invalid' | string;
 }
 
 // ============ 持久化记忆 / 任务评价 ============
@@ -198,6 +217,9 @@ export interface FeedbackResponse {
   domain?: string;
   profile_confidence?: number | null;
   profile_quarantined?: boolean | null;
+  task_signature?: string;
+  golden_status?: 'pending' | 'active' | 'invalid' | string;
+  golden_code_path?: string;
 }
 
 export interface DraftEpisodeResponse {

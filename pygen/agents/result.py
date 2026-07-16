@@ -36,6 +36,14 @@ class PlannerResult:
         self.auto_findings: Optional[Dict[str, Any]] = None
         self.summary_draft_path: Optional[str] = None
         self.html_fingerprint: Optional[str] = None
+        # Evidence-driven orchestration outputs.  ``final_state`` is retained
+        # in-memory only so the API can append the real runtime result before
+        # Stage-1 memory is written.
+        self.stage_evidence: Dict[str, Dict[str, Any]] = {}
+        self.validation_reports: List[Dict[str, Any]] = []
+        self.attribution_decision: Optional[Dict[str, Any]] = None
+        self.repair_history: List[Dict[str, Any]] = []
+        self.final_state: Dict[str, Any] = {}
 
 
 __all__ = ["PlannerResult"]

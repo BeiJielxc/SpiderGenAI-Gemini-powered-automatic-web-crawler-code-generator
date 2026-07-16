@@ -439,7 +439,7 @@ from datetime import datetime
 
 # 配置
 BASE_API_URL = "..."
-OUTPUT_DIR = r"..."  # 使用提供的输出目录
+OUTPUT_DIR = os.environ.get("PYGEN_OUTPUT_DIR", ".")  # 由任务运行环境注入
 HEADERS = {...}
 
 # 分类配置（如果是SPA页面需要分类参数）
